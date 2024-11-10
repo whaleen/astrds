@@ -1,13 +1,12 @@
-// Traditional Node.js function format
 exports.handler = async function (event, context) {
-  // Set CORS headers
+  console.log('getScores function called', { httpMethod: event.httpMethod });
+
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
 
-  // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,
@@ -16,12 +15,16 @@ exports.handler = async function (event, context) {
   }
 
   try {
+    const scores = []; // Empty for now
+    console.log('Returning scores:', scores);
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify([])
+      body: JSON.stringify(scores)
     };
   } catch (error) {
+    console.error('Error in getScores:', error);
     return {
       statusCode: 500,
       headers,
