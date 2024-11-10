@@ -1,0 +1,13 @@
+[build]
+  command = "npx pnpm install && npx pnpm build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NPM_FLAGS = "--shamefully-hoist"
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
