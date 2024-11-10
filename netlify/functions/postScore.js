@@ -1,6 +1,6 @@
-import { Context } from "@netlify/functions";
+let scores = [];
 
-exports.handler = async function (event, context) {
+exports.handler = async function (event) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -17,9 +17,6 @@ exports.handler = async function (event, context) {
   try {
     const { score, walletAddress } = JSON.parse(event.body);
 
-    // Get existing scores
-    const existingScores = JSON.parse(await context.store.get('highScores') || '[]');
-
     // Add new score
     const newScore = {
       score,
@@ -28,24 +25,21 @@ exports.handler = async function (event, context) {
     };
 
     // Add to list and sort, keep top 10
-    const allScores = [...existingScores, newScore]
+    scores = [...scores, newScore]
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
-
-    // Save updated scores
-    await context.store.set('highScores', JSON.stringify(allScores));
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(allScores)
+      body: JSON.stringify(scores)
     };
   } catch (error) {
-    console.error('Error saving score:', error);
+    console.error('Error in postScore:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Failed to save score', details: error.message })
+      body: JSON.stringify({ error: 'Failed to save score' })
     };
   }
 };
