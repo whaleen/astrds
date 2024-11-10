@@ -9,14 +9,18 @@ export const handler = async (event, context) => {
   };
 
   try {
-    console.log('Function context:', {
-      siteId: context.site.id,
-      hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
-    });
+    let siteId;
+    if (context && context.site && context.site.id) {
+      siteId = context.site.id;
+    } else if (process.env.SITE_ID) {
+      siteId = process.env.SITE_ID;
+    } else {
+      throw new Error("Site ID is missing from the environment variables or the context object.");
+    }
 
     const store = getStore({
       name: "site:high-scores",
-      siteID: context.site.id,
+      siteID: siteId,
       token: process.env.BLOB_READ_WRITE_TOKEN
     });
 
