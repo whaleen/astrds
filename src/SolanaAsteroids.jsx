@@ -8,6 +8,8 @@ import { randomNumBetweenExcluding } from './helpers/helpers'
 import { verifyWalletSignature } from './auth'
 import VolumeControl from './components/VolumeControl'
 import { soundManager } from './sounds/SoundManager'
+import { submitScore } from './api/scores'
+import Leaderboard from './components/Leaderboard'
 
 const KEY = {
   LEFT: 37,
@@ -50,6 +52,7 @@ export class SolanaAsteroids extends Component {
       isInitialized: false,
       gameState: 'INITIAL',
       signatureLoading: false,
+      showLeaderboard: false,
     }
 
     this.canvasRef = React.createRef()
@@ -265,24 +268,29 @@ export class SolanaAsteroids extends Component {
     )
   }
 
-  gameOver() {
-    // Stop background music
+  async gameOver() {
     soundManager.stop('bgMusic')
-    // Play game over sound
     soundManager.play('gameOver')
+
+    // Submit score if it's worth recording
+    if (this.state.currentScore > 0) {
+      try {
+        await submitScore(
+          this.state.currentScore,
+          this.props.wallet.publicKey?.toString()
+        )
+      } catch (error) {
+        console.error('Failed to submit score:', error)
+      }
+    }
+
     this.cleanup()
     this.setState({
       inGame: false,
       gameState: 'GAME_OVER',
-      context: null, // Clear context on game over
+      context: null,
+      showLeaderboard: true, // Show leaderboard on game over
     })
-
-    if (this.state.currentScore > this.state.topScore) {
-      this.setState({
-        topScore: this.state.currentScore,
-      })
-      localStorage['topscore'] = this.state.currentScore
-    }
   }
 
   cleanup() {
@@ -511,7 +519,6 @@ export class SolanaAsteroids extends Component {
                     ? `${currentScore} Points!`
                     : '0 points... So sad.'}
                 </p>
-                <p>Insert another quarter?</p>
                 <button
                   className='start-button'
                   onClick={this.handleQuarterInsert}
@@ -523,6 +530,12 @@ export class SolanaAsteroids extends Component {
                 </button>
               </div>
             </div>
+            {this.state.showLeaderboard && (
+              <Leaderboard
+                currentScore={this.state.currentScore}
+                onClose={() => this.setState({ showLeaderboard: false })}
+              />
+            )}
           </div>
         )
 
