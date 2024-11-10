@@ -1,7 +1,13 @@
 export const getHighScores = async () => {
+  console.log('getHighScores called');
   try {
+    console.log('Fetching scores...');
     const response = await fetch('/.netlify/functions/getScores');
-    const data = await response.json();
+    console.log('Response:', response.status);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const data = JSON.parse(text);
+    console.log('Parsed data:', data);
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('Error fetching scores:', error);
@@ -10,7 +16,9 @@ export const getHighScores = async () => {
 };
 
 export const submitScore = async (score, walletAddress) => {
+  console.log('submitScore called', { score, walletAddress });
   try {
+    console.log('Submitting score...');
     const response = await fetch('/.netlify/functions/postScore', {
       method: 'POST',
       headers: {
@@ -18,8 +26,11 @@ export const submitScore = async (score, walletAddress) => {
       },
       body: JSON.stringify({ score, walletAddress }),
     });
-
-    const data = await response.json();
+    console.log('Submit response status:', response.status);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const data = JSON.parse(text);
+    console.log('Parsed data:', data);
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('Error submitting score:', error);

@@ -509,6 +509,7 @@ export class SolanaAsteroids extends Component {
         )
 
       case 'GAME_OVER':
+        console.log('Game Over state, showing leaderboard')
         return (
           <div className='auth-container'>
             <div className='wallet-section'>
@@ -530,12 +531,10 @@ export class SolanaAsteroids extends Component {
                 </button>
               </div>
             </div>
-            {this.state.showLeaderboard && (
-              <Leaderboard
-                currentScore={this.state.currentScore}
-                onClose={() => this.setState({ showLeaderboard: false })}
-              />
-            )}
+            <Leaderboard
+              currentScore={this.state.currentScore}
+              onClose={() => this.setState({ showLeaderboard: false })}
+            />
           </div>
         )
 
