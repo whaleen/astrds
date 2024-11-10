@@ -1,7 +1,7 @@
 // Shared scores array (note: this will reset on cold starts)
-global.scores = global.scores || [];
+const scores = [];
 
-exports.handler = async function (event) {
+export const handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -16,11 +16,11 @@ exports.handler = async function (event) {
   }
 
   try {
-    console.log('Current scores:', global.scores);
+    console.log('Current scores:', scores);
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(global.scores)
+      body: JSON.stringify(scores)
     };
   } catch (error) {
     console.error('Error in getScores:', error);

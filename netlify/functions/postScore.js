@@ -1,7 +1,7 @@
 // Shared scores array (note: this will reset on cold starts)
-global.scores = global.scores || [];
+const scores = [];
 
-exports.handler = async function (event) {
+export const handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -16,7 +16,7 @@ exports.handler = async function (event) {
   }
 
   try {
-    console.log('Existing scores:', global.scores);
+    console.log('Existing scores:', scores);
     const { score, walletAddress } = JSON.parse(event.body);
 
     // Add new score
@@ -26,16 +26,18 @@ exports.handler = async function (event) {
       date: new Date().toISOString()
     };
 
-    // Add to list and sort, keep top 10
-    global.scores = [...global.scores, newScore]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
+    // Update scores array
+    scores.push(newScore);
+    scores.sort((a, b) => b.score - a.score);
+    while (scores.length > 10) {
+      scores.pop();
+    }
 
-    console.log('Updated scores:', global.scores);
+    console.log('Updated scores:', scores);
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(global.scores)
+      body: JSON.stringify(scores)
     };
   } catch (error) {
     console.error('Error in postScore:', error);
