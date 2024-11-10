@@ -1,6 +1,6 @@
-exports.handler = async function (event, context) {
-  console.log('getScores function called', { httpMethod: event.httpMethod });
+import { Context } from "@netlify/functions";
 
+exports.handler = async function (event, context) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -15,16 +15,16 @@ exports.handler = async function (event, context) {
   }
 
   try {
-    const scores = []; // Empty for now
-    console.log('Returning scores:', scores);
+    // Get scores from KV store
+    const scores = await context.store.get('highScores') || '[]';
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(scores)
+      body: scores
     };
   } catch (error) {
-    console.error('Error in getScores:', error);
+    console.error('Error fetching scores:', error);
     return {
       statusCode: 500,
       headers,

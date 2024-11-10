@@ -1,9 +1,6 @@
-exports.handler = async function (event, context) {
-  console.log('postScore function called', {
-    httpMethod: event.httpMethod,
-    body: event.body
-  });
+import { Context } from "@netlify/functions";
 
+exports.handler = async function (event, context) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -19,15 +16,32 @@ exports.handler = async function (event, context) {
 
   try {
     const { score, walletAddress } = JSON.parse(event.body);
-    console.log('Processing score submission:', { score, walletAddress });
+
+    // Get existing scores
+    const existingScores = JSON.parse(await context.store.get('highScores') || '[]');
+
+    // Add new score
+    const newScore = {
+      score,
+      walletAddress,
+      date: new Date().toISOString()
+    };
+
+    // Add to list and sort, keep top 10
+    const allScores = [...existingScores, newScore]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+
+    // Save updated scores
+    await context.store.set('highScores', JSON.stringify(allScores));
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ success: true, score, walletAddress })
+      body: JSON.stringify(allScores)
     };
   } catch (error) {
-    console.error('Error in postScore:', error);
+    console.error('Error saving score:', error);
     return {
       statusCode: 500,
       headers,
