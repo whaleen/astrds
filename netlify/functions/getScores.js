@@ -1,5 +1,4 @@
-// Shared scores array (note: this will reset on cold starts)
-const scores = [];
+import { getStore } from "@netlify/blobs";
 
 export const handler = async (event) => {
   const headers = {
@@ -8,26 +7,46 @@ export const handler = async (event) => {
     'Content-Type': 'application/json'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers
-    };
-  }
-
   try {
-    console.log('Current scores:', scores);
+    console.log('Getting blob store...');
+    const store = getStore({
+      name: "site:high-scores",
+    });
+
+    const { score, walletAddress } = JSON.parse(event.body);
+    console.log('Received score:', { score, walletAddress });
+
+    // Get existing scores
+    const existingScoresStr = await store.get("scores");
+    const existingScores = existingScoresStr ? JSON.parse(existingScoresStr) : [];
+    console.log('Current scores:', existingScores);
+
+    // Add new score
+    const newScore = {
+      score,
+      walletAddress,
+      date: new Date().toISOString()
+    };
+
+    // Update scores
+    const allScores = [...existingScores, newScore]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+
+    console.log('Saving updated scores:', allScores);
+    await store.set("scores", JSON.stringify(allScores));
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(scores)
+      body: JSON.stringify(allScores)
     };
   } catch (error) {
-    console.error('Error in getScores:', error);
+    console.error('Error saving score:', error);
     return {
-      statusCode: 200,
+      statusCode: 500,
       headers,
-      body: JSON.stringify([])
+      body: JSON.stringify({ error: 'Failed to save score', details: error.message })
     };
   }
 };
