@@ -1,4 +1,5 @@
-let scores = [];
+const fs = require('fs');
+const path = require('path');
 
 exports.handler = async function (event) {
   const headers = {
@@ -16,6 +17,13 @@ exports.handler = async function (event) {
 
   try {
     const { score, walletAddress } = JSON.parse(event.body);
+    const scoresPath = path.join('/tmp', 'scores.json');
+
+    // Read existing scores
+    let scores = [];
+    if (fs.existsSync(scoresPath)) {
+      scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
+    }
 
     // Add new score
     const newScore = {
@@ -29,6 +37,9 @@ exports.handler = async function (event) {
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
 
+    // Save back to file
+    fs.writeFileSync(scoresPath, JSON.stringify(scores));
+
     return {
       statusCode: 200,
       headers,
@@ -39,7 +50,7 @@ exports.handler = async function (event) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Failed to save score' })
+      body: JSON.stringify({ error: 'Failed to save score', details: error.message })
     };
   }
 };

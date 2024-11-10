@@ -1,4 +1,5 @@
-let scores = [];
+const fs = require('fs');
+const path = require('path');
 
 exports.handler = async function (event) {
   const headers = {
@@ -15,6 +16,13 @@ exports.handler = async function (event) {
   }
 
   try {
+    const scoresPath = path.join('/tmp', 'scores.json');
+    let scores = [];
+
+    if (fs.existsSync(scoresPath)) {
+      scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
+    }
+
     return {
       statusCode: 200,
       headers,
@@ -23,9 +31,9 @@ exports.handler = async function (event) {
   } catch (error) {
     console.error('Error in getScores:', error);
     return {
-      statusCode: 500,
+      statusCode: 200, // Return 200 even on error, with empty array
       headers,
-      body: JSON.stringify({ error: 'Failed to fetch scores' })
+      body: JSON.stringify([])
     };
   }
 };
