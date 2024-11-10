@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { getHighScores } from '../api/scores'
-import { Loader2 } from 'lucide-react'
 
 const EnhancedLeaderboard = ({ currentScore, onClose, initialScores = [] }) => {
   const [scores, setScores] = useState(initialScores)
@@ -47,8 +46,8 @@ const EnhancedLeaderboard = ({ currentScore, onClose, initialScores = [] }) => {
         <h2 className='text-2xl text-blue-400 text-center mb-6'>High Scores</h2>
 
         {loading ? (
-          <div className='flex justify-center items-center py-8'>
-            <Loader2 className='w-8 h-8 text-blue-400 animate-spin' />
+          <div className='text-center text-blue-400 py-8'>
+            Loading scores...
           </div>
         ) : error ? (
           <div className='text-red-400 text-center py-4'>{error}</div>
