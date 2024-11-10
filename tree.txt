@@ -1,0 +1,42 @@
+.
+├── README.md
+├── index.html
+├── netlify
+│   ├── blobs
+│   │   └── scores.json
+│   └── functions
+│       ├── getScores.js
+│       └── postScore.js
+├── netlify.toml
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── public
+│   └── sounds
+│       ├── coin.wav
+│       ├── explosion.wav
+│       ├── shoot.wav
+│       └── thrust.wav
+├── src
+│   ├── SolanaAsteroids.jsx
+│   ├── api
+│   │   └── scores.js
+│   ├── auth.js
+│   ├── components
+│   │   ├── Asteroid.jsx
+│   │   ├── Bullet.jsx
+│   │   ├── Leaderboard.jsx
+│   │   ├── Particle.jsx
+│   │   ├── Ship.jsx
+│   │   └── VolumeControl.jsx
+│   ├── helpers
+│   │   └── helpers.js
+│   ├── index.jsx
+│   ├── sounds
+│   │   └── SoundManager.js
+│   └── styles
+│       └── style.css
+├── tree.txt
+└── vite.config.js
+
+12 directories, 28 files
