@@ -1,7 +1,6 @@
-import { getStore } from "@netlify/blobs";
+let scores = [];
 
 export default async function handler(event, context) {
-  // Set CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -9,7 +8,6 @@ export default async function handler(event, context) {
     'Content-Type': 'application/json'
   };
 
-  // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,
@@ -36,14 +34,6 @@ export default async function handler(event, context) {
       };
     }
 
-    const store = getStore({
-      name: "scores"
-    });
-
-    // Get existing scores
-    const existingData = await store.get("highscores");
-    const scores = existingData ? JSON.parse(existingData) : [];
-
     // Add new score
     const newScore = {
       score,
@@ -52,17 +42,14 @@ export default async function handler(event, context) {
     };
 
     // Add to list and sort, keep top 10
-    const allScores = [...scores, newScore]
+    scores = [...scores, newScore]
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
-
-    // Save updated scores
-    await store.set("highscores", JSON.stringify(allScores));
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(allScores)
+      body: JSON.stringify(scores)
     };
   } catch (error) {
     console.error('Error saving score:', error);
