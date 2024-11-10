@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+// Shared scores array (note: this will reset on cold starts)
+global.scores = global.scores || [];
 
 exports.handler = async function (event) {
   const headers = {
@@ -16,14 +16,8 @@ exports.handler = async function (event) {
   }
 
   try {
+    console.log('Existing scores:', global.scores);
     const { score, walletAddress } = JSON.parse(event.body);
-    const scoresPath = path.join('/tmp', 'scores.json');
-
-    // Read existing scores
-    let scores = [];
-    if (fs.existsSync(scoresPath)) {
-      scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
-    }
 
     // Add new score
     const newScore = {
@@ -33,17 +27,15 @@ exports.handler = async function (event) {
     };
 
     // Add to list and sort, keep top 10
-    scores = [...scores, newScore]
+    global.scores = [...global.scores, newScore]
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
 
-    // Save back to file
-    fs.writeFileSync(scoresPath, JSON.stringify(scores));
-
+    console.log('Updated scores:', global.scores);
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(scores)
+      body: JSON.stringify(global.scores)
     };
   } catch (error) {
     console.error('Error in postScore:', error);

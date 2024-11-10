@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+// Shared scores array (note: this will reset on cold starts)
+global.scores = global.scores || [];
 
 exports.handler = async function (event) {
   const headers = {
@@ -16,22 +16,16 @@ exports.handler = async function (event) {
   }
 
   try {
-    const scoresPath = path.join('/tmp', 'scores.json');
-    let scores = [];
-
-    if (fs.existsSync(scoresPath)) {
-      scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
-    }
-
+    console.log('Current scores:', global.scores);
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(scores)
+      body: JSON.stringify(global.scores)
     };
   } catch (error) {
     console.error('Error in getScores:', error);
     return {
-      statusCode: 200, // Return 200 even on error, with empty array
+      statusCode: 200,
       headers,
       body: JSON.stringify([])
     };

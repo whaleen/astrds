@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { getHighScores } from '../api/scores'
 
-const Leaderboard = ({ currentScore, onClose }) => {
-  const [scores, setScores] = useState([])
+const Leaderboard = ({ currentScore, onClose, initialScores = [] }) => {
+  const [scores, setScores] = useState(initialScores)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('Leaderboard mounted')
+    console.log('Leaderboard mounted', { initialScores })
     const fetchScores = async () => {
       console.log('Fetching scores in Leaderboard')
       const highScores = await getHighScores()
@@ -15,7 +15,7 @@ const Leaderboard = ({ currentScore, onClose }) => {
       setLoading(false)
     }
     fetchScores()
-  }, [])
+  }, [initialScores])
 
   // Shorten wallet address for display
   const shortenAddress = (address) => {

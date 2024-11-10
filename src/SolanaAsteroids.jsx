@@ -272,10 +272,11 @@ export class SolanaAsteroids extends Component {
     soundManager.stop('bgMusic')
     soundManager.play('gameOver')
 
+    let highScores = []
     // Submit score if it's worth recording
     if (this.state.currentScore > 0) {
       try {
-        await submitScore(
+        highScores = await submitScore(
           this.state.currentScore,
           this.props.wallet.publicKey?.toString()
         )
@@ -289,7 +290,7 @@ export class SolanaAsteroids extends Component {
       inGame: false,
       gameState: 'GAME_OVER',
       context: null,
-      showLeaderboard: true, // Show leaderboard on game over
+      highScores, // Store the scores we just got back
     })
   }
 
@@ -533,6 +534,7 @@ export class SolanaAsteroids extends Component {
             </div>
             <Leaderboard
               currentScore={this.state.currentScore}
+              initialScores={this.state.highScores || []}
               onClose={() => this.setState({ showLeaderboard: false })}
             />
           </div>
