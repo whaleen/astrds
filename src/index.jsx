@@ -18,14 +18,21 @@ import '@solana/wallet-adapter-react-ui/styles.css'
 const container = document.getElementById('root')
 const root = createRoot(container)
 
-// Initialize wallet adapter
+// Initialize wallet adapter with more explicit configuration
 const endpoint = clusterApiUrl('devnet')
+const config = {
+  commitment: 'confirmed',
+}
+
 const wallets = [new PhantomWalletAdapter()]
 
-// Render app
+// Render app with more detailed configuration
 root.render(
   <React.StrictMode>
-    <ConnectionProvider endpoint={endpoint}>
+    <ConnectionProvider
+      endpoint={endpoint}
+      config={config}
+    >
       <WalletProvider
         wallets={wallets}
         autoConnect

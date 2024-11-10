@@ -110,15 +110,26 @@ export class SolanaAsteroids extends Component {
 
   handleQuarterInsert = async () => {
     const { wallet } = this.props
-    if (!wallet.connected) return
+    if (!wallet.connected) {
+      console.error('Wallet not connected')
+      return
+    }
 
     this.setState({ signatureLoading: true })
 
     try {
       // Play quarter insert sound
       soundManager.play('quarterInsert')
-      const connection = new Connection('https://api.devnet.solana.com')
+
+      console.log('Initializing connection to Solana...')
+      const connection = new Connection(
+        'https://api.devnet.solana.com',
+        'confirmed'
+      )
+
+      console.log('Requesting wallet signature...')
       const isVerified = await verifyWalletSignature(wallet, connection)
+      console.log('Signature verification result:', isVerified)
 
       if (isVerified) {
         this.setState(
@@ -127,16 +138,18 @@ export class SolanaAsteroids extends Component {
             signatureLoading: false,
           },
           () => {
-            // Start background music when game starts
             soundManager.play('bgMusic')
             this.startGame()
           }
         )
       } else {
+        console.error('Signature verification failed')
         this.setState({
           signatureLoading: false,
           gameState: 'READY_TO_PLAY',
         })
+        // Add user feedback
+        alert('Failed to verify wallet signature. Please try again.')
       }
     } catch (error) {
       console.error('Quarter insert failed:', error)
@@ -144,6 +157,8 @@ export class SolanaAsteroids extends Component {
         signatureLoading: false,
         gameState: 'READY_TO_PLAY',
       })
+      // Add user feedback
+      alert('Failed to process quarter insert. Please try again.')
     }
   }
 
