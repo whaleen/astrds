@@ -1,3 +1,4 @@
+// postScore.js
 import { getStore } from "@netlify/blobs";
 
 export const handler = async (event, context) => {
@@ -8,15 +9,14 @@ export const handler = async (event, context) => {
   };
 
   try {
-    const siteId = context.site?.id;
     console.log('Function context:', {
-      siteId,
+      siteId: context.site.id,
       hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
     });
 
     const store = getStore({
-      name: "site:scores",
-      siteID: process.env.SITE_ID,
+      name: "site:high-scores",
+      siteID: context.site.id,
       token: process.env.BLOB_READ_WRITE_TOKEN
     });
 
