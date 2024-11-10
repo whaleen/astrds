@@ -15,7 +15,7 @@ export const handler = async (event, context) => {
     });
 
     const store = getStore({
-      name: "site:high-scores",
+      name: "site:scores",
       siteID: siteId,
       token: process.env.BLOB_READ_WRITE_TOKEN
     });

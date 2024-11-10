@@ -91,7 +91,7 @@ export default class Asteroid {
     context.translate(this.position.x, this.position.y)
     context.rotate((this.rotation * Math.PI) / 180)
     context.strokeStyle = '#FFF'
-    context.lineWidth = 2
+    context.lineWidth = 0.1
     context.beginPath()
     context.moveTo(0, -this.radius)
     for (let i = 1; i < this.vertices.length; i++) {

@@ -64,7 +64,7 @@ export default class Ship {
     this.velocity.y -= Math.cos((-this.rotation * Math.PI) / 180) * this.speed
 
     // Play thrust sound
-    soundManager.play('thrust')
+    soundManager.play('Asteroids')
 
     // Thruster particles
     let posDelta = rotatePoint(

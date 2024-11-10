@@ -453,8 +453,8 @@ export class SolanaAsteroids extends Component {
     return (
       <div>
         <span className='score current-score'>Score: {currentScore}</span>
+        <span className='score'>Top Score: {topScore}</span>
         <div className='game-header'>
-          <span className='score'>Top Score: {topScore}</span>
           <VolumeControl />
           <div className='wallet-game-button'>
             <WalletMultiButton />
