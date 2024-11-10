@@ -1,23 +1,32 @@
-// Shared scores array (note: this will reset on cold starts)
-const scores = [];
+import { getStore } from "@netlify/blobs";
 
-export const handler = async (event) => {
+export const handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers
-    };
-  }
-
   try {
-    console.log('Existing scores:', scores);
+    const siteId = context.site?.id;
+    console.log('Function context:', {
+      siteId,
+      hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
+    });
+
+    const store = getStore({
+      name: "site:high-scores",
+      siteID: siteId,
+      token: process.env.BLOB_READ_WRITE_TOKEN
+    });
+
     const { score, walletAddress } = JSON.parse(event.body);
+    console.log('Processing new score:', { score, walletAddress });
+
+    // Get existing scores
+    const existingScoresStr = await store.get("scores");
+    const existingScores = existingScoresStr ? JSON.parse(existingScoresStr) : [];
+    console.log('Current scores:', existingScores);
 
     // Add new score
     const newScore = {
@@ -26,25 +35,38 @@ export const handler = async (event) => {
       date: new Date().toISOString()
     };
 
-    // Update scores array
-    scores.push(newScore);
-    scores.sort((a, b) => b.score - a.score);
-    while (scores.length > 10) {
-      scores.pop();
-    }
+    // Update scores
+    const allScores = [...existingScores, newScore]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
 
-    console.log('Updated scores:', scores);
+    console.log('Saving updated scores:', allScores);
+    await store.set("scores", JSON.stringify(allScores));
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(scores)
+      body: JSON.stringify(allScores)
     };
   } catch (error) {
-    console.error('Error in postScore:', error);
+    console.error('Error saving score:', {
+      error: error.message,
+      context: context ? 'exists' : 'missing',
+      siteId: context?.site?.id || 'missing',
+      hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
+    });
+
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Failed to save score', details: error.message })
+      body: JSON.stringify({
+        error: 'Failed to save score',
+        details: error.message,
+        debug: {
+          hasSiteId: !!context?.site?.id,
+          hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
+        }
+      })
     };
   }
 };
