@@ -12,7 +12,9 @@
     "build": "vite build",
     "serve": "vite preview",
     "lint": "eslint src --fix",
-    "clean": "rm -rf node_modules dist .vite"
+    "clean": "rm -rf node_modules dist .vite",
+    "test:functions": "netlify functions:invoke getScores && netlify functions:invoke postScore --payload '{\"score\": 1000, \"walletAddress\": \"TEST_WALLET\"}'",
+    "test:blob": "curl -X GET '/.netlify/functions/getScores'"
   },
   "dependencies": {
     "@netlify/blobs": "^8.1.0",

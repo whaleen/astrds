@@ -272,16 +272,20 @@ export class SolanaAsteroids extends Component {
     soundManager.stop('bgMusic')
     soundManager.play('gameOver')
 
-    let highScores = []
-    // Submit score if it's worth recording
     if (this.state.currentScore > 0) {
       try {
-        highScores = await submitScore(
+        this.setState({ submittingScore: true })
+        const highScores = await submitScore(
           this.state.currentScore,
-          this.props.wallet.publicKey?.toString()
+          this.props.wallet.publicKey?.toString() || 'Anonymous'
         )
+        this.setState({
+          highScores,
+          submittingScore: false,
+        })
       } catch (error) {
         console.error('Failed to submit score:', error)
+        this.setState({ submittingScore: false })
       }
     }
 
@@ -289,8 +293,6 @@ export class SolanaAsteroids extends Component {
     this.setState({
       inGame: false,
       gameState: 'GAME_OVER',
-      context: null,
-      highScores, // Store the scores we just got back
     })
   }
 
