@@ -1,3 +1,4 @@
+// src/SolanaAsteroids.jsx
 import React, { Component } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
@@ -27,8 +28,57 @@ export const SolanaAsteroidsWrapper = () => {
   return <SolanaAsteroids wallet={wallet} />
 }
 
+const AuthContainer = ({ children, title }) => (
+  <div className='flex flex-col items-center justify-center min-h-screen bg-black relative z-10'>
+    <h1
+      className='text-4xl md:text-5xl mb-10 uppercase text-center leading-tight
+                   text-white animate-[glow_1.5s_ease-in-out_infinite_alternate]
+                   [text-shadow:0_0_10px_#4dc1f9,0_0_20px_#4dc1f9,0_0_30px_#4dc1f9]'
+    >
+      {title}
+    </h1>
+    <div className='flex flex-col items-center gap-6 text-center'>
+      {children}
+    </div>
+  </div>
+)
+
+const GameHeader = () => (
+  <div className='fixed top-5 right-5 z-10 flex gap-5 items-center'>
+    <VolumeControl />
+    <div className='opacity-70 hover:opacity-100 transition-opacity'>
+      <WalletMultiButton />
+    </div>
+  </div>
+)
+
+const GameInfo = ({ currentScore, topScore }) => (
+  <>
+    <span className='absolute top-5 left-5 z-10 text-base'>
+      Score: {currentScore}
+    </span>
+    <span className='absolute top-5 left-40 z-10 text-base'>
+      Top Score: {topScore}
+    </span>
+    <span className='absolute top-5 left-1/2 -translate-x-1/2 z-10 text-xs text-center text-gray-400'>
+      Use [A][S][W][D] or [←][↑][↓][→] to MOVE
+      <br />
+      Use [SPACE] to SHOOT
+    </span>
+  </>
+)
+
+const WalletWrapper = ({ children, loading }) => (
+  <div className='flex flex-col items-center gap-6'>
+    <div className='flex flex-col items-center gap-4'>{children}</div>
+    {loading && (
+      <div className='text-game-blue animate-pulse'>Processing...</div>
+    )}
+  </div>
+)
+
 export class SolanaAsteroids extends Component {
-  // 2. Constructor
+  // Constructor
   constructor(props) {
     super(props)
     this.state = {
@@ -62,7 +112,7 @@ export class SolanaAsteroids extends Component {
     this.particles = []
   }
 
-  // 3. Lifecycle methods
+  // Lifecycle methods
   componentDidMount() {
     window.addEventListener('keyup', this.handleKeys.bind(this, false))
     window.addEventListener('keydown', this.handleKeys.bind(this, true))
@@ -103,7 +153,7 @@ export class SolanaAsteroids extends Component {
     }
   }
 
-  // 4. Event handlers
+  // Event handlers
   handleWalletConnection = async () => {
     const { wallet } = this.props
     if (!wallet.connected) return
@@ -186,7 +236,7 @@ export class SolanaAsteroids extends Component {
     })
   }
 
-  // 5. Game logic methods
+  // Game logic methods
   initializeGame = () => {
     if (this.canvasRef.current && !this.state.isInitialized) {
       const context = this.canvasRef.current.getContext('2d')
@@ -448,29 +498,22 @@ export class SolanaAsteroids extends Component {
     }
   }
 
-  // 6. Render methods
+  // Render methods
   renderGame() {
     const { currentScore, topScore } = this.state
 
     return (
       <div>
-        <span className='score current-score'>Score: {currentScore}</span>
-        <span className='score'>Top Score: {topScore}</span>
-        <div className='game-header'>
-          <VolumeControl />
-          <div className='wallet-game-button'>
-            <WalletMultiButton />
-          </div>
-        </div>
-        <span className='controls'>
-          Use [A][S][W][D] or [←][↑][↓][→] to MOVE
-          <br />
-          Use [SPACE] to SHOOT
-        </span>
+        <GameHeader />
+        <GameInfo
+          currentScore={this.state.currentScore}
+          topScore={this.state.topScore}
+        />
         <canvas
           ref={this.canvasRef}
           width={this.state.screen.width * this.state.screen.ratio}
           height={this.state.screen.height * this.state.screen.ratio}
+          className='block bg-black absolute inset-0 w-full h-full'
         />
       </div>
     )
@@ -483,48 +526,54 @@ export class SolanaAsteroids extends Component {
     switch (gameState) {
       case 'INITIAL':
         return (
-          <div className='auth-container'>
-            <h1>Solana Asteroids</h1>
-            <div className='wallet-section'>
+          <AuthContainer title='Solana Asteroids'>
+            <WalletWrapper>
               <WalletMultiButton />
-              <p>Connect your wallet to play</p>
-            </div>
-          </div>
+              <p className='text-gray-400'>Connect your wallet to play</p>
+            </WalletWrapper>
+          </AuthContainer>
         )
 
       case 'READY_TO_PLAY':
         return (
-          <div className='auth-container'>
-            <h1>Solana Asteroids</h1>
-            <div className='wallet-section'>
+          <AuthContainer title='Solana Asteroids'>
+            <WalletWrapper loading={signatureLoading}>
               <WalletMultiButton />
               <button
-                className='start-button'
                 onClick={this.handleQuarterInsert}
                 disabled={signatureLoading}
+                className='bg-transparent border-2 border-game-green text-game-green
+                           px-8 py-4 uppercase cursor-pointer transition-all
+                           hover:bg-game-green hover:text-black hover:shadow-[0_0_15px_#4dff4d]
+                           disabled:bg-gray-800 disabled:border-gray-700 disabled:text-gray-500
+                           disabled:cursor-not-allowed disabled:hover:shadow-none'
               >
                 {signatureLoading
                   ? 'Inserting Quarter...'
                   : 'Insert Quarter To Play'}
               </button>
-            </div>
-          </div>
+            </WalletWrapper>
+          </AuthContainer>
         )
 
       case 'GAME_OVER':
         console.log('Game Over state, showing leaderboard')
         return (
-          <div className='auth-container'>
-            <div className='wallet-section'>
-              <div className='endgame'>
-                <p>Game over, man!</p>
-                <p>
+          <div className='fixed inset-0 flex items-center justify-center min-h-screen bg-black/75'>
+            <div className='flex flex-col items-center gap-6'>
+              <div className='flex flex-col items-center gap-4 bg-black/90 border-2 border-game-blue p-8 max-w-lg animate-fadeIn'>
+                <p className='text-xl text-red-400'>Game over, man!</p>
+                <p className='text-lg'>
                   {currentScore > 0
                     ? `${currentScore} Points!`
                     : '0 points... So sad.'}
                 </p>
                 <button
-                  className='start-button'
+                  className='bg-transparent border-2 border-game-green text-game-green
+                       px-8 py-4 uppercase cursor-pointer transition-all
+                       hover:bg-game-green hover:text-black hover:shadow-[0_0_15px_#4dff4d]
+                       disabled:bg-gray-800 disabled:border-gray-700 disabled:text-gray-500
+                       disabled:cursor-not-allowed disabled:hover:shadow-none'
                   onClick={this.handleQuarterInsert}
                   disabled={signatureLoading}
                 >
@@ -543,6 +592,8 @@ export class SolanaAsteroids extends Component {
         )
 
       case 'PLAYING':
+        return this.renderGame()
+
       default:
         return this.renderGame()
     }

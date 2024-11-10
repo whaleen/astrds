@@ -1,5 +1,14 @@
+/* The font import is not working */
+
 /* Base styles */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
 
 body {
   padding: 0;
@@ -256,46 +265,4 @@ canvas {
   .score {
     font-size: 14px;
   }
-}
-
-
-/* Volume Control */
-.volume-control {
-  display: flex;
-  align-items: center;
-  margin: 0 20px;
-}
-
-.volume-slider {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100px;
-  height: 4px;
-  background: #4dc1f9;
-  outline: none;
-  opacity: 0.7;
-  transition: opacity .2s;
-  cursor: pointer;
-}
-
-.volume-slider:hover {
-  opacity: 1;
-}
-
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 15px;
-  height: 15px;
-  background: #ffffff;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.volume-slider::-moz-range-thumb {
-  width: 15px;
-  height: 15px;
-  background: #ffffff;
-  border-radius: 50%;
-  cursor: pointer;
 }

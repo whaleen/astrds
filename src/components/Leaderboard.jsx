@@ -41,12 +41,14 @@ const EnhancedLeaderboard = ({ currentScore, onClose, initialScores = [] }) => {
   }
 
   return (
-    <div className='fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50'>
-      <div className='bg-black border-2 border-blue-400 p-6 max-w-lg w-full mx-4'>
-        <h2 className='text-2xl text-blue-400 text-center mb-6'>High Scores</h2>
+    <div className='fixed inset-0 bg-black/75 flex items-center justify-center z-50'>
+      <div className='bg-black border-2 border-game-blue p-6 max-w-lg w-full mx-4'>
+        <h2 className='text-2xl text-game-blue text-center mb-6'>
+          High Scores
+        </h2>
 
         {loading ? (
-          <div className='text-center text-blue-400 py-8'>
+          <div className='text-center text-game-blue py-8'>
             Loading scores...
           </div>
         ) : error ? (
@@ -107,7 +109,8 @@ const EnhancedLeaderboard = ({ currentScore, onClose, initialScores = [] }) => {
 
         <button
           onClick={onClose}
-          className='mt-6 w-full bg-transparent border-2 border-blue-400 text-blue-400 py-2 px-4 hover:bg-blue-400 hover:text-black transition-colors'
+          className='mt-6 w-full bg-transparent border-2 border-game-blue text-game-blue 
+                     py-2 px-4 hover:bg-game-blue hover:text-black transition-colors'
         >
           Close
         </button>
