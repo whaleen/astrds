@@ -1,4 +1,4 @@
-import { Transaction, SystemProgram, PublicKey } from '@solana/web3.js';
+import { SystemProgram } from '@solana/web3.js';
 
 export const verifyWalletSignature = async (wallet, connection) => {
   if (!wallet.publicKey) {
@@ -11,33 +11,16 @@ export const verifyWalletSignature = async (wallet, connection) => {
     console.log('Wallet connected:', wallet.connected);
     console.log('Public key:', wallet.publicKey.toString());
 
-    // Create a simple instruction that won't cost anything
-    const instruction = SystemProgram.transfer({
-      fromPubkey: wallet.publicKey,
-      toPubkey: wallet.publicKey,
-      lamports: 0,
-    });
-
-    // Create transaction
-    const transaction = new Transaction().add(instruction);
-
-    // Get the recent blockhash
-    try {
-      const { blockhash } = await connection.getLatestBlockhash('confirmed');
-      console.log('Got blockhash:', blockhash);
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = wallet.publicKey;
-    } catch (error) {
-      console.error('Failed to get blockhash:', error);
-      return false;
-    }
+    // Create a simple message to sign
+    const message = new Uint8Array([
+      ...new TextEncoder().encode('Play Asteroids: '),
+      ...new TextEncoder().encode(new Date().toISOString()),
+    ]);
 
     // Request signature from user
     try {
       console.log('Requesting signature...');
-      const signed = await wallet.signMessage(
-        new TextEncoder().encode('Verify wallet ownership to play Asteroids!')
-      );
+      const signature = await wallet.signMessage(message);
       console.log('Message signed successfully');
       return true;
     } catch (error) {
