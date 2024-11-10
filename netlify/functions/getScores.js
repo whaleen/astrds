@@ -9,21 +9,15 @@ export const handler = async (event, context) => {
   };
 
   try {
-    console.log('Function context:', {
-      siteId: context.site.id,
-      hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
-    });
+    const siteId = process.env.SITE_ID;
+    if (!siteId) {
+      throw new Error("Site ID is missing from environment variables.");
+    }
 
     const store = getStore({
       name: "site:high-scores",
-      siteID: context.site.id,
+      siteID: siteId,
       token: process.env.BLOB_READ_WRITE_TOKEN
-    });
-
-    console.log('Store config:', {
-      name: "site:high-scores",
-      siteID: context.site.id,
-      hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
     });
 
     console.log('Fetching scores...');
@@ -38,8 +32,7 @@ export const handler = async (event, context) => {
   } catch (error) {
     console.error('Error getting scores:', {
       error: error.message,
-      context: context ? 'exists' : 'missing',
-      siteId: context?.site?.id || 'missing',
+      hasSiteId: !!process.env.SITE_ID,
       hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
     });
 
@@ -50,7 +43,7 @@ export const handler = async (event, context) => {
         error: 'Failed to get scores',
         details: error.message,
         debug: {
-          hasSiteId: !!context?.site?.id,
+          hasSiteId: !!process.env.SITE_ID,
           hasToken: !!process.env.BLOB_READ_WRITE_TOKEN
         }
       })
