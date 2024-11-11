@@ -1,90 +1,15 @@
-/* The font import is not working */
-
-/* Base styles */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-
-
-body {
-  padding: 0;
-  margin: 0;
-  font-family: 'Press Start 2P', monospace;
-  font-weight: 100;
-  color: #ffffff;
-  background-color: #000000;
-  overflow: hidden;
-}
-
-/* Canvas */
-canvas {
-  display: block;
-  background-color: #000000;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* Auth Container / Title Screen */
-.auth-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #000000;
-  position: relative;
-  z-index: 2;
-}
-
-.auth-container h1 {
-  font-size: 48px;
-  margin-bottom: 40px;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1.2;
-  text-shadow: 0 0 10px #4dc1f9,
-    0 0 20px #4dc1f9,
-    0 0 30px #4dc1f9;
-  animation: glow 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    text-shadow: 0 0 10px #4dc1f9,
-      0 0 20px #4dc1f9,
-      0 0 30px #4dc1f9;
-  }
-
-  to {
-    text-shadow: 0 0 20px #4dc1f9,
-      0 0 30px #4dc1f9,
-      0 0 40px #4dc1f9;
+@layer base {
+  body {
+    @apply font-arcade text-white bg-black overflow-hidden m-0 p-0;
   }
 }
 
-/* Wallet Section */
-.wallet-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  text-align: center;
-}
-
-.wallet-section p {
-  font-size: 16px;
-  color: #888;
-  margin: 0;
-}
 
 /* Wallet Button Styles */
 .wallet-adapter-button {
@@ -136,29 +61,6 @@ canvas {
   box-shadow: none;
 }
 
-/* Game Interface */
-.game-header {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 2;
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.score {
-  display: block;
-  position: absolute;
-  top: 20px;
-  z-index: 2;
-  font-size: 16px;
-  text-shadow: 0 0 5px #4dc1f9;
-}
-
-.current-score {
-  left: 20px;
-}
 
 .controls {
   display: block;
@@ -235,16 +137,6 @@ canvas {
   50% {
     opacity: 1;
   }
-}
-
-/* Wallet Game Button (in-game) */
-.wallet-game-button {
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
-}
-
-.wallet-game-button:hover {
-  opacity: 1;
 }
 
 /* Responsive Adjustments */

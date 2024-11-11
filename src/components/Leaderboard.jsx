@@ -42,7 +42,7 @@ const EnhancedLeaderboard = ({ currentScore, onClose, initialScores = [] }) => {
 
   return (
     <div className='fixed inset-0 bg-black/75 flex items-center justify-center z-50'>
-      <div className='bg-black border-2 border-game-blue p-6 max-w-lg w-full mx-4'>
+      <div className='bg-black border-2 border-game-blue p-6 max-w-3xl w-full mx-4'>
         <h2 className='text-2xl text-game-blue text-center mb-6'>
           High Scores
         </h2>
