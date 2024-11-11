@@ -20,6 +20,7 @@ import {
   AuthContainer as BaseAuthContainer,
   GameHeader as BaseGameHeader,
 } from './components/ui/StyledComponents'
+import Chat from './components/Chat'
 
 const KEY = {
   LEFT: 37,
@@ -110,6 +111,7 @@ export class SolanaAsteroids extends Component {
       gameState: 'INITIAL',
       signatureLoading: false,
       showLeaderboard: false,
+      showChat: false,
     }
 
     this.canvasRef = React.createRef()
@@ -117,6 +119,13 @@ export class SolanaAsteroids extends Component {
     this.asteroids = []
     this.bullets = []
     this.particles = []
+  }
+
+  // Add method to toggle chat
+  toggleChat = () => {
+    this.setState((prevState) => ({
+      showChat: !prevState.showChat,
+    }))
   }
 
   // Lifecycle methods
@@ -516,6 +525,19 @@ export class SolanaAsteroids extends Component {
           currentScore={this.state.currentScore}
           topScore={this.state.topScore}
         />
+        <div className='absolute top-5 left-1/2 -translate-x-1/2 z-10 flex gap-4'>
+          <Controls>
+            Use [A][S][W][D] or [←][↑][↓][→] to MOVE
+            <br />
+            Use [SPACE] to SHOOT
+          </Controls>
+          <StartButton
+            onClick={this.toggleChat}
+            className='bg-transparent border-2 border-game-blue text-game-blue'
+          >
+            CHAT
+          </StartButton>
+        </div>
         <canvas
           ref={this.canvasRef}
           width={this.state.screen.width * this.state.screen.ratio}
@@ -528,7 +550,7 @@ export class SolanaAsteroids extends Component {
 
   getDisplayContent() {
     const { wallet } = this.props
-    const { gameState, currentScore, signatureLoading } = this.state
+    const { gameState, currentScore, signatureLoading, showChat } = this.state
 
     switch (gameState) {
       case 'INITIAL':
@@ -548,21 +570,30 @@ export class SolanaAsteroids extends Component {
               <StyledWalletButton>
                 <WalletMultiButton />
               </StyledWalletButton>
-              <StartButton
-                onClick={this.handleQuarterInsert}
-                disabled={signatureLoading}
-                loading={signatureLoading}
-              >
-                {signatureLoading
-                  ? 'Inserting Quarter...'
-                  : 'Insert Quarter To Play'}
-              </StartButton>
+              <div className='flex flex-col gap-4 items-center'>
+                <StartButton
+                  onClick={this.handleQuarterInsert}
+                  disabled={signatureLoading}
+                  loading={signatureLoading}
+                >
+                  {signatureLoading
+                    ? 'Inserting Quarter...'
+                    : 'Insert Quarter To Play'}
+                </StartButton>
+                <StartButton
+                  onClick={this.toggleChat}
+                  className='bg-transparent border-2 border-game-blue text-game-blue'
+                >
+                  CHAT
+                </StartButton>
+              </div>
               {signatureLoading && (
                 <div className='text-game-blue animate-pulse'>
                   Processing...
                 </div>
               )}
             </div>
+            {showChat && <Chat onClose={this.toggleChat} />}
           </BaseAuthContainer>
         )
 
@@ -586,7 +617,12 @@ export class SolanaAsteroids extends Component {
         )
 
       case 'PLAYING':
-        return this.renderGame()
+        return (
+          <>
+            {this.renderGame()}
+            {showChat && <Chat onClose={this.toggleChat} />}
+          </>
+        )
 
       default:
         return this.renderGame()
