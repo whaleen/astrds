@@ -65,8 +65,8 @@ const GameHeaderContent = () => (
 
 const GameInfo = ({ currentScore, topScore }) => (
   <>
-    <Score className='absolute top-5 left-5 z-10'>Score: {currentScore}</Score>
-    <Score className='absolute top-5 left-40 z-10'>Top Score: {topScore}</Score>
+    <Score className='absolute top-5 left-5 z-10'>Top Score: {topScore}</Score>
+    <Score className='absolute top-15 left-5 z-10'>Score: {currentScore}</Score>
     <Controls>
       Use [A][S][W][D] or [←][↑][↓][→] to MOVE
       <br />
