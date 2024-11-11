@@ -11,6 +11,15 @@ import VolumeControl from './components/VolumeControl'
 import { soundManager } from './sounds/SoundManager'
 import { submitScore } from './api/scores'
 import Leaderboard from './components/Leaderboard'
+import {
+  StyledWalletButton,
+  StartButton,
+  Controls,
+  GameOver,
+  Score,
+  AuthContainer as BaseAuthContainer,
+  GameHeader as BaseGameHeader,
+} from './components/ui/StyledComponents'
 
 const KEY = {
   LEFT: 37,
@@ -43,28 +52,26 @@ const AuthContainer = ({ children, title }) => (
   </div>
 )
 
-const GameHeader = () => (
-  <div className='fixed top-5 right-5 z-10 flex gap-5 items-center'>
+const GameHeaderContent = () => (
+  <BaseGameHeader>
     <VolumeControl />
     <div className='opacity-70 hover:opacity-100 transition-opacity'>
-      <WalletMultiButton />
+      <StyledWalletButton>
+        <WalletMultiButton />
+      </StyledWalletButton>
     </div>
-  </div>
+  </BaseGameHeader>
 )
 
 const GameInfo = ({ currentScore, topScore }) => (
   <>
-    <span className='absolute top-5 left-5 z-10 text-base'>
-      Score: {currentScore}
-    </span>
-    <span className='absolute top-5 left-40 z-10 text-base'>
-      Top Score: {topScore}
-    </span>
-    <span className='absolute top-5 left-1/2 -translate-x-1/2 z-10 text-xs text-center text-gray-400'>
+    <Score className='absolute top-5 left-5 z-10'>Score: {currentScore}</Score>
+    <Score className='absolute top-5 left-40 z-10'>Top Score: {topScore}</Score>
+    <Controls>
       Use [A][S][W][D] or [←][↑][↓][→] to MOVE
       <br />
       Use [SPACE] to SHOOT
-    </span>
+    </Controls>
   </>
 )
 
@@ -504,7 +511,7 @@ export class SolanaAsteroids extends Component {
 
     return (
       <div>
-        <GameHeader />
+        <GameHeaderContent />
         <GameInfo
           currentScore={this.state.currentScore}
           topScore={this.state.topScore}
@@ -526,34 +533,37 @@ export class SolanaAsteroids extends Component {
     switch (gameState) {
       case 'INITIAL':
         return (
-          <AuthContainer title='Solana Asteroids'>
+          <BaseAuthContainer title='Solana Asteroids'>
             <WalletWrapper>
               <WalletMultiButton />
               <p className='text-gray-400'>Connect your wallet to play</p>
             </WalletWrapper>
-          </AuthContainer>
+          </BaseAuthContainer>
         )
 
       case 'READY_TO_PLAY':
         return (
-          <AuthContainer title='Solana Asteroids'>
-            <WalletWrapper loading={signatureLoading}>
-              <WalletMultiButton />
-              <button
+          <BaseAuthContainer title='Solana Asteroids'>
+            <div className='flex flex-col items-center gap-6'>
+              <StyledWalletButton>
+                <WalletMultiButton />
+              </StyledWalletButton>
+              <StartButton
                 onClick={this.handleQuarterInsert}
                 disabled={signatureLoading}
-                className='bg-transparent border-2 border-game-green text-game-green
-                           px-8 py-4 uppercase cursor-pointer transition-all
-                           hover:bg-game-green hover:text-black hover:shadow-[0_0_15px_#4dff4d]
-                           disabled:bg-gray-800 disabled:border-gray-700 disabled:text-gray-500
-                           disabled:cursor-not-allowed disabled:hover:shadow-none'
+                loading={signatureLoading}
               >
                 {signatureLoading
                   ? 'Inserting Quarter...'
                   : 'Insert Quarter To Play'}
-              </button>
-            </WalletWrapper>
-          </AuthContainer>
+              </StartButton>
+              {signatureLoading && (
+                <div className='text-game-blue animate-pulse'>
+                  Processing...
+                </div>
+              )}
+            </div>
+          </BaseAuthContainer>
         )
 
       case 'GAME_OVER':
@@ -561,27 +571,11 @@ export class SolanaAsteroids extends Component {
         return (
           <div className='fixed inset-0 flex items-center justify-center min-h-screen bg-black/75'>
             <div className='flex flex-col items-center gap-6'>
-              <div className='flex flex-col items-center gap-4 bg-black/90 border-2 border-game-blue p-8 max-w-lg animate-fadeIn'>
-                <p className='text-xl text-red-400'>Game over, man!</p>
-                <p className='text-lg'>
-                  {currentScore > 0
-                    ? `${currentScore} Points!`
-                    : '0 points... So sad.'}
-                </p>
-                <button
-                  className='bg-transparent border-2 border-game-green text-game-green
-                       px-8 py-4 uppercase cursor-pointer transition-all
-                       hover:bg-game-green hover:text-black hover:shadow-[0_0_15px_#4dff4d]
-                       disabled:bg-gray-800 disabled:border-gray-700 disabled:text-gray-500
-                       disabled:cursor-not-allowed disabled:hover:shadow-none'
-                  onClick={this.handleQuarterInsert}
-                  disabled={signatureLoading}
-                >
-                  {signatureLoading
-                    ? 'Inserting Quarter...'
-                    : 'Add A Quarter, Play Again'}
-                </button>
-              </div>
+              <GameOver
+                score={currentScore}
+                onPlayAgain={this.handleQuarterInsert}
+                loading={signatureLoading}
+              />
             </div>
             <Leaderboard
               currentScore={this.state.currentScore}

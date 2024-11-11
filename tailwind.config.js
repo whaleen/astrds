@@ -16,6 +16,7 @@ export default {
       animation: {
         'fadeIn': 'fadeIn 0.5s ease-out',
         'glow': 'glow 1.5s ease-in-out infinite alternate',
+        'blink': 'blink 1s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -34,6 +35,14 @@ export default {
           },
           'to': {
             textShadow: '0 0 20px #4dc1f9, 0 0 30px #4dc1f9, 0 0 40px #4dc1f9',
+          }
+        },
+        blink: {
+          '0%, 100%': {
+            opacity: '0',
+          },
+          '50%': {
+            opacity: '1',
           }
         }
       },
