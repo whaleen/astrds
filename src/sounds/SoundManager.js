@@ -115,10 +115,10 @@ class SoundManager {
 
       // Music tracks
       await Promise.all([
-        this.loadMusic('titleMusic', '/sounds/title-theme.mp3'),
+        this.loadMusic('titleMusic', '/sounds/arcis.mp3'),
         this.loadMusic('readyMusic', '/sounds/ready.wav'),
-        this.loadMusic('gameMusic', '/sounds/game-music.mp3'),
-        this.loadMusic('gameOverMusic', '/sounds/game-over.mp3')
+        this.loadMusic('gameMusic', '/sounds/arcis.mp3'),
+        this.loadMusic('gameOverMusic', '/sounds/arcis.mp3')
       ]);
 
       this.initialized = true;
