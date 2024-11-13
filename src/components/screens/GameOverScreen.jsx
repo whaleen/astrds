@@ -5,8 +5,8 @@ import { useGameStore } from '../../stores/gameStore'
 import { QuarterButton } from '../ui/Buttons'
 // import GameTitle from '../ui/GameTitle'
 import { soundManager } from '../../sounds/SoundManager'
-import bgImage from '/assets/wojak.png'
 
+import ScreenContainer from '../layout/ScreenContainer'
 const GameOverScreen = () => {
   const wallet = useWallet()
   const score = useGameStore((state) => state.score)
@@ -55,50 +55,52 @@ const GameOverScreen = () => {
   }
 
   return (
-    <div className='fixed inset-0 flex items-center justify-center z-40 bg-black/75 backdrop-blur-sm'>
-      <div className='max-w-lg w-full mx-4 text-center'>
-        <div className='bg-black/50 border border-game-red p-8 animate-fadeIn'>
-          <h1 className='text-game-red text-4xl mb-8'>GAME OVER</h1>
+    <ScreenContainer screenType='GAME_OVER'>
+      <div className='fixed inset-0 flex items-center justify-center z-40 bg-black/75 backdrop-blur-sm'>
+        <div className='max-w-lg w-full mx-4 text-center'>
+          <div className='bg-black/50 border border-white p-8 animate-fadeIn'>
+            <h1 className='text-game-red text-4xl mb-8'>GAME OVER</h1>
 
-          {renderAchievement()}
+            {renderAchievement()}
 
-          <div className='mb-8'>
-            <div className='text-2xl mb-2'>Final Score</div>
-            <div className='text-4xl text-game-blue font-bold'>
-              {score.toLocaleString()}
-            </div>
-          </div>
-
-          {lastGameStats && (
-            <div className='mb-8 space-y-2'>
-              <div className='text-gray-400'>
-                Rank: #{lastGameStats.rank} of {lastGameStats.totalPlayers}
+            <div className='mb-8'>
+              <div className='text-2xl mb-2'>Final Score</div>
+              <div className='text-4xl text-game-blue font-bold'>
+                {score.toLocaleString()}
               </div>
             </div>
-          )}
 
-          <div className='space-y-4'>
-            <QuarterButton
-              onClick={handlePlayAgain}
-              disabled={!wallet.connected}
-            >
-              Insert Quarter, Play Again
-            </QuarterButton>
+            {lastGameStats && (
+              <div className='mb-8 space-y-2'>
+                <div className='text-gray-400'>
+                  Rank: #{lastGameStats.rank} of {lastGameStats.totalPlayers}
+                </div>
+              </div>
+            )}
 
-            <button
-              onClick={handleViewLeaderboard}
-              className='text-game-blue hover:text-white transition-colors'
-            >
-              View Leaderboard
-            </button>
-          </div>
+            <div className='space-y-4'>
+              <QuarterButton
+                onClick={handlePlayAgain}
+                disabled={!wallet.connected}
+              >
+                Insert Quarter, Play Again
+              </QuarterButton>
 
-          <div className='mt-8 text-sm text-gray-500'>
-            Tip: Practice makes perfect! Keep playing to improve your score.
+              <button
+                onClick={handleViewLeaderboard}
+                className='text-game-blue hover:text-white transition-colors'
+              >
+                View Leaderboard
+              </button>
+            </div>
+
+            <div className='mt-8 text-sm text-gray-500'>
+              Tip: Practice makes perfect! Keep playing to improve your score.
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ScreenContainer>
   )
 }
 

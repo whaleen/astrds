@@ -1,19 +1,49 @@
 // src/components/layout/ScreenContainer.jsx
 import React from 'react'
-// import bgImage from '/public/game-screen-bg.jpg'
-import bgImage from '/assets/joi.gif'
+// Import all background images
+import joiGif from '/assets/wojak.png'
+import wojakPng from '/assets/dying.gif'
 
-const ScreenContainer = ({ children, className = '' }) => {
+// Background configurations for different screens
+export const SCREEN_BACKGROUNDS = {
+  INITIAL: {
+    image: joiGif,
+    overlay: 'bg-black/75', // Customize overlay opacity per screen
+  },
+  READY_TO_PLAY: {
+    image: wojakPng,
+    overlay: 'bg-black/60',
+  },
+  GAME_OVER: {
+    image: wojakPng,
+    overlay: 'bg-black/80',
+  },
+  LEADERBOARD: {
+    image: joiGif,
+    overlay: 'bg-black/75',
+  },
+}
+
+const ScreenContainer = ({
+  children,
+  className = '',
+  screenType = 'INITIAL',
+}) => {
+  const background =
+    SCREEN_BACKGROUNDS[screenType] || SCREEN_BACKGROUNDS.INITIAL
+
   return (
     <div
       className={`fixed inset-0 flex items-center justify-center z-40 ${className}`}
       style={{
-        backgroundImage: `url(${bgImage})`,
+        backgroundImage: `url(${background.image})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
-      <div className='bg-black/75 border border-game-blue p-8 max-w-2xl w-full mx-4'>
+      <div
+        className={`${background.overlay} border border-game-blue p-8 max-w-2xl w-full mx-4`}
+      >
         {children}
       </div>
     </div>

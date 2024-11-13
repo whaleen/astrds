@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react'
 import Ship from '../../game/entities/Ship'
 import Pill from '../../game/entities/Pill'
+import Token from '../../game/entities/Token'
 import Asteroid from '../../game/entities/Asteroid'
 import Bullet from '../../game/entities/Bullet'
 import { randomNumBetweenExcluding } from '../../helpers/helpers'
@@ -55,6 +56,9 @@ const GameScreen = () => {
     pills: [],
     lastPillSpawn: 0,
     pillSpawnDelay: 3000,
+    tokens: [],
+    lastTokenSpawn: 0,
+    tokenSpawnDelay: 5000, // Every 5 seconds
     keys: {
       left: 0,
       right: 0,
@@ -199,17 +203,25 @@ const GameScreen = () => {
     // Get powerups state
     const powerups = usePowerupStore.getState().powerups
 
-    // Check spawning timers
     const now = Date.now()
+
+    // Check spawning timers
     if (now - gameState.lastPillSpawn > gameState.pillSpawnDelay) {
       const newPill = new Pill({ screen: gameState.screen, type: 'standard' })
       createObject(newPill, 'pills')
       gameState.lastPillSpawn = now
     }
-
+    // Check pickup timer
     if (now - gameState.lastShipPickupSpawn >= gameState.shipPickupInterval) {
       spawnShipPickup()
       gameState.lastShipPickupSpawn = now
+    }
+
+    // Check token spawn timer
+    if (now - gameState.lastTokenSpawn > gameState.tokenSpawnDelay) {
+      const newToken = new Token({ screen: gameState.screen, type: 'standard' })
+      createObject(newToken, 'tokens')
+      gameState.lastTokenSpawn = now
     }
 
     // Update all game objects
@@ -217,6 +229,7 @@ const GameScreen = () => {
     updateObjects(gameState.asteroids, 'asteroids')
     updateObjects(gameState.bullets, 'bullets')
     updateObjects(gameState.pills, 'pills')
+    updateObjects(gameState.tokens, 'tokens')
     updateObjects(gameState.ship, 'ship')
     updateObjects(gameState.shipPickups, 'shipPickups')
 
@@ -228,7 +241,7 @@ const GameScreen = () => {
       checkCollisionsWith(gameState.bullets, gameState.asteroids)
       checkCollisionsWith(gameState.ship, gameState.asteroids)
 
-      // Check for collectible collisions
+      // Check for pill collisions
       gameState.pills.forEach((pill) => {
         if (checkCollision(currentShip, pill)) {
           pill.destroy()
@@ -236,6 +249,15 @@ const GameScreen = () => {
           soundManager.playSound('collect')
           activatePowerups()
           setTimeout(deactivatePowerups, 10000)
+        }
+      })
+
+      // Check token collisions
+      gameState.tokens.forEach((token) => {
+        if (checkCollision(currentShip, token)) {
+          token.destroy()
+          addInventoryItem('tokens', 1)
+          soundManager.playSound('collect')
         }
       })
 
@@ -326,6 +348,7 @@ const GameScreen = () => {
 
     gameStateRef.current.lastPillSpawn = Date.now()
     gameStateRef.current.lastShipPickupSpawn = Date.now()
+    gameStateRef.current.lastTokenSpawn = Date.now()
 
     context.save()
     context.scale(

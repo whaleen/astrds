@@ -13,6 +13,10 @@ const App = () => {
   // Use Helius RPC URL from environment variables
   const endpoint = useMemo(() => import.meta.env.VITE_SOLANA_RPC_ENDPOINT, [])
 
+  // "Phantom was registered as a Standard Wallet.
+  /// The Wallet Adapter for Phantom
+  // can be removed from your app."
+  // We're going to leave it.
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter({

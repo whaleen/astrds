@@ -17,7 +17,9 @@ const PauseOverlay = () => {
   ]
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center '>
+      {/* <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm'> 
+    APply blur and opacity to the background */}
       <div className='text-center space-y-8 max-w-lg w-full mx-4'>
         <h2
           className='text-4xl font-bold text-game-blue animate-[glow_1.5s_ease-in-out_infinite_alternate]

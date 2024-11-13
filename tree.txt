@@ -16,6 +16,9 @@
 ├── postcss.config.js
 ├── public
 │   ├── assets
+│   │   ├── dying.gif
+│   │   ├── dying.jpg
+│   │   ├── dying.webp
 │   │   ├── joe.gif
 │   │   ├── joe.jpg
 │   │   ├── joi.gif
@@ -37,6 +40,7 @@
 │       ├── explosion.wav
 │       ├── game-music.wav
 │       ├── gameover.wav
+│       ├── glass-and-buffalo-warrior-travel.mp3
 │       ├── ping.wav
 │       ├── ready.wav
 │       ├── shoot.wav
@@ -80,7 +84,6 @@
 │   │       ├── CountdownAnimation.jsx
 │   │       ├── GameTitle.jsx
 │   │       ├── InventoryHUD.jsx
-│   │       ├── InventoryHUDtest.jsx
 │   │       ├── LevelDisplay.jsx
 │   │       └── StyledComponents.jsx
 │   ├── game
@@ -90,7 +93,8 @@
 │   │   │   ├── Particle.js
 │   │   │   ├── Pill.js
 │   │   │   ├── Ship.js
-│   │   │   └── ShipPickup.js
+│   │   │   ├── ShipPickup.js
+│   │   │   └── Token.js
 │   │   ├── index.js
 │   │   └── systems
 │   │       └── InventoryManager.js
@@ -112,4 +116,4 @@
 ├── tree.txt
 └── vite.config.js
 
-24 directories, 89 files
+24 directories, 93 files

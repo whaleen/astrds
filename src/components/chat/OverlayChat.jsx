@@ -51,7 +51,7 @@ const OverlayChat = () => {
         )}
       </div>
 
-      <div className='flex-1 p-1 flex flex-col justify-end'>
+      <div className='flex-1 p-4 flex flex-col justify-end'>
         <div className='space-y-1'>
           {recentMessages.map((msg) => (
             <div
