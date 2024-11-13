@@ -2,7 +2,7 @@
 import React from 'react'
 import Header from './Header'
 import InventoryHUDTest from '../ui/InventoryHUDtest'
-import PowerupTest from '../test/PowerupTest'
+// import PowerupTest from '../test/PowerupTest'
 import { useGameStore } from '../../stores/gameStore'
 
 const GameLayout = ({ children }) => {
@@ -17,7 +17,7 @@ const GameLayout = ({ children }) => {
       {gameState === 'PLAYING' && (
         <>
           <InventoryHUDTest />
-          <PowerupTest />
+          {/* <PowerupTest /> */}
         </>
       )}
     </div>

@@ -4,11 +4,17 @@ import { soundManager } from '../../sounds/SoundManager'
 
 export default class Bullet {
   constructor(args) {
+    if (!args.ship || typeof args.ship.rotation !== 'number') {
+      console.error('Invalid ship object passed to Bullet constructor:', args.ship)
+      throw new Error('Cannot create bullet: invalid ship object')
+    }
+
     let posDelta = rotatePoint(
       { x: 0, y: -20 },
       { x: 0, y: 0 },
       (args.ship.rotation * Math.PI) / 180
     )
+
     this.position = {
       x: args.ship.position.x + posDelta.x,
       y: args.ship.position.y + posDelta.y,

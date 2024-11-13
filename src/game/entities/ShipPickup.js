@@ -27,11 +27,11 @@ export default class ShipPickup {
     context.scale(pulseScale, pulseScale);
 
     // Glow effect
-    context.shadowColor = '#4dc1f9';
-    context.shadowBlur = 10;
+    // context.shadowColor = '#FFFF2D';
+    // context.shadowBlur = 10;
 
     // Ship shape
-    context.strokeStyle = '#ffffff';
+    context.strokeStyle = '#CE222D';
     context.fillStyle = '#000000';
     context.lineWidth = 2;
     context.beginPath();

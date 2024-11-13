@@ -20,6 +20,7 @@
 │   │   ├── joe.jpg
 │   │   ├── joi.gif
 │   │   ├── joi.webp
+│   │   ├── wojak-on-moon.png
 │   │   ├── wojak.jpg
 │   │   └── wojak.png
 │   ├── raw
@@ -65,6 +66,7 @@
 │   │   │   ├── Header.jsx
 │   │   │   └── ScreenContainer.jsx
 │   │   ├── screens
+│   │   │   ├── GameOverScreen.jsx
 │   │   │   ├── LeaderboardRank.jsx
 │   │   │   ├── LeaderboardScreen.jsx
 │   │   │   ├── LeaderboardTable.jsx
@@ -81,9 +83,6 @@
 │   │       ├── InventoryHUDtest.jsx
 │   │       ├── LevelDisplay.jsx
 │   │       └── StyledComponents.jsx
-│   ├── context
-│   │   ├── GameContext.jsx
-│   │   └── GameProvider.jsx
 │   ├── game
 │   │   ├── entities
 │   │   │   ├── Asteroid.js
@@ -97,12 +96,11 @@
 │   │       └── InventoryManager.js
 │   ├── helpers
 │   │   └── helpers.js
-│   ├── hooks
-│   │   └── useGame.js
 │   ├── index.jsx
 │   ├── sounds
 │   │   └── SoundManager.js
 │   ├── stores
+│   │   ├── audioStore.js
 │   │   ├── chatStore.js
 │   │   ├── gameStore.js
 │   │   ├── inventoryStore.js
@@ -114,4 +112,4 @@
 ├── tree.txt
 └── vite.config.js
 
-26 directories, 89 files
+24 directories, 89 files

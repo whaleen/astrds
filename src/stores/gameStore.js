@@ -4,9 +4,10 @@ import { submitScore, getHighScores } from '../api/scores'
 
 export const useGameStore = create((set, get) => ({
   isPaused: false,
-  gameState: 'INITIAL',
+  gameState: 'INITIAL', // INITIAL -> READY_TO_PLAY -> PLAYING -> GAME_OVER -> LEADERBOARD
   score: 0,
   topScore: 0,
+  lastGameStats: null,
 
   updateScore: (newScore) => {
     const validScore = Math.max(0, parseInt(newScore) || 0)
@@ -20,19 +21,42 @@ export const useGameStore = create((set, get) => ({
     }))
   },
 
+  setGameStats: (stats) => {
+    set({ lastGameStats: stats })
+  },
+
   // Submit final score to the API
   submitFinalScore: async (walletAddress) => {
-    if (!walletAddress) return
+    if (!walletAddress) return null
 
     const currentScore = get().score
-    if (currentScore <= 0) return
+    if (currentScore <= 0) return null
 
     try {
+      // Submit score and get updated leaderboard
       const updatedScores = await submitScore(currentScore, walletAddress)
-      set({ topScore: updatedScores[0]?.score || 0 })
-      return updatedScores
+
+      if (Array.isArray(updatedScores) && updatedScores.length > 0) {
+        // Find player's rank
+        const playerRank = updatedScores.findIndex(s => s.walletAddress === walletAddress) + 1
+
+        // Update store with latest scores and stats
+        set({
+          topScore: updatedScores[0]?.score || 0,
+          lastGameStats: {
+            score: currentScore,
+            rank: playerRank,
+            isHighScore: playerRank === 1,
+            totalPlayers: updatedScores.length
+          }
+        })
+
+        return updatedScores
+      }
+      return null
     } catch (error) {
       console.error('Error submitting score:', error)
+      return null
     }
   },
 
@@ -42,12 +66,14 @@ export const useGameStore = create((set, get) => ({
 
   setGameState: (newState) => set({
     gameState: newState,
-    isPaused: false
+    isPaused: false,
+    ...(newState === 'READY_TO_PLAY' ? { score: 0, lastGameStats: null } : {})
   }),
 
   resetGame: () => set({
     isPaused: false,
     gameState: 'INITIAL',
-    score: 0
+    score: 0,
+    lastGameStats: null
   })
 }))

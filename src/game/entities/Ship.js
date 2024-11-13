@@ -36,13 +36,24 @@ export default class Ship {
     const wallet = window.solana?.publicKey?.toString()
 
     if (wallet) {
+      // First submit the score and wait for the response
       gameStore.submitFinalScore(wallet)
-        .then(() => this.onDie())
+        .then((updatedScores) => {
+          if (updatedScores) {
+            // Update the top score and game state
+            const playerRank = updatedScores.findIndex(s => s.walletAddress === wallet) + 1
+            gameStore.setGameState('GAME_OVER')
+          }
+        })
+        .catch(error => {
+          console.error('Error submitting final score:', error)
+          gameStore.setGameState('GAME_OVER')
+        })
     } else {
-      this.onDie()
+      gameStore.setGameState('GAME_OVER')
     }
 
-    // Explode
+    // Create explosion particles
     for (let i = 0; i < 60; i++) {
       const particle = new Particle({
         lifeSpan: randomNumBetween(60, 100),
@@ -98,6 +109,9 @@ export default class Ship {
   }
 
   render(state) {
+    // If ship is marked for deletion, don't process any more actions
+    if (this.delete) return;
+
     const powerups = usePowerupStore.getState().powerups
 
     // Controls
@@ -114,13 +128,17 @@ export default class Ship {
     // Shooting with powerup check
     const shootingDelay = powerups.rapidFire ? 50 : 250
     if (state.keys.space && Date.now() - this.lastShot > shootingDelay) {
-      const bullet = new Bullet({
-        ship: this,
-        powered: powerups.rapidFire
-      })
-      this.create(bullet, 'bullets')
-      this.lastShot = Date.now()
-      soundManager.playSound('shoot')
+      try {
+        const bullet = new Bullet({
+          ship: this,
+          powered: powerups.rapidFire
+        })
+        this.create(bullet, 'bullets')
+        this.lastShot = Date.now()
+        soundManager.playSound('shoot')
+      } catch (error) {
+        console.error('Failed to create bullet:', error)
+      }
     }
 
     // Move

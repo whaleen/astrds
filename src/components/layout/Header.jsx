@@ -49,37 +49,88 @@ const GameStats = () => {
 }
 
 const Header = () => {
+  const { toggleFullChat } = useChatStore()
   const { overlayVisible, toggleOverlay } = useChatStore()
+  const gameState = useGameStore((state) => state.gameState)
+
+  // Define what elements should show on each screen
+  const shouldShowVolumeControl = true // Always show volume control
+  const shouldShowGameStats = ['PLAYING', 'GAME_OVER'].includes(gameState)
+  const shouldShowChatButton = gameState === 'GAME_OVER' // Show chat button only during gameplay
+  const shouldShowChatToggle = gameState === 'PLAYING'
+  const shouldShowWalletButton = true // Always show wallet button
+
+  // Define background opacity based on screen
+  const getHeaderBackground = () => {
+    // ... (getHeaderBackground function code remains the same)
+  }
 
   return (
-    <header className='fixed top-0 w-full z-50 bg-black/50 backdrop-blur-sm border-b border-white/10 px-4 py-3'>
+    <header
+      className={`fixed top-0 w-full z-50 ${getHeaderBackground()} 
+                 backdrop-blur-sm border-b border-white/10 px-4 py-3
+                 transition-colors duration-300`}
+    >
       <div className='max-w-7xl mx-auto flex justify-between items-center gap-4'>
         {/* Left section */}
         <div className='flex items-center gap-4'>
-          <VolumeControl />
+          {shouldShowVolumeControl && <VolumeControl />}
         </div>
 
         {/* Center section */}
-        <GameStats />
+        <div
+          className={`transition-opacity duration-300 
+                        ${shouldShowGameStats ? 'opacity-100' : 'opacity-0'}`}
+        >
+          {shouldShowGameStats && <GameStats />}
+        </div>
 
         {/* Right section */}
         <div className='flex items-center gap-4'>
-          <button
-            onClick={toggleOverlay}
-            className={`h-[48px] px-6 flex items-center justify-center
-              border-2 transition-colors duration-200
-              ${
-                !overlayVisible
-                  ? 'border-game-blue bg-transparent text-game-blue hover:bg-game-blue hover:text-black'
-                  : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/80'
-              }`}
-          >
-            <MessageSquare size={20} />
-          </button>
+          {shouldShowChatButton && (
+            <button
+              onClick={toggleFullChat}
+              className='h-12 px-4 flex items-center justify-center
+                         bg-game-blue text-black rounded-sm hover:bg-white 
+                         transition-colors duration-200'
+            >
+              <MessageSquare
+                size={20}
+                className='mr-2'
+              />
+              Chat
+            </button>
+          )}
+          {shouldShowChatToggle && (
+            <button
+              onClick={toggleOverlay}
+              className={`h-[48px] px-6 flex items-center justify-center
+                border-2 transition-colors duration-200
+                ${
+                  !overlayVisible
+                    ? 'border-game-blue bg-transparent text-game-blue hover:bg-game-blue hover:text-black'
+                    : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/80'
+                }
+                transition-all duration-300`}
+            >
+              <MessageSquare size={20} />
+            </button>
+          )}
 
-          <StyledWalletButton>
-            <WalletMultiButton />
-          </StyledWalletButton>
+          {shouldShowWalletButton && (
+            <div
+              className={`transition-opacity duration-300 
+                           ${
+                             gameState === 'INITIAL'
+                               ? 'opacity-100 scale-110'
+                               : 'opacity-80 hover:opacity-100'
+                           }`}
+            >
+              <StyledWalletButton>
+                <WalletMultiButton />
+              </StyledWalletButton>
+            </div>
+          )}
         </div>
       </div>
     </header>

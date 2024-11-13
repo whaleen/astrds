@@ -1,7 +1,7 @@
 // src/components/layout/ScreenContainer.jsx
 import React from 'react'
 // import bgImage from '/public/game-screen-bg.jpg'
-import bgImage from '/assets/wojak.png'
+import bgImage from '/assets/joi.gif'
 
 const ScreenContainer = ({ children, className = '' }) => {
   return (
