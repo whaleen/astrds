@@ -39,7 +39,6 @@ const GameScreen = () => {
   const togglePause = useGameStore((state) => state.togglePause)
 
   // Powerup selectors
-  const powerups = usePowerupStore((state) => state.powerups)
   const activatePowerups = usePowerupStore((state) => state.activatePowerups)
   const deactivatePowerups = usePowerupStore(
     (state) => state.deactivatePowerups
@@ -76,15 +75,6 @@ const GameScreen = () => {
   })
 
   const requestRef = useRef()
-
-  useEffect(() => {
-    return () => {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current)
-        requestRef.current = null
-      }
-    }
-  }, [])
 
   const spawnShipPickup = () => {
     if (gameStateRef.current.shipPickups.length === 0) {
@@ -146,15 +136,10 @@ const GameScreen = () => {
   }
 
   const generateAsteroids = (howMany) => {
-    // Get a reference to the current game state, including the player's ship and the screen dimensions
     const ship = gameStateRef.current.ship[0]
     const screen = gameStateRef.current.screen
 
-    // Loop to create the specified number of asteroids
     for (let i = 0; i < howMany; i++) {
-      // Generate the x and y coordinates for the asteroid's starting position
-      // The position is randomized, but it is excluded from a certain range around the player's ship
-      // This ensures the asteroids don't spawn too close to the player
       const asteroidX = randomNumBetweenExcluding(
         0,
         screen.width,
@@ -168,11 +153,6 @@ const GameScreen = () => {
         ship.position.y + 60
       )
 
-      // Create a new Asteroid object with the following properties:
-      // - size: The initial radius of the asteroid, set to 80
-      // - position: The randomly generated x and y coordinates for the asteroid's starting position
-      // - create: A reference to the createObject function, which is used to add the asteroid to the game
-      // - currentScore: The current score, which is passed to the asteroid object
       const asteroid = new Asteroid({
         size: 40,
         position: {
@@ -183,32 +163,28 @@ const GameScreen = () => {
         currentScore: score,
       })
 
-      // Add the new asteroid to the game by calling the createObject function
-      // The second argument, "asteroids", is likely a tag or identifier used to keep track of all asteroid objects
       createObject(asteroid, 'asteroids')
     }
   }
 
   const addInventoryItem = useInventoryStore((state) => state.addItem)
 
-  const update = () => {
+  const update = (timestamp) => {
+    const gameState = gameStateRef.current
+    const isPausedNow = useGameStore.getState().isPaused
+
+    // Clear any existing animation frame
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current)
     }
 
-    const gameState = gameStateRef.current
-    const currentlyPaused = isPaused
-
-    // Set up next frame
+    // Always get the next frame, even when paused
     requestRef.current = requestAnimationFrame(update)
 
-    // Don't proceed if game isn't active
-    if (!gameState.context || !gameState.inGame || currentlyPaused) {
+    // Don't update game state if inactive or paused
+    if (!gameState.context || !gameState.inGame || isPausedNow) {
       return
     }
-
-    // Get powerups state
-    const powerups = usePowerupStore.getState().powerups
 
     const context = gameState.context
     context.save()
@@ -219,6 +195,9 @@ const GameScreen = () => {
     context.globalAlpha = 0.4
     context.fillRect(0, 0, gameState.screen.width, gameState.screen.height)
     context.globalAlpha = 1
+
+    // Get powerups state
+    const powerups = usePowerupStore.getState().powerups
 
     // Check spawning timers
     const now = Date.now()
@@ -241,11 +220,11 @@ const GameScreen = () => {
     updateObjects(gameState.ship, 'ship')
     updateObjects(gameState.shipPickups, 'shipPickups')
 
-    // Get current ship - do this after updates in case ship was destroyed
+    // Get current ship
     const currentShip = gameState.ship[0]
 
     if (currentShip && !currentShip.delete) {
-      // Check for collisions only if ship exists and isn't being destroyed
+      // Check for collisions
       checkCollisionsWith(gameState.bullets, gameState.asteroids)
       checkCollisionsWith(gameState.ship, gameState.asteroids)
 
@@ -269,7 +248,7 @@ const GameScreen = () => {
         }
       })
 
-      // Handle shooting - Only if ship exists and isn't being destroyed
+      // Handle shooting
       if (
         gameState.keys.space &&
         Date.now() - gameState.lastShot > (powerups.rapidFire ? 50 : 250)
@@ -287,7 +266,7 @@ const GameScreen = () => {
       }
     }
 
-    // Next level check - independent of ship status
+    // Next level check
     if (!gameState.asteroids.length) {
       gameState.asteroidCount = Math.min(gameState.asteroidCount + 1, 10)
       useLevelStore.getState().incrementLevel()
@@ -383,6 +362,11 @@ const GameScreen = () => {
       if (e.keyCode === KEY.ESC || e.keyCode === KEY.P) {
         togglePause()
         soundManager.playSound(!isPaused ? 'ready' : 'collect')
+
+        // If unpausing, restart the animation loop
+        if (isPaused) {
+          requestRef.current = requestAnimationFrame(update)
+        }
         return
       }
 

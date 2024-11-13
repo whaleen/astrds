@@ -56,7 +56,8 @@ const Header = () => {
   // Define what elements should show on each screen
   const shouldShowVolumeControl = true // Always show volume control
   const shouldShowGameStats = ['PLAYING', 'GAME_OVER'].includes(gameState)
-  const shouldShowChatButton = gameState === 'GAME_OVER' // Show chat button only during gameplay
+  const shouldShowChatButton = ['LEADERBOARD', 'GAME_OVER'].includes(gameState)
+  // const shouldShowChatButton = gameState === 'GAME_OVER' // Show chat button only during gameplay
   const shouldShowChatToggle = gameState === 'PLAYING'
   const shouldShowWalletButton = true // Always show wallet button
 

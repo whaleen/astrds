@@ -21,9 +21,28 @@ export const useGameStore = create((set, get) => ({
     }))
   },
 
-  setGameStats: (stats) => {
-    set({ lastGameStats: stats })
-  },
+  // Pause functionality
+  togglePause: () => set(
+    (state) => ({ isPaused: !state.isPaused }),
+    false,
+    'togglePause'
+  ),
+
+  setPause: (paused) => set(
+    { isPaused: paused },
+    false,
+    'setPause'
+  ),
+
+  setGameState: (newState) => set(
+    (state) => ({
+      gameState: newState,
+      isPaused: false, // Reset pause when changing game state
+      ...(newState === 'READY_TO_PLAY' ? { score: 0, lastGameStats: null } : {})
+    }),
+    false,
+    'setGameState'
+  ),
 
   // Submit final score to the API
   submitFinalScore: async (walletAddress) => {
@@ -59,16 +78,6 @@ export const useGameStore = create((set, get) => ({
       return null
     }
   },
-
-  togglePause: () => set((state) => ({
-    isPaused: !state.isPaused
-  })),
-
-  setGameState: (newState) => set({
-    gameState: newState,
-    isPaused: false,
-    ...(newState === 'READY_TO_PLAY' ? { score: 0, lastGameStats: null } : {})
-  }),
 
   resetGame: () => set({
     isPaused: false,
