@@ -1,3 +1,4 @@
+// src/components/game/GameScreen.jsx
 import React, { useEffect, useRef } from 'react'
 import { useGame } from '../../hooks/useGame'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -15,6 +16,9 @@ import ShipPickup from '../../game/entities/ShipPickup'
 import { useInventoryStore } from '../../stores/inventoryStore'
 import LevelDisplay from '../ui/LevelDisplay'
 import { useLevelStore } from '../../stores/levelStore'
+import PauseOverlay from './PauseOverlay'
+import { useChatStore } from '../../stores/chatStore'
+import { useGameStore } from '../../stores/gameStore'
 
 const KEY = {
   LEFT: 37,
@@ -24,13 +28,19 @@ const KEY = {
   D: 68,
   W: 87,
   SPACE: 32,
+  P: 80,
+  ESC: 27,
 }
 
 const GameScreen = () => {
+  const { toggleOverlay: toggleOverlayChat } = useChatStore()
   const levelStore = useLevelStore()
-
   const { state, actions } = useGame()
   const wallet = useWallet()
+
+  // Get pause state and actions from gameStore
+  const isPaused = useGameStore((state) => state.isPaused)
+  const togglePause = useGameStore((state) => state.togglePause)
 
   const powerups = usePowerupStore((state) => state.powerups)
   const activatePowerups = usePowerupStore((state) => state.activatePowerups)
@@ -65,13 +75,22 @@ const GameScreen = () => {
     asteroidCount: 2,
     shipPickups: [],
     lastShipPickupSpawn: 0,
-    shipPickupInterval: 20000, // 20 seconds
+    shipPickupInterval: 20000,
     lastShot: 0,
   })
 
   const requestRef = useRef()
 
-  // Helper function to spawn ship pickups
+  // Clean up animation frame
+  useEffect(() => {
+    return () => {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current)
+        requestRef.current = null
+      }
+    }
+  }, [])
+
   const spawnShipPickup = () => {
     if (gameStateRef.current.shipPickups.length === 0) {
       const pickup = new ShipPickup({
@@ -81,7 +100,6 @@ const GameScreen = () => {
     }
   }
 
-  // Expose spawnShipPickup to window for external access
   useEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.__gameScreen = {
@@ -160,12 +178,24 @@ const GameScreen = () => {
     }
   }
 
-  // Add Zustand inventory store hook
   const addInventoryItem = useInventoryStore((state) => state.addItem)
 
   const update = () => {
+    // Cancel any existing animation frame for cleanup
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current)
+    }
+
     const gameState = gameStateRef.current
-    if (!gameState.context || !gameState.inGame) return
+    const currentlyPaused = useGameStore.getState().isPaused
+
+    // Schedule next frame
+    requestRef.current = requestAnimationFrame(update)
+
+    // Return early if game shouldn't update
+    if (!gameState.context || !gameState.inGame || currentlyPaused) {
+      return
+    }
 
     const context = gameState.context
     context.save()
@@ -177,7 +207,7 @@ const GameScreen = () => {
     context.fillRect(0, 0, gameState.screen.width, gameState.screen.height)
     context.globalAlpha = 1
 
-    // Check spawning timers for pills (keeping original pill system)
+    // Check spawning timers for pills and pickups
     const now = Date.now()
     if (now - gameState.lastPillSpawn > gameState.pillSpawnDelay) {
       const newPill = new Pill({ screen: gameState.screen, type: 'standard' })
@@ -185,13 +215,12 @@ const GameScreen = () => {
       gameState.lastPillSpawn = now
     }
 
-    // Ship pickup spawning check (separate from pill system)
     if (now - gameState.lastShipPickupSpawn >= gameState.shipPickupInterval) {
       spawnShipPickup()
       gameState.lastShipPickupSpawn = now
     }
 
-    // Update game objects
+    // Update all game objects
     updateObjects(gameState.particles, 'particles')
     updateObjects(gameState.asteroids, 'asteroids')
     updateObjects(gameState.bullets, 'bullets')
@@ -203,36 +232,37 @@ const GameScreen = () => {
     checkCollisionsWith(gameState.bullets, gameState.asteroids)
     checkCollisionsWith(gameState.ship, gameState.asteroids)
 
-    // Check for pill collisions
+    // Check for collectible collisions
     if (gameState.ship[0]) {
+      // Check pill collisions
       gameState.pills.forEach((pill) => {
         if (checkCollision(gameState.ship[0], pill)) {
           pill.destroy()
-          addInventoryItem('pills', 1) // Use Zustand instead of actions
+          addInventoryItem('pills', 1)
           soundManager.playSound('collect')
           activatePowerups()
           setTimeout(deactivatePowerups, 10000)
         }
       })
 
-      // Check for ship pickup collisions
+      // Check ship pickup collisions
       gameState.shipPickups.forEach((pickup) => {
         if (checkCollision(gameState.ship[0], pickup)) {
           pickup.destroy()
-          addInventoryItem('ships', 1) // Use Zustand instead of actions
+          addInventoryItem('ships', 1)
           soundManager.playSound('collect')
         }
       })
     }
 
-    // Next set of asteroids
+    // Next level check
     if (!gameState.asteroids.length) {
       gameState.asteroidCount = Math.min(gameState.asteroidCount + 1, 10)
-      useLevelStore.getState().incrementLevel() // Change this line
+      useLevelStore.getState().incrementLevel()
       generateAsteroids(gameState.asteroidCount)
     }
 
-    // Ship shooting
+    // Handle shooting
     if (
       gameState.keys.space &&
       Date.now() - gameState.lastShot > (powerups.rapidFire ? 50 : 250)
@@ -246,23 +276,8 @@ const GameScreen = () => {
     }
 
     context.restore()
-
-    // Next frame
-    requestRef.current = requestAnimationFrame(update)
   }
 
-  const handleGameOver = () => {
-    if (gameStateRef.current.inGame) {
-      soundManager.transitionMusic('gameMusic', 'gameOverMusic', {
-        crossFadeDuration: 1000,
-      })
-      gameStateRef.current.inGame = false
-      levelStore.resetLevel() // Add this line
-      actions.endGame()
-    }
-  }
-
-  // Initialize game
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -270,12 +285,22 @@ const GameScreen = () => {
     const context = canvas.getContext('2d')
     if (!context) return
 
+    // Reset pause state at start of new game
+    if (useGameStore.getState().isPaused) {
+      useGameStore.getState().togglePause()
+    }
+
     context.clearRect(
       0,
       0,
       gameStateRef.current.screen.width * gameStateRef.current.screen.ratio,
       gameStateRef.current.screen.height * gameStateRef.current.screen.ratio
     )
+
+    // Reset pause state when starting new game
+    if (useGameStore.getState().isPaused) {
+      useGameStore.getState().togglePause()
+    }
 
     gameStateRef.current.context = context
     gameStateRef.current.inGame = true
@@ -297,7 +322,7 @@ const GameScreen = () => {
             crossFadeDuration: 1000,
           })
           gameStateRef.current.inGame = false
-          useLevelStore.getState().resetLevel() // Use getState() to access store outside of components
+          useLevelStore.getState().resetLevel()
           actions.endGame()
         }
       },
@@ -306,11 +331,9 @@ const GameScreen = () => {
 
     generateAsteroids(gameStateRef.current.asteroidCount)
 
-    // Reset spawn timers
     gameStateRef.current.lastPillSpawn = Date.now()
     gameStateRef.current.lastShipPickupSpawn = Date.now()
 
-    // Initial black background
     context.save()
     context.scale(
       gameStateRef.current.screen.ratio,
@@ -325,7 +348,6 @@ const GameScreen = () => {
     )
     context.restore()
 
-    // Start game loop
     requestRef.current = requestAnimationFrame(update)
 
     return () => {
@@ -339,9 +361,20 @@ const GameScreen = () => {
     }
   }, [state.gameState])
 
-  // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (!gameStateRef.current.inGame) return
+
+      // Handle pause before other inputs
+      if (e.keyCode === KEY.ESC || e.keyCode === KEY.P) {
+        togglePause()
+        soundManager.playSound(!isPaused ? 'ready' : 'collect')
+        return // Don't process other inputs when toggling pause
+      }
+
+      // Don't process game inputs if paused
+      if (isPaused) return
+
       if (e.keyCode === KEY.LEFT || e.keyCode === KEY.A)
         gameStateRef.current.keys.left = 1
       if (e.keyCode === KEY.RIGHT || e.keyCode === KEY.D)
@@ -350,7 +383,7 @@ const GameScreen = () => {
         gameStateRef.current.keys.up = 1
       if (e.keyCode === KEY.SPACE) gameStateRef.current.keys.space = 1
       if (e.key.toLowerCase() === 'c') {
-        actions.toggleOverlayChat()
+        toggleOverlayChat()
       }
     }
 
@@ -371,7 +404,7 @@ const GameScreen = () => {
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [])
+  }, [togglePause, isPaused])
 
   return (
     <>
@@ -389,6 +422,7 @@ const GameScreen = () => {
       <GameOverlay score={state.score} />
       <OverlayChat />
       <LevelDisplay />
+      <PauseOverlay />
     </>
   )
 }

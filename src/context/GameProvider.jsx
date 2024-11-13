@@ -18,19 +18,12 @@ export const initialState = {
     tokens: 0,
     pills: 0,
   },
-  isPaused: false,
 }
 
 export const gameReducer = (state, action) => {
   console.log('GameReducer:', { currentState: state.gameState, action })
 
   switch (action.type) {
-    case 'TOGGLE_PAUSE':
-      return {
-        ...state,
-        isPaused: !state.isPaused,
-      }
-
     case 'ADVANCE_LEVEL':
       return {
         ...state,
