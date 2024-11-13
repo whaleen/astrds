@@ -12,7 +12,9 @@ import GameOverlay from './GameOverlay'
 import OverlayChat from '../chat/OverlayChat'
 import { usePowerupStore } from '../../stores/powerupStore'
 import ShipPickup from '../../game/entities/ShipPickup'
-import { useInventoryStore } from '../../stores/inventoryStore' // Add this import at the top
+import { useInventoryStore } from '../../stores/inventoryStore'
+import LevelDisplay from '../ui/LevelDisplay'
+import { useLevelStore } from '../../stores/levelStore'
 
 const KEY = {
   LEFT: 37,
@@ -25,6 +27,8 @@ const KEY = {
 }
 
 const GameScreen = () => {
+  const levelStore = useLevelStore()
+
   const { state, actions } = useGame()
   const wallet = useWallet()
 
@@ -224,6 +228,7 @@ const GameScreen = () => {
     // Next set of asteroids
     if (!gameState.asteroids.length) {
       gameState.asteroidCount = Math.min(gameState.asteroidCount + 1, 10)
+      useLevelStore.getState().incrementLevel() // Change this line
       generateAsteroids(gameState.asteroidCount)
     }
 
@@ -252,6 +257,7 @@ const GameScreen = () => {
         crossFadeDuration: 1000,
       })
       gameStateRef.current.inGame = false
+      levelStore.resetLevel() // Add this line
       actions.endGame()
     }
   }
@@ -285,7 +291,16 @@ const GameScreen = () => {
         y: gameStateRef.current.screen.height / 2,
       },
       create: createObject,
-      onDie: handleGameOver,
+      onDie: () => {
+        if (gameStateRef.current.inGame) {
+          soundManager.transitionMusic('gameMusic', 'gameOverMusic', {
+            crossFadeDuration: 1000,
+          })
+          gameStateRef.current.inGame = false
+          useLevelStore.getState().resetLevel() // Use getState() to access store outside of components
+          actions.endGame()
+        }
+      },
     })
     createObject(ship, 'ship')
 
@@ -373,6 +388,7 @@ const GameScreen = () => {
       />
       <GameOverlay score={state.score} />
       <OverlayChat />
+      <LevelDisplay />
     </>
   )
 }
