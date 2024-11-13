@@ -1,7 +1,8 @@
 // src/components/ui/InventoryHUD.jsx
 import React, { useState } from 'react'
-import { useGame } from '../../hooks/useGame'
-import { soundManager } from '../../sounds/SoundManager'
+import { useGameStore } from '../../stores/gameStore'
+import { useInventoryStore } from '../../stores/inventoryStore'
+import { useAudioStore } from '../../stores/audioStore'
 
 // SVG Icons as components
 const ShipIcon = () => (
@@ -67,10 +68,12 @@ const ItemCounter = ({
   const [showTooltip, setShowTooltip] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
 
+  const playSound = useAudioStore((state) => state.playSound)
+
   const handleClick = () => {
     if (!disabled && count > 0 && !cooldown) {
       setIsAnimating(true)
-      soundManager.playSound('collect')
+      playSound('collect')
       onClick()
       setTimeout(() => setIsAnimating(false), 200)
     }
@@ -97,30 +100,20 @@ const ItemCounter = ({
         `}
       >
         <div
-          className={`
-          w-8 h-8 flex items-center justify-center
-          transition-transform duration-200
-          ${isAnimating ? 'scale-125' : ''}
-        `}
+          className={`w-8 h-8 flex items-center justify-center transition-transform duration-200
+            ${isAnimating ? 'scale-125' : ''}`}
         >
           {icon}
         </div>
         <span
-          className={`
-          text-xl font-arcade text-white
-          transition-all duration-200
-          ${isAnimating ? 'text-game-blue scale-110' : ''}
-        `}
+          className={`text-xl font-arcade text-white transition-all duration-200
+            ${isAnimating ? 'text-game-blue scale-110' : ''}`}
         >
           ×{count}
         </span>
 
-        {/* Cooldown Overlay */}
         {cooldown && (
-          <div
-            className='absolute inset-0 bg-black/50 
-                       flex items-center justify-center'
-          >
+          <div className='absolute inset-0 bg-black/50 flex items-center justify-center'>
             <span className='text-sm text-white/80'>
               {Math.ceil(cooldown / 1000)}s
             </span>
@@ -128,12 +121,8 @@ const ItemCounter = ({
         )}
       </button>
 
-      {/* Enhanced Tooltip */}
       {showTooltip && (
-        <div
-          className='absolute bottom-full left-0 mb-2 w-48 
-                      bg-black/90 rounded overflow-hidden'
-        >
+        <div className='absolute bottom-full left-0 mb-2 w-48 bg-black/90 rounded overflow-hidden'>
           <div className='px-3 py-2 bg-game-blue/20'>
             <span className='text-sm font-bold text-game-blue'>
               {label} ({count}/{max})
@@ -157,12 +146,17 @@ const ItemCounter = ({
 }
 
 const InventoryHUD = () => {
-  const { state, actions } = useGame()
   const [cooldowns, setCooldowns] = useState({
     ships: 0,
     tokens: 0,
     pills: 0,
   })
+
+  // Store state selectors
+  const gameState = useGameStore((state) => state.gameState)
+  const items = useInventoryStore((state) => state.items)
+  const addItem = useInventoryStore((state) => state.addItem)
+  const useItem = useInventoryStore((state) => state.useItem)
 
   const startCooldown = (itemType, duration) => {
     setCooldowns((prev) => ({ ...prev, [itemType]: duration }))
@@ -176,8 +170,8 @@ const InventoryHUD = () => {
   }
 
   const handleUseItem = (itemType) => {
-    if (state.inventory[itemType] > 0 && !cooldowns[itemType]) {
-      const success = actions.useItem(itemType)
+    if (items[itemType] > 0 && !cooldowns[itemType]) {
+      const success = useItem(itemType)
       if (success) {
         // Different cooldowns for different items
         const cooldownDurations = {
@@ -186,21 +180,18 @@ const InventoryHUD = () => {
           pills: 10000, // 10 seconds
         }
         startCooldown(itemType, cooldownDurations[itemType])
-
-        // Play feedback sound
-        soundManager.playSound('collect')
       }
     }
   }
 
-  const isGameActive = state.gameState === 'PLAYING'
-  const isGameOver = state.gameState === 'GAME_OVER'
+  const isGameActive = gameState === 'PLAYING'
+  const isGameOver = gameState === 'GAME_OVER'
 
   return (
     <div className='fixed top-20 right-5 flex flex-col gap-2 z-10'>
       <ItemCounter
         icon={<ShipIcon />}
-        count={state.inventory.ships}
+        count={items.ships}
         max={5}
         label='Extra Lives'
         description='Respawn after destruction. Use to add an extra life.'
@@ -211,7 +202,7 @@ const InventoryHUD = () => {
 
       <ItemCounter
         icon={<TokenIcon />}
-        count={state.inventory.tokens}
+        count={items.tokens}
         max={99}
         label='Continue Tokens'
         description='Continue game after Game Over. Keeps your score!'
@@ -222,7 +213,7 @@ const InventoryHUD = () => {
 
       <ItemCounter
         icon={<PillIcon />}
-        count={state.inventory.pills}
+        count={items.pills}
         max={99}
         label='Power Pills'
         description='Temporary invincibility and increased firepower.'

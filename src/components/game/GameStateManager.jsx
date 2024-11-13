@@ -1,16 +1,14 @@
-// src/components/game/GameStateManager.jsx
 import React from 'react'
-import { useGame } from '../../hooks/useGame'
+import { useGameStore } from '../../stores/gameStore'
 import TitleScreen from '../screens/TitleScreen'
 import ReadyScreen from '../screens/ReadyScreen'
 import GameScreen from './GameScreen'
 import LeaderboardScreen from '../screens/LeaderboardScreen'
 
 const GameStateManager = () => {
-  const { state } = useGame()
-  console.log('GameStateManager - current state:', state.gameState)
+  const gameState = useGameStore((state) => state.gameState)
 
-  switch (state.gameState) {
+  switch (gameState) {
     case 'INITIAL':
       return <TitleScreen />
     case 'READY_TO_PLAY':

@@ -1,6 +1,5 @@
 // src/components/game/GameScreen.jsx
 import React, { useEffect, useRef } from 'react'
-import { useGame } from '../../hooks/useGame'
 import Ship from '../../game/entities/Ship'
 import Pill from '../../game/entities/Pill'
 import Asteroid from '../../game/entities/Asteroid'
@@ -30,12 +29,16 @@ const KEY = {
 
 const GameScreen = () => {
   const { toggleOverlay: toggleOverlayChat } = useChatStore()
-  const { state, actions } = useGame()
 
-  // Get pause state and actions from gameStore
+  // Game state selectors
+  const score = useGameStore((state) => state.score)
+  const addToScore = useGameStore((state) => state.addToScore)
+  const submitFinalScore = useGameStore((state) => state.submitFinalScore)
+  const setGameState = useGameStore((state) => state.setGameState)
   const isPaused = useGameStore((state) => state.isPaused)
   const togglePause = useGameStore((state) => state.togglePause)
 
+  // Powerup selectors
   const powerups = usePowerupStore((state) => state.powerups)
   const activatePowerups = usePowerupStore((state) => state.activatePowerups)
   const deactivatePowerups = usePowerupStore(
@@ -65,7 +68,6 @@ const GameScreen = () => {
       height: window.innerHeight,
       ratio: window.devicePixelRatio || 1,
     },
-    currentScore: 0,
     asteroidCount: 2,
     shipPickups: [],
     lastShipPickupSpawn: 0,
@@ -75,7 +77,6 @@ const GameScreen = () => {
 
   const requestRef = useRef()
 
-  // Clean up animation frame
   useEffect(() => {
     return () => {
       if (requestRef.current) {
@@ -147,7 +148,6 @@ const GameScreen = () => {
   const generateAsteroids = (howMany) => {
     const ship = gameStateRef.current.ship[0]
     const screen = gameStateRef.current.screen
-    const currentScore = useGameStore.getState().score
 
     for (let i = 0; i < howMany; i++) {
       const asteroid = new Asteroid({
@@ -167,7 +167,7 @@ const GameScreen = () => {
           ),
         },
         create: createObject,
-        currentScore: currentScore,
+        currentScore: score,
       })
       createObject(asteroid, 'asteroids')
     }
@@ -176,18 +176,15 @@ const GameScreen = () => {
   const addInventoryItem = useInventoryStore((state) => state.addItem)
 
   const update = () => {
-    // Cancel any existing animation frame for cleanup
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current)
     }
 
     const gameState = gameStateRef.current
-    const currentlyPaused = useGameStore.getState().isPaused
+    const currentlyPaused = isPaused
 
-    // Schedule next frame
     requestRef.current = requestAnimationFrame(update)
 
-    // Return early if game shouldn't update
     if (!gameState.context || !gameState.inGame || currentlyPaused) {
       return
     }
@@ -202,7 +199,7 @@ const GameScreen = () => {
     context.fillRect(0, 0, gameState.screen.width, gameState.screen.height)
     context.globalAlpha = 1
 
-    // Check spawning timers for pills and pickups
+    // Check spawning timers
     const now = Date.now()
     if (now - gameState.lastPillSpawn > gameState.pillSpawnDelay) {
       const newPill = new Pill({ screen: gameState.screen, type: 'standard' })
@@ -281,8 +278,8 @@ const GameScreen = () => {
     if (!context) return
 
     // Reset pause state at start of new game
-    if (useGameStore.getState().isPaused) {
-      useGameStore.getState().togglePause()
+    if (isPaused) {
+      togglePause()
     }
 
     context.clearRect(
@@ -291,11 +288,6 @@ const GameScreen = () => {
       gameStateRef.current.screen.width * gameStateRef.current.screen.ratio,
       gameStateRef.current.screen.height * gameStateRef.current.screen.ratio
     )
-
-    // Reset pause state when starting new game
-    if (useGameStore.getState().isPaused) {
-      useGameStore.getState().togglePause()
-    }
 
     gameStateRef.current.context = context
     gameStateRef.current.inGame = true
@@ -318,7 +310,7 @@ const GameScreen = () => {
           })
           gameStateRef.current.inGame = false
           useLevelStore.getState().resetLevel()
-          actions.endGame()
+          setGameState('GAME_OVER')
         }
       },
     })
@@ -354,7 +346,7 @@ const GameScreen = () => {
         soundManager.stopMusic('gameMusic', { fadeOut: true })
       }
     }
-  }, [state.gameState])
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -364,7 +356,7 @@ const GameScreen = () => {
       if (e.keyCode === KEY.ESC || e.keyCode === KEY.P) {
         togglePause()
         soundManager.playSound(!isPaused ? 'ready' : 'collect')
-        return // Don't process other inputs when toggling pause
+        return
       }
 
       // Don't process game inputs if paused

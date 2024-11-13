@@ -1,38 +1,35 @@
 // src/components/screens/TitleScreen.jsx
 import React, { useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useGame } from '../../hooks/useGame'
-import { soundManager } from '../../sounds/SoundManager'
+import { useGameStore } from '../../stores/gameStore'
+import { useAudioStore } from '../../stores/audioStore'
 import ScreenContainer from '../layout/ScreenContainer'
 import GameTitle from '../ui/GameTitle'
 import ActionButtons from '../ui/ActionButtons'
 import { QuarterButton } from '../ui/Buttons'
 
 const TitleScreen = () => {
-  const { state, actions } = useGame()
   const wallet = useWallet()
+  const setGameState = useGameStore((state) => state.setGameState)
+  const isProcessing = useGameStore((state) => state.isProcessing)
+  const playMusic = useAudioStore((state) => state.playMusic)
+  const playSound = useAudioStore((state) => state.playSound)
 
   useEffect(() => {
     // Start title music with fade in when screen mounts
-    soundManager.playMusic('titleMusic', {
+    playMusic('titleMusic', {
       fadeIn: true,
       loop: true,
     })
-
-    return () => {
-      // Fade out title music when leaving screen
-      soundManager.stopMusic('titleMusic', { fadeOut: true })
-    }
-  }, [])
+  }, [playMusic])
 
   const handleQuarterInsert = async () => {
-    console.log('Quarter Insert clicked, wallet:', wallet.connected)
     if (!wallet.connected) return
 
     try {
       // Play quarter insert sound
-      soundManager.playSound('quarterInsert')
-      actions.insertQuarter()
+      playSound('quarterInsert')
+      setGameState('READY_TO_PLAY')
     } catch (error) {
       console.error('Error inserting quarter:', error)
     }
@@ -44,8 +41,8 @@ const TitleScreen = () => {
       <ActionButtons>
         <QuarterButton
           onClick={handleQuarterInsert}
-          disabled={!wallet.connected || state.isProcessing}
-          loading={state.isProcessing}
+          disabled={!wallet.connected || isProcessing}
+          loading={isProcessing}
         />
       </ActionButtons>
 

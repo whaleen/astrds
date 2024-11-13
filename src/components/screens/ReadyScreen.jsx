@@ -1,20 +1,26 @@
 // src/components/screens/ReadyScreen.jsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useGame } from '../../hooks/useGame'
+import { Connection } from '@solana/web3.js'
 import { verifyWalletSignature } from '../../auth'
 import { soundManager } from '../../sounds/SoundManager'
 import ScreenContainer from '../layout/ScreenContainer'
 import GameTitle from '../ui/GameTitle'
-import { Connection } from '@solana/web3.js'
+import { useGameStore } from '../../stores/gameStore'
+import { useAudioStore } from '../../stores/audioStore'
 
 const ReadyScreen = () => {
-  const { actions } = useGame()
   const wallet = useWallet()
-  const [countdown, setCountdown] = useState(null) // null for initial state
+  const [countdown, setCountdown] = useState(null)
   const [verificationError, setVerificationError] = useState(null)
   const hasStarted = useRef(false)
   const mountedRef = useRef(true)
+
+  // Store selectors
+  const setGameState = useGameStore((state) => state.setGameState)
+  const playMusic = useAudioStore((state) => state.playMusic)
+  const transitionMusic = useAudioStore((state) => state.transitionMusic)
+  const playSound = useAudioStore((state) => state.playSound)
 
   // Separate useEffect for game sequence initialization
   useEffect(() => {
@@ -41,7 +47,7 @@ const ReadyScreen = () => {
 
         // Transition from title to ready music
         console.log('Transitioning music...')
-        await soundManager.transitionMusic('titleMusic', 'readyMusic', {
+        await transitionMusic('titleMusic', 'readyMusic', {
           crossFadeDuration: 1000,
         })
         console.log('Music transition complete')
@@ -91,7 +97,7 @@ const ReadyScreen = () => {
           console.log('Countdown:', i)
 
           if (i > 0) {
-            soundManager.playSound('countdownPing')
+            playSound('countdownPing')
             await new Promise((resolve) => setTimeout(resolve, 1000))
           }
         }
@@ -99,17 +105,16 @@ const ReadyScreen = () => {
         // Final check before starting game
         if (mountedRef.current) {
           console.log('Starting game and transitioning music')
-          soundManager.transitionMusic('readyMusic', 'gameMusic', {
+          transitionMusic('readyMusic', 'gameMusic', {
             crossFadeDuration: 1000,
           })
-          actions.startGame()
+          setGameState('PLAYING')
         }
       } catch (error) {
         console.error('Game start sequence failed:', error)
         if (mountedRef.current) {
           soundManager.stopAll()
           setVerificationError(error.message)
-          actions.toggleFullChat(null)
         }
       }
     }
@@ -121,7 +126,7 @@ const ReadyScreen = () => {
         clearInterval(countdownTimer)
       }
     }
-  }, [actions, wallet])
+  }, [wallet, playSound, transitionMusic, setGameState])
 
   if (verificationError) {
     return (
@@ -153,7 +158,6 @@ const ReadyScreen = () => {
             {countdown === null ? (
               <>
                 <div className='text-4xl'>Inserting Quarter...</div>
-                {/* <div className=''>Check pockets...</div> */}
               </>
             ) : countdown === 0 ? (
               'GO!'

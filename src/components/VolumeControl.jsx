@@ -1,21 +1,15 @@
 // src/components/VolumeControl.jsx
-import React, { useState, useEffect } from 'react'
-import { soundManager } from '../sounds/SoundManager'
+import React from 'react'
+import { useAudioStore } from '../stores/audioStore'
 
 const VolumeControl = () => {
-  const [volume, setVolume] = useState(0.5)
+  const volume = useAudioStore((state) => state.volume)
+  const setVolume = useAudioStore((state) => state.setVolume)
 
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value)
-    console.log('Volume changed:', newVolume)
     setVolume(newVolume)
-    soundManager.setVolume(newVolume)
   }
-
-  // Test sound playback on mount
-  useEffect(() => {
-    console.log('VolumeControl mounted, current volume:', volume)
-  }, [])
 
   return (
     <div className='flex items-center mx-5'>

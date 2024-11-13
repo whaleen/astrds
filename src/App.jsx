@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useMemo } from 'react'
 import {
   ConnectionProvider,
@@ -9,7 +8,6 @@ import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 import GameLayout from './components/layout/GameLayout'
 import GameStateManager from './components/game/GameStateManager'
 import ChatSystem from './components/chat/ChatSystem'
-import { GameProvider } from './context/GameProvider'
 
 const App = () => {
   // Use Helius RPC URL from environment variables
@@ -41,12 +39,10 @@ const App = () => {
         autoConnect
       >
         <WalletModalProvider>
-          <GameProvider>
-            <GameLayout>
-              <GameStateManager />
-              <ChatSystem />
-            </GameLayout>
-          </GameProvider>
+          <GameLayout>
+            <GameStateManager />
+            <ChatSystem />
+          </GameLayout>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
