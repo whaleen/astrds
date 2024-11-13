@@ -5,7 +5,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    open: true
+    proxy: {
+      '/.netlify/functions': {
+        target: 'http://localhost:8888',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',
@@ -17,5 +22,4 @@ export default defineConfig({
     }
   },
   publicDir: 'public',
-
 });

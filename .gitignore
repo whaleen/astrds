@@ -35,3 +35,7 @@ pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
+
+
+# Project Media Assets
+	public/raw

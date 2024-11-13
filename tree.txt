@@ -5,38 +5,113 @@
 │   ├── blobs
 │   │   └── scores.json
 │   └── functions
+│       ├── getChatMessages.js
 │       ├── getScores.js
+│       ├── postChatMessage.js
 │       └── postScore.js
 ├── netlify.toml
 ├── package.json
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml
+├── postcss.config.js
 ├── public
+│   ├── assets
+│   │   ├── joe.gif
+│   │   ├── joe.jpg
+│   │   ├── joi.gif
+│   │   ├── joi.webp
+│   │   ├── wojak.jpg
+│   │   └── wojak.png
+│   ├── raw
+│   │   ├── Ana-de-Armas-in-Blade-Runner-2049.webp
+│   │   ├── dying.jpg
+│   │   ├── joi.jpg
+│   │   └── skyline.jpg
 │   └── sounds
 │       ├── coin.wav
+│       ├── collect-pill.mp3
+│       ├── collect.wav
+│       ├── danger.wav
 │       ├── explosion.wav
+│       ├── game-music.mp3
+│       ├── game-music.wav
+│       ├── game-over.mp3
+│       ├── gameover-music.mp3
+│       ├── gameover.wav
+│       ├── ping.wav
+│       ├── ready.wav
 │       ├── shoot.wav
-│       └── thrust.wav
+│       ├── space-wind.wav
+│       ├── thrust.wav
+│       └── title-theme.mp3
 ├── src
-│   ├── SolanaAsteroids.jsx
+│   ├── App.jsx
 │   ├── api
+│   │   ├── chat.js
+│   │   ├── pusher.js
 │   │   └── scores.js
 │   ├── auth.js
 │   ├── components
-│   │   ├── Asteroid.jsx
-│   │   ├── Bullet.jsx
-│   │   ├── Leaderboard.jsx
-│   │   ├── Particle.jsx
-│   │   ├── Ship.jsx
-│   │   └── VolumeControl.jsx
+│   │   ├── VolumeControl.jsx
+│   │   ├── chat
+│   │   │   ├── ChatBase.jsx
+│   │   │   ├── ChatSystem.jsx
+│   │   │   ├── FullChat.jsx
+│   │   │   └── OverlayChat.jsx
+│   │   ├── game
+│   │   │   ├── GameControls.jsx
+│   │   │   ├── GameOverlay.jsx
+│   │   │   ├── GameScreen.jsx
+│   │   │   └── GameStateManager.jsx
+│   │   ├── layout
+│   │   │   ├── GameLayout.jsx
+│   │   │   ├── Header.jsx
+│   │   │   └── ScreenContainer.jsx
+│   │   ├── screens
+│   │   │   ├── LeaderboardRank.jsx
+│   │   │   ├── LeaderboardScreen.jsx
+│   │   │   ├── LeaderboardTable.jsx
+│   │   │   ├── ReadyScreen.jsx
+│   │   │   └── TitleScreen.jsx
+│   │   ├── test
+│   │   │   └── PowerupTest.jsx
+│   │   └── ui
+│   │       ├── ActionButtons.jsx
+│   │       ├── Buttons.jsx
+│   │       ├── CountdownAnimation.jsx
+│   │       ├── GameTitle.jsx
+│   │       ├── InventoryHUD.jsx
+│   │       ├── InventoryHUDtest.jsx
+│   │       └── StyledComponents.jsx
+│   ├── context
+│   │   ├── GameContext.jsx
+│   │   └── GameProvider.jsx
+│   ├── game
+│   │   ├── entities
+│   │   │   ├── Asteroid.js
+│   │   │   ├── Bullet.js
+│   │   │   ├── Particle.js
+│   │   │   ├── Pill.js
+│   │   │   ├── Ship.js
+│   │   │   └── ShipPickup.js
+│   │   ├── index.js
+│   │   └── systems
+│   │       └── InventoryManager.js
 │   ├── helpers
 │   │   └── helpers.js
+│   ├── hooks
+│   │   └── useGame.js
 │   ├── index.jsx
 │   ├── sounds
 │   │   └── SoundManager.js
+│   ├── stores
+│   │   ├── chatStore.js
+│   │   ├── inventoryStore.js
+│   │   └── powerupStore.js
 │   └── styles
 │       └── style.css
+├── tailwind.config.js
 ├── tree.txt
 └── vite.config.js
 
-12 directories, 28 files
+26 directories, 89 files

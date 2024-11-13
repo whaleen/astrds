@@ -9,6 +9,7 @@ export default {
       colors: {
         'game-blue': '#4dc1f9',
         'game-green': '#4dff4d',
+        'game-red': '#ff4d4d',
       },
       fontFamily: {
         arcade: ['"Press Start 2P"', 'monospace'],
@@ -17,6 +18,8 @@ export default {
         'fadeIn': 'fadeIn 0.5s ease-out',
         'glow': 'glow 1.5s ease-in-out infinite alternate',
         'blink': 'blink 1s infinite',
+        'pulse': 'pulse 0.2s ease-in-out',
+        'scale': 'scale 0.2s ease-in-out',
       },
       keyframes: {
         fadeIn: {
@@ -44,7 +47,61 @@ export default {
           '50%': {
             opacity: '1',
           }
-        }
+        },
+        countdownPulse: {
+          '0%': {
+            transform: 'scale(0.8)',
+            opacity: '0'
+          },
+          '50%': {
+            transform: 'scale(1.2)',
+            opacity: '1'
+          },
+          '100%': {
+            transform: 'scale(1)',
+            opacity: '0'
+          }
+        },
+        countdownExpand: {
+          '0%': {
+            transform: 'scale(1)',
+            opacity: '0.5'
+          },
+          '100%': {
+            transform: 'scale(2)',
+            opacity: '0'
+          }
+        },
+        readyGoPulse: {
+          '0%': {
+            transform: 'scale(0.8)',
+            opacity: '0'
+          },
+          '50%': {
+            transform: 'scale(1.1)',
+            opacity: '1'
+          },
+          '100%': {
+            transform: 'scale(1)',
+            opacity: '1'
+          }
+        },
+        pulse: {
+          '0%, 100%': {
+            transform: 'scale(1)',
+          },
+          '50%': {
+            transform: 'scale(1.05)',
+          }
+        },
+        scale: {
+          '0%': {
+            transform: 'scale(1)',
+          },
+          '100%': {
+            transform: 'scale(1.1)',
+          }
+        },
       },
     },
   },

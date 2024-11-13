@@ -5,7 +5,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["@netlify/blobs"]
+  external_node_modules = ["@netlify/blobs", "pusher"]
 
 [build.environment]
   NODE_VERSION = "18"
@@ -18,6 +18,6 @@
 
 [dev]
   command = "pnpm start"
+  targetPort = 3000
   port = 8888
-  targetPort = 5173
   framework = "#custom"
