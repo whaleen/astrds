@@ -35,14 +35,14 @@ const OverlayChat = () => {
 
   return (
     <div
-      className={`fixed right-4 top-20 w-48 bg-black/30 backdrop-blur-sm 
-            border border-white/10 rounded-lg flex flex-col z-20
+      className={`fixed right-4 top-20 w-64 bg-black/30 backdrop-blur-sm 
+            border border-white/10 rounded-xs flex flex-col z-20
             transition-all duration-300 ${
-              overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              !overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
       style={{ height: 'calc(30vh - 20px)' }}
     >
-      <div className='p-1 border-b border-white/10 flex justify-between items-center'>
+      <div className='p-2 border-b border-white/10 flex justify-between items-center'>
         <span className='text-[10px] text-white/80'>Game Chat</span>
         {!isPaused ? (
           <span className='text-[10px] text-game-blue'>[Pause] to chat</span>

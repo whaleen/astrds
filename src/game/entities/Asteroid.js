@@ -2,6 +2,7 @@
 import Particle from './Particle'
 import { asteroidVertices, randomNumBetween } from '../../helpers/helpers'
 import { soundManager } from '../../sounds/SoundManager'
+import { useGameStore } from '../../stores/gameStore'
 
 export default class Asteroid {
   constructor(args) {
@@ -13,16 +14,20 @@ export default class Asteroid {
     this.rotation = 0
     this.rotationSpeed = randomNumBetween(-1, 1)
     this.radius = args.size
-    this.score = (80 / this.radius) * 5
+    // Ensure score calculation results in a valid number
+    this.score = Math.floor((80 / Math.max(1, this.radius)) * 5)
     this.create = args.create
-    this.addScore = args.addScore
     this.vertices = asteroidVertices(8, args.size)
   }
 
   destroy() {
     this.delete = true
     soundManager.playSound('explosion')
-    this.addScore(this.score)
+
+    // Add points using the new addToScore method
+    const gameStore = useGameStore.getState()
+    const scoreToAdd = Math.max(0, Math.floor(this.score))
+    gameStore.addToScore(scoreToAdd)
 
     // Explode
     for (let i = 0; i < this.radius; i++) {
@@ -30,12 +35,8 @@ export default class Asteroid {
         lifeSpan: randomNumBetween(60, 100),
         size: randomNumBetween(1, 3),
         position: {
-          x:
-            this.position.x +
-            randomNumBetween(-this.radius / 4, this.radius / 4),
-          y:
-            this.position.y +
-            randomNumBetween(-this.radius / 4, this.radius / 4),
+          x: this.position.x + randomNumBetween(-this.radius / 4, this.radius / 4),
+          y: this.position.y + randomNumBetween(-this.radius / 4, this.radius / 4),
         },
         velocity: {
           x: randomNumBetween(-1.5, 1.5),
@@ -55,7 +56,6 @@ export default class Asteroid {
             y: randomNumBetween(-10, 20) + this.position.y,
           },
           create: this.create.bind(this),
-          addScore: this.addScore.bind(this),
         })
         this.create(asteroid, 'asteroids')
       }

@@ -28,22 +28,19 @@
 │   │   ├── joi.jpg
 │   │   └── skyline.jpg
 │   └── sounds
+│       ├── arcis.mp3
 │       ├── coin.wav
 │       ├── collect-pill.mp3
 │       ├── collect.wav
 │       ├── danger.wav
 │       ├── explosion.wav
-│       ├── game-music.mp3
 │       ├── game-music.wav
-│       ├── game-over.mp3
-│       ├── gameover-music.mp3
 │       ├── gameover.wav
 │       ├── ping.wav
 │       ├── ready.wav
 │       ├── shoot.wav
 │       ├── space-wind.wav
-│       ├── thrust.wav
-│       └── title-theme.mp3
+│       └── thrust.wav
 ├── src
 │   ├── App.jsx
 │   ├── api
@@ -59,10 +56,10 @@
 │   │   │   ├── FullChat.jsx
 │   │   │   └── OverlayChat.jsx
 │   │   ├── game
-│   │   │   ├── GameControls.jsx
 │   │   │   ├── GameOverlay.jsx
 │   │   │   ├── GameScreen.jsx
-│   │   │   └── GameStateManager.jsx
+│   │   │   ├── GameStateManager.jsx
+│   │   │   └── PauseOverlay.jsx
 │   │   ├── layout
 │   │   │   ├── GameLayout.jsx
 │   │   │   ├── Header.jsx
@@ -82,6 +79,7 @@
 │   │       ├── GameTitle.jsx
 │   │       ├── InventoryHUD.jsx
 │   │       ├── InventoryHUDtest.jsx
+│   │       ├── LevelDisplay.jsx
 │   │       └── StyledComponents.jsx
 │   ├── context
 │   │   ├── GameContext.jsx
@@ -106,7 +104,9 @@
 │   │   └── SoundManager.js
 │   ├── stores
 │   │   ├── chatStore.js
+│   │   ├── gameStore.js
 │   │   ├── inventoryStore.js
+│   │   ├── levelStore.js
 │   │   └── powerupStore.js
 │   └── styles
 │       └── style.css

@@ -151,7 +151,10 @@ const ReadyScreen = () => {
                          [text-shadow:0_0_10px_#4dc1f9,0_0_20px_#4dc1f9,0_0_30px_#4dc1f9]'
           >
             {countdown === null ? (
-              <div className='text-4xl'>Verifying Connection</div>
+              <>
+                <div className='text-4xl'>Inserting Quarter...</div>
+                {/* <div className=''>Check pockets...</div> */}
+              </>
             ) : countdown === 0 ? (
               'GO!'
             ) : (

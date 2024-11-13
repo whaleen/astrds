@@ -130,57 +130,58 @@ const InventoryHUDTest = () => {
   }
 
   return (
-    <div className='fixed top-20 right-5 flex flex-col gap-2 z-10'>
-      <ItemCounter
-        icon={<div>🚀</div>}
-        count={items.ships}
-        max={5}
-        label='Ships'
-        description='Extra lives for your ship'
-        onClick={() => handleUseItem('ships')}
-        cooldown={cooldowns.ships}
-      />
-      <ItemCounter
-        icon={<div>🎮</div>}
-        count={items.tokens}
-        max={99}
-        label='Tokens'
-        description='Continue tokens'
-        onClick={() => handleUseItem('tokens')}
-        cooldown={cooldowns.tokens}
-      />
-      <ItemCounter
-        icon={<div>💊</div>}
-        count={items.pills}
-        max={99}
-        label='Pills'
-        description='Power-up pills'
-        onClick={() => handleUseItem('pills')}
-        cooldown={cooldowns.pills}
-      />
-
-      {/* Test buttons */}
-      <div className='mt-4 space-y-2'>
-        <button
-          onClick={() => handleAddItem('ships')}
-          className='w-full px-3 py-2 bg-game-blue/20 text-game-blue rounded hover:bg-game-blue/30'
-        >
-          Add Ship
-        </button>
-        <button
-          onClick={() => handleAddItem('tokens')}
-          className='w-full px-3 py-2 bg-game-blue/20 text-game-blue rounded hover:bg-game-blue/30'
-        >
-          Add Token
-        </button>
-        <button
-          onClick={() => handleAddItem('pills')}
-          className='w-full px-3 py-2 bg-game-blue/20 text-game-blue rounded hover:bg-game-blue/30'
-        >
-          Add Pill
-        </button>
+    <div className='fixed left-4 top-20 w-64 bg-black/30 backdrop-blur-sm border border-white/10 rounded-lg p-4 z-20'>
+      <div className='space-y-2'>
+        <ItemCounter
+          icon={<div>🚀</div>}
+          count={items.ships}
+          max={5}
+          label='Ships'
+          description='Extra lives for your ship'
+          onClick={() => handleUseItem('ships')}
+          cooldown={cooldowns.ships}
+        />
+        <ItemCounter
+          icon={<div>🎮</div>}
+          count={items.tokens}
+          max={99}
+          label='Tokens'
+          description='Continue tokens'
+          onClick={() => handleUseItem('tokens')}
+          cooldown={cooldowns.tokens}
+        />
+        <ItemCounter
+          icon={<div>💊</div>}
+          count={items.pills}
+          max={99}
+          label='Pills'
+          description='Power-up pills'
+          onClick={() => handleUseItem('pills')}
+          cooldown={cooldowns.pills}
+        />
       </div>
     </div>
+
+    // <div className='mt-4 space-y-2'>
+    //   <button
+    //     onClick={() => handleAddItem('ships')}
+    //     className='w-full px-3 py-2 bg-game-blue/20 text-game-blue rounded hover:bg-game-blue/30'
+    //   >
+    //     Add Ship
+    //   </button>
+    //   <button
+    //     onClick={() => handleAddItem('tokens')}
+    //     className='w-full px-3 py-2 bg-game-blue/20 text-game-blue rounded hover:bg-game-blue/30'
+    //   >
+    //     Add Token
+    //   </button>
+    //   <button
+    //     onClick={() => handleAddItem('pills')}
+    //     className='w-full px-3 py-2 bg-game-blue/20 text-game-blue rounded hover:bg-game-blue/30'
+    //   >
+    //     Add Pill
+    //   </button>
+    // </div>
   )
 }
 

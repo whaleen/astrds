@@ -10,7 +10,9 @@ export const BaseButton = ({
   className = '',
 }) => {
   const variants = {
-    quarter: `bg-transparent border-2 border-game-red text-game-red 
+    quarter: `bg-transparent border-2 border-game-green text-game-green 
+              hover:bg-game-green hover:text-black hover:shadow-[0_0_15px_#4dff4d]`,
+    red: `bg-transparent border-2 border-game-red text-game-red 
               hover:bg-game-red hover:text-black hover:shadow-[0_0_15px_#ff4d4d]`,
     chat: `bg-transparent border-2 border-game-blue text-game-blue 
            hover:bg-game-blue hover:text-black hover:shadow-[0_0_15px_#4dc1f9]`,

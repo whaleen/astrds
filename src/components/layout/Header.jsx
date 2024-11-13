@@ -1,45 +1,82 @@
+// src/components/layout/Header.jsx
 import React from 'react'
+import { useEffect } from 'react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { MessageSquare } from 'lucide-react'
 import VolumeControl from '../VolumeControl'
-// import { useGame } from '../../hooks/useGame'
-import { StyledWalletButton, ChatButton } from '../ui/Buttons'
+import { StyledWalletButton } from '../ui/Buttons'
 import { useChatStore } from '../../stores/chatStore'
+import { useLevelStore } from '../../stores/levelStore'
+import { useGameStore } from '../../stores/gameStore'
+import { getHighScores } from '../../api/scores'
 
-const Header = () => {
-  const { overlayVisible, toggleOverlay, toggleFullChat } = useChatStore()
+const GameStats = () => {
+  const level = useLevelStore((state) => state.level)
+  const score = useGameStore((state) => state.score)
+  const topScore = useGameStore((state) => state.topScore)
 
-  // What do we do with this now?
-  // const { state, actions } = useGame()
+  useEffect(() => {
+    const fetchTopScore = async () => {
+      try {
+        const scores = await getHighScores()
+        if (scores && scores.length > 0) {
+          useGameStore.setState({ topScore: scores[0].score })
+        }
+      } catch (error) {
+        console.error('Failed to fetch top score:', error)
+      }
+    }
 
-  const handleToggleOverlay = () => {
-    toggleOverlay()
-  }
-
-  const handleToggleFullChat = () => {
-    toggleFullChat()
-  }
+    fetchTopScore()
+  }, [])
 
   return (
-    <header className='fixed top-0 w-full z-50 p-5 flex justify-between items-center'>
-      <div className='flex items-center space-x-4'>
-        <VolumeControl />
+    <div className='flex items-center gap-6 text-sm'>
+      <div className='flex flex-col items-center'>
+        <span className='text-game-blue text-xs'>LEVEL</span>
+        <span className='font-bold'>{level}</span>
       </div>
-      <ChatButton onClick={handleToggleFullChat} />
-      <div className='flex items-center space-x-4'>
-        <button
-          onClick={handleToggleOverlay}
-          className={`p-2 rounded transition-colors duration-200
-            ${
-              overlayVisible
-                ? 'bg-game-blue/20 text-game-blue'
-                : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80'
-            }`}
-          title={overlayVisible ? 'Hide Chat' : 'Show Chat'}
-        >
-          <MessageSquare size={16} />
-        </button>
-        <div className='opacity-70 hover:opacity-100 transition-opacity'>
+      <div className='flex flex-col items-center'>
+        <span className='text-game-blue text-xs'>SCORE</span>
+        <span className='font-bold'>{score.toLocaleString()}</span>
+      </div>
+      <div className='flex flex-col items-center'>
+        <span className='text-game-blue text-xs'>TOP SCORE</span>
+        <span className='font-bold'>{topScore.toLocaleString()}</span>
+      </div>
+    </div>
+  )
+}
+
+const Header = () => {
+  const { overlayVisible, toggleOverlay } = useChatStore()
+
+  return (
+    <header className='fixed top-0 w-full z-50 bg-black/50 backdrop-blur-sm border-b border-white/10 px-4 py-3'>
+      <div className='max-w-7xl mx-auto flex justify-between items-center gap-4'>
+        {/* Left section */}
+        <div className='flex items-center gap-4'>
+          <VolumeControl />
+        </div>
+
+        {/* Center section */}
+        <GameStats />
+
+        {/* Right section */}
+        <div className='flex items-center gap-4'>
+          <button
+            onClick={toggleOverlay}
+            className={`h-[48px] px-6 flex items-center justify-center
+              border-2 transition-colors duration-200
+              ${
+                !overlayVisible
+                  ? 'border-game-blue bg-transparent text-game-blue hover:bg-game-blue hover:text-black'
+                  : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/80'
+              }`}
+          >
+            <MessageSquare size={20} />
+          </button>
+
           <StyledWalletButton>
             <WalletMultiButton />
           </StyledWalletButton>

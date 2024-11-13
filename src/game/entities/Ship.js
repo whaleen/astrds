@@ -4,6 +4,7 @@ import Particle from './Particle'
 import { rotatePoint, randomNumBetween } from '../../helpers/helpers'
 import { soundManager } from '../../sounds/SoundManager'
 import { usePowerupStore } from '../../stores/powerupStore'
+import { useGameStore } from '../../stores/gameStore'
 
 export default class Ship {
   constructor(args) {
@@ -29,7 +30,17 @@ export default class Ship {
 
     this.delete = true
     soundManager.playSound('explosion')
-    this.onDie()
+
+    // Submit final score before game over
+    const gameStore = useGameStore.getState()
+    const wallet = window.solana?.publicKey?.toString()
+
+    if (wallet) {
+      gameStore.submitFinalScore(wallet)
+        .then(() => this.onDie())
+    } else {
+      this.onDie()
+    }
 
     // Explode
     for (let i = 0; i < 60; i++) {

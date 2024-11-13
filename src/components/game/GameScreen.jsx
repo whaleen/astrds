@@ -1,20 +1,16 @@
 // src/components/game/GameScreen.jsx
 import React, { useEffect, useRef } from 'react'
 import { useGame } from '../../hooks/useGame'
-import { useWallet } from '@solana/wallet-adapter-react'
 import Ship from '../../game/entities/Ship'
 import Pill from '../../game/entities/Pill'
 import Asteroid from '../../game/entities/Asteroid'
 import Bullet from '../../game/entities/Bullet'
 import { randomNumBetweenExcluding } from '../../helpers/helpers'
 import { soundManager } from '../../sounds/SoundManager'
-import GameControls from './GameControls'
-import GameOverlay from './GameOverlay'
 import OverlayChat from '../chat/OverlayChat'
 import { usePowerupStore } from '../../stores/powerupStore'
 import ShipPickup from '../../game/entities/ShipPickup'
 import { useInventoryStore } from '../../stores/inventoryStore'
-import LevelDisplay from '../ui/LevelDisplay'
 import { useLevelStore } from '../../stores/levelStore'
 import PauseOverlay from './PauseOverlay'
 import { useChatStore } from '../../stores/chatStore'
@@ -34,9 +30,7 @@ const KEY = {
 
 const GameScreen = () => {
   const { toggleOverlay: toggleOverlayChat } = useChatStore()
-  const levelStore = useLevelStore()
   const { state, actions } = useGame()
-  const wallet = useWallet()
 
   // Get pause state and actions from gameStore
   const isPaused = useGameStore((state) => state.isPaused)
@@ -153,6 +147,7 @@ const GameScreen = () => {
   const generateAsteroids = (howMany) => {
     const ship = gameStateRef.current.ship[0]
     const screen = gameStateRef.current.screen
+    const currentScore = useGameStore.getState().score
 
     for (let i = 0; i < howMany; i++) {
       const asteroid = new Asteroid({
@@ -172,7 +167,7 @@ const GameScreen = () => {
           ),
         },
         create: createObject,
-        addScore: (points) => actions.updateScore(points),
+        currentScore: currentScore,
       })
       createObject(asteroid, 'asteroids')
     }
@@ -408,7 +403,6 @@ const GameScreen = () => {
 
   return (
     <>
-      <GameControls />
       <canvas
         ref={canvasRef}
         width={
@@ -419,9 +413,7 @@ const GameScreen = () => {
         }
         className='block bg-black absolute inset-0 w-full h-full'
       />
-      <GameOverlay score={state.score} />
       <OverlayChat />
-      <LevelDisplay />
       <PauseOverlay />
     </>
   )
