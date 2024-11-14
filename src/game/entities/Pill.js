@@ -3,34 +3,37 @@ import { randomNumBetween } from '../../helpers/helpers'
 
 export default class Pill {
   constructor(args) {
-    this.radius = 8 // Back to smaller size
+    this.id = `pill-${Date.now()}-${Math.random()}`
+    this.radius = 8
+    this.delete = false
 
-    // Position calculation
+    // Position calculation from screen edge
     const edge = Math.floor(Math.random() * 4)
+    const screen = args.screen
 
     switch (edge) {
       case 0: // Top
         this.position = {
-          x: Math.random() * args.screen.width,
+          x: Math.random() * screen.width,
           y: -this.radius
         }
         break
       case 1: // Right
         this.position = {
-          x: args.screen.width + this.radius,
-          y: Math.random() * args.screen.height
+          x: screen.width + this.radius,
+          y: Math.random() * screen.height
         }
         break
       case 2: // Bottom
         this.position = {
-          x: Math.random() * args.screen.width,
-          y: args.screen.height + this.radius
+          x: Math.random() * screen.width,
+          y: screen.height + this.radius
         }
         break
       case 3: // Left
         this.position = {
           x: -this.radius,
-          y: Math.random() * args.screen.height
+          y: Math.random() * screen.height
         }
         break
     }
@@ -40,13 +43,11 @@ export default class Pill {
       y: randomNumBetween(-1.5, 1.5)
     }
 
-    this.delete = false
     this.type = args.type || 'standard'
     this.timeToLive = 15 * 1000 // 15 seconds lifetime
     this.creation = Date.now()
-
-    this.color = '#4dc1f9' // Back to blue
-    this.pulseRate = 0.05 // Slower pulse
+    this.color = '#4dc1f9'
+    this.pulseRate = 0.05
     this.pulsePhase = 0
   }
 
@@ -76,7 +77,7 @@ export default class Pill {
 
     // Subtler pulsing animation
     this.pulsePhase += this.pulseRate
-    const pulseScale = 1 + Math.sin(this.pulsePhase) * 0.2 // Reduced pulse amplitude
+    const pulseScale = 1 + Math.sin(this.pulsePhase) * 0.2
     const currentRadius = this.radius * pulseScale
 
     // Draw

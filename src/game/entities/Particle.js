@@ -1,10 +1,13 @@
+// src/game/entities/Particle.js
 export default class Particle {
   constructor(args) {
+    this.id = `particle-${Date.now()}-${Math.random()}`
     this.position = args.position
     this.velocity = args.velocity
     this.radius = args.size
     this.lifeSpan = args.lifeSpan
     this.inertia = 0.98
+    this.delete = false
   }
 
   destroy() {

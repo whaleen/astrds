@@ -1,13 +1,14 @@
 // src/game/entities/Ship.js
-import Bullet from './Bullet'
-import Particle from './Particle'
 import { rotatePoint, randomNumBetween } from '../../helpers/helpers'
 import { soundManager } from '../../sounds/SoundManager'
-import { usePowerupStore } from '../../stores/powerupStore'
 import { useGameStore } from '../../stores/gameStore'
+import { usePowerupStore } from '../../stores/powerupStore'
+import { useEngineStore } from '../../stores/engineStore'
+import Particle from './Particle'
 
 export default class Ship {
   constructor(args) {
+    this.id = `ship-${Date.now()}`
     this.position = args.position
     this.velocity = {
       x: 0,
@@ -19,12 +20,11 @@ export default class Ship {
     this.inertia = 0.99
     this.radius = 20
     this.lastShot = 0
-    this.create = args.create
     this.onDie = args.onDie
+    this.delete = false
   }
 
   destroy() {
-    // Don't destroy if invincible
     const powerups = usePowerupStore.getState().powerups
     if (powerups.invincible) return
 
@@ -36,21 +36,12 @@ export default class Ship {
     const wallet = window.solana?.publicKey?.toString()
 
     if (wallet) {
-      // First submit the score and wait for the response
       gameStore.submitFinalScore(wallet)
-        .then((updatedScores) => {
-          if (updatedScores) {
-            // Update the top score and game state
-            const playerRank = updatedScores.findIndex(s => s.walletAddress === wallet) + 1
-            gameStore.setGameState('GAME_OVER')
-          }
-        })
-        .catch(error => {
-          console.error('Error submitting final score:', error)
-          gameStore.setGameState('GAME_OVER')
+        .then(() => {
+          this.onDie?.()
         })
     } else {
-      gameStore.setGameState('GAME_OVER')
+      this.onDie?.()
     }
 
     // Create explosion particles
@@ -67,32 +58,33 @@ export default class Ship {
           y: randomNumBetween(-1.5, 1.5),
         },
       })
-      this.create(particle, 'particles')
+      useEngineStore.getState().addEntity(particle, 'particles')
     }
   }
 
   rotate(dir) {
-    if (dir == 'LEFT') {
+    if (dir === 'LEFT') {
       this.rotation -= this.rotationSpeed
     }
-    if (dir == 'RIGHT') {
+    if (dir === 'RIGHT') {
       this.rotation += this.rotationSpeed
     }
   }
 
-  accelerate(val) {
+  accelerate() {
     this.velocity.x -= Math.sin((-this.rotation * Math.PI) / 180) * this.speed
     this.velocity.y -= Math.cos((-this.rotation * Math.PI) / 180) * this.speed
 
     // Play thrust sound
     soundManager.playSound('thrust')
 
-    // Thruster particles
+    // Create thruster particles
     let posDelta = rotatePoint(
       { x: 0, y: -10 },
       { x: 0, y: 0 },
       ((this.rotation - 180) * Math.PI) / 180
     )
+
     const particle = new Particle({
       lifeSpan: randomNumBetween(20, 40),
       size: randomNumBetween(1, 3),
@@ -105,41 +97,15 @@ export default class Ship {
         y: posDelta.y / randomNumBetween(3, 5),
       },
     })
-    this.create(particle, 'particles')
+    useEngineStore.getState().addEntity(particle, 'particles')
   }
 
   render(state) {
-    // If ship is marked for deletion, don't process any more actions
-    if (this.delete) return;
 
-    const powerups = usePowerupStore.getState().powerups
-
-    // Controls
-    if (state.keys.up) {
-      this.accelerate(1)
-    }
-    if (state.keys.left) {
-      this.rotate('LEFT')
-    }
-    if (state.keys.right) {
-      this.rotate('RIGHT')
-    }
-
-    // Shooting with powerup check
-    const shootingDelay = powerups.rapidFire ? 50 : 250
-    if (state.keys.space && Date.now() - this.lastShot > shootingDelay) {
-      try {
-        const bullet = new Bullet({
-          ship: this,
-          powered: powerups.rapidFire
-        })
-        this.create(bullet, 'bullets')
-        this.lastShot = Date.now()
-        soundManager.playSound('shoot')
-      } catch (error) {
-        console.error('Failed to create bullet:', error)
-      }
-    }
+    // Handle ship controls
+    if (state.keys.left) this.rotate('LEFT')
+    if (state.keys.right) this.rotate('RIGHT')
+    if (state.keys.up) this.accelerate()
 
     // Move
     this.position.x += this.velocity.x
@@ -167,6 +133,7 @@ export default class Ship {
     context.translate(this.position.x, this.position.y)
 
     // Add invincibility effect
+    const powerups = usePowerupStore.getState().powerups
     if (powerups.invincible) {
       context.shadowColor = '#4dc1f9'
       context.shadowBlur = 10

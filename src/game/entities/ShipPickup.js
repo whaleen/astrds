@@ -1,49 +1,46 @@
 // src/game/entities/ShipPickup.js
-import { soundManager } from '../../sounds/SoundManager';
+import { soundManager } from '../../sounds/SoundManager'
 
 export default class ShipPickup {
   constructor(args) {
+    this.id = `ship-pickup-${Date.now()}-${Math.random()}`
     this.position = {
       x: Math.floor(Math.random() * args.screen.width),
       y: Math.floor(Math.random() * args.screen.height)
-    };
-    this.radius = 20;
-    this.delete = false;
+    }
+    this.radius = 20
+    this.delete = false
   }
 
   destroy() {
-    this.delete = true;
-    soundManager.playSound('collect');
+    this.delete = true
+    soundManager.playSound('collect')
   }
 
   render(state) {
-    const context = state.context;
+    const context = state.context
 
-    context.save();
-    context.translate(this.position.x, this.position.y);
+    context.save()
+    context.translate(this.position.x, this.position.y)
 
     // Add subtle pulsing effect
-    const pulseScale = 1 + Math.sin(Date.now() / 200) * 0.1;
-    context.scale(pulseScale, pulseScale);
-
-    // Glow effect
-    // context.shadowColor = '#FFFF2D';
-    // context.shadowBlur = 10;
+    const pulseScale = 1 + Math.sin(Date.now() / 200) * 0.1
+    context.scale(pulseScale, pulseScale)
 
     // Ship shape
-    context.strokeStyle = '#CE222D';
-    context.fillStyle = '#000000';
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(0, -15);
-    context.lineTo(10, 10);
-    context.lineTo(5, 7);
-    context.lineTo(-5, 7);
-    context.lineTo(-10, 10);
-    context.closePath();
-    context.fill();
-    context.stroke();
+    context.strokeStyle = '#CE222D'
+    context.fillStyle = '#000000'
+    context.lineWidth = 2
+    context.beginPath()
+    context.moveTo(0, -15)
+    context.lineTo(10, 10)
+    context.lineTo(5, 7)
+    context.lineTo(-5, 7)
+    context.lineTo(-10, 10)
+    context.closePath()
+    context.fill()
+    context.stroke()
 
-    context.restore();
+    context.restore()
   }
 }

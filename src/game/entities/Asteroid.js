@@ -1,11 +1,13 @@
 // src/game/entities/Asteroid.js
-import Particle from './Particle'
 import { asteroidVertices, randomNumBetween } from '../../helpers/helpers'
 import { soundManager } from '../../sounds/SoundManager'
 import { useGameStore } from '../../stores/gameStore'
+import { useEngineStore } from '../../stores/engineStore'
+import Particle from './Particle'
 
 export default class Asteroid {
   constructor(args) {
+    this.id = `asteroid-${Date.now()}-${Math.random()}`
     this.position = args.position
     this.velocity = {
       x: randomNumBetween(-1.5, 1.5),
@@ -14,22 +16,21 @@ export default class Asteroid {
     this.rotation = 0
     this.rotationSpeed = randomNumBetween(-1, 1)
     this.radius = args.size
-    // Ensure score calculation results in a valid number
     this.score = Math.floor((80 / Math.max(1, this.radius)) * 5)
-    this.create = args.create
     this.vertices = asteroidVertices(8, args.size)
+    this.delete = false
   }
 
   destroy() {
     this.delete = true
     soundManager.playSound('explosion')
 
-    // Add points using the new addToScore method
+    // Add points using the store
     const gameStore = useGameStore.getState()
     const scoreToAdd = Math.max(0, Math.floor(this.score))
     gameStore.addToScore(scoreToAdd)
 
-    // Explode
+    // Create explosion particles
     for (let i = 0; i < this.radius; i++) {
       const particle = new Particle({
         lifeSpan: randomNumBetween(60, 100),
@@ -43,21 +44,20 @@ export default class Asteroid {
           y: randomNumBetween(-1.5, 1.5),
         },
       })
-      this.create(particle, 'particles')
+      useEngineStore.getState().addEntity(particle, 'particles')
     }
 
     // Break into smaller asteroids
     if (this.radius > 10) {
       for (let i = 0; i < 2; i++) {
-        let asteroid = new Asteroid({
+        const newAsteroid = new Asteroid({
           size: this.radius / 2,
           position: {
             x: randomNumBetween(-10, 20) + this.position.x,
             y: randomNumBetween(-10, 20) + this.position.y,
           },
-          create: this.create.bind(this),
         })
-        this.create(asteroid, 'asteroids')
+        useEngineStore.getState().addEntity(newAsteroid, 'asteroids')
       }
     }
   }
@@ -103,4 +103,3 @@ export default class Asteroid {
     context.restore()
   }
 }
-

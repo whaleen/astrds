@@ -9,6 +9,9 @@ export default class Bullet {
       throw new Error('Cannot create bullet: invalid ship object')
     }
 
+    this.id = `bullet-${Date.now()}-${Math.random()}`
+
+    // Calculate bullet position relative to ship
     let posDelta = rotatePoint(
       { x: 0, y: -20 },
       { x: 0, y: 0 },
@@ -19,6 +22,7 @@ export default class Bullet {
       x: args.ship.position.x + posDelta.x,
       y: args.ship.position.y + posDelta.y,
     }
+
     this.rotation = args.ship.rotation
     this.velocity = {
       x: posDelta.x / 2,
@@ -26,6 +30,7 @@ export default class Bullet {
     }
     this.radius = args.powered ? 3 : 2 // Bigger bullets when powered
     this.powered = args.powered
+    this.delete = false
 
     soundManager.playSound('shoot')
   }

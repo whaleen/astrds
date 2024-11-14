@@ -1,20 +1,13 @@
 // src/components/game/GameScreen.jsx
 import React, { useEffect, useRef } from 'react'
 import Ship from '../../game/entities/Ship'
-import Pill from '../../game/entities/Pill'
-import Token from '../../game/entities/Token'
-import Asteroid from '../../game/entities/Asteroid'
-import Bullet from '../../game/entities/Bullet'
-import { randomNumBetweenExcluding } from '../../helpers/helpers'
 import { soundManager } from '../../sounds/SoundManager'
 import OverlayChat from '../chat/OverlayChat'
-import { usePowerupStore } from '../../stores/powerupStore'
-import ShipPickup from '../../game/entities/ShipPickup'
-import { useInventoryStore } from '../../stores/inventoryStore'
-import { useLevelStore } from '../../stores/levelStore'
 import PauseOverlay from './PauseOverlay'
 import { useChatStore } from '../../stores/chatStore'
 import { useGameStore } from '../../stores/gameStore'
+import { useEngineStore } from '../../stores/engineStore'
+import { useLevelStore } from '../../stores/levelStore'
 
 const KEY = {
   LEFT: 37,
@@ -30,274 +23,25 @@ const KEY = {
 
 const GameScreen = () => {
   const { toggleOverlay: toggleOverlayChat } = useChatStore()
+  const canvasRef = useRef(null)
 
   // Game state selectors
-  const score = useGameStore((state) => state.score)
-  const addToScore = useGameStore((state) => state.addToScore)
-  const submitFinalScore = useGameStore((state) => state.submitFinalScore)
-  const setGameState = useGameStore((state) => state.setGameState)
   const isPaused = useGameStore((state) => state.isPaused)
   const togglePause = useGameStore((state) => state.togglePause)
+  const setGameState = useGameStore((state) => state.setGameState)
 
-  // Powerup selectors
-  const activatePowerups = usePowerupStore((state) => state.activatePowerups)
-  const deactivatePowerups = usePowerupStore(
-    (state) => state.deactivatePowerups
-  )
+  // Engine store selectors
+  const {
+    initializeEngine,
+    startGameLoop,
+    stopGameLoop,
+    resetEngine,
+    setKey,
+    screen,
+    addEntity,
+  } = useEngineStore()
 
-  // Game refs
-  const canvasRef = useRef(null)
-  const gameStateRef = useRef({
-    context: null,
-    ship: [],
-    asteroids: [],
-    bullets: [],
-    particles: [],
-    pills: [],
-    lastPillSpawn: 0,
-    pillSpawnDelay: 3000,
-    tokens: [],
-    lastTokenSpawn: 0,
-    tokenSpawnDelay: 5000, // Every 5 seconds
-    keys: {
-      left: 0,
-      right: 0,
-      up: 0,
-      space: 0,
-    },
-    inGame: false,
-    screen: {
-      width: window.innerWidth,
-      height: window.innerHeight,
-      ratio: window.devicePixelRatio || 1,
-    },
-    asteroidCount: 2,
-    shipPickups: [],
-    lastShipPickupSpawn: 0,
-    shipPickupInterval: 20000,
-    lastShot: 0,
-  })
-
-  const requestRef = useRef()
-
-  const spawnShipPickup = () => {
-    if (gameStateRef.current.shipPickups.length === 0) {
-      const pickup = new ShipPickup({
-        screen: gameStateRef.current.screen,
-      })
-      createObject(pickup, 'shipPickups')
-    }
-  }
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      canvasRef.current.__gameScreen = {
-        spawnShipPickup,
-      }
-    }
-
-    return () => {
-      if (canvasRef.current) {
-        delete canvasRef.current.__gameScreen
-      }
-    }
-  }, [])
-
-  const createObject = (item, group) => {
-    gameStateRef.current[group].push(item)
-  }
-
-  const updateObjects = (items, group) => {
-    let index = 0
-    for (let item of items) {
-      if (item.delete) {
-        gameStateRef.current[group].splice(index, 1)
-      } else {
-        items[index].render(gameStateRef.current)
-      }
-      index++
-    }
-  }
-
-  const checkCollisionsWith = (items1, items2) => {
-    for (let i = items1.length - 1; i >= 0; i--) {
-      for (let j = items2.length - 1; j >= 0; j--) {
-        const item1 = items1[i]
-        const item2 = items2[j]
-        if (checkCollision(item1, item2)) {
-          item1.destroy()
-          item2.destroy()
-        }
-      }
-    }
-  }
-
-  const checkCollision = (obj1, obj2) => {
-    const vx = obj1.position.x - obj2.position.x
-    const vy = obj1.position.y - obj2.position.y
-    const length = Math.sqrt(vx * vx + vy * vy)
-    return length < obj1.radius + obj2.radius
-  }
-
-  const generateAsteroids = (howMany) => {
-    const ship = gameStateRef.current.ship[0]
-    const screen = gameStateRef.current.screen
-
-    for (let i = 0; i < howMany; i++) {
-      const asteroidX = randomNumBetweenExcluding(
-        0,
-        screen.width,
-        ship.position.x - 60,
-        ship.position.x + 60
-      )
-      const asteroidY = randomNumBetweenExcluding(
-        0,
-        screen.height,
-        ship.position.y - 60,
-        ship.position.y + 60
-      )
-
-      const asteroid = new Asteroid({
-        size: 40,
-        position: {
-          x: asteroidX,
-          y: asteroidY,
-        },
-        create: createObject,
-        currentScore: score,
-      })
-
-      createObject(asteroid, 'asteroids')
-    }
-  }
-
-  const addInventoryItem = useInventoryStore((state) => state.addItem)
-
-  const update = (timestamp) => {
-    const gameState = gameStateRef.current
-    const isPausedNow = useGameStore.getState().isPaused
-
-    // Clear any existing animation frame
-    if (requestRef.current) {
-      cancelAnimationFrame(requestRef.current)
-    }
-
-    // Always get the next frame, even when paused
-    requestRef.current = requestAnimationFrame(update)
-
-    // Don't update game state if inactive or paused
-    if (!gameState.context || !gameState.inGame || isPausedNow) {
-      return
-    }
-
-    const context = gameState.context
-    context.save()
-    context.scale(gameState.screen.ratio, gameState.screen.ratio)
-
-    // Motion trail
-    context.fillStyle = '#000'
-    context.globalAlpha = 0.4
-    context.fillRect(0, 0, gameState.screen.width, gameState.screen.height)
-    context.globalAlpha = 1
-
-    // Get powerups state
-    const powerups = usePowerupStore.getState().powerups
-
-    const now = Date.now()
-
-    // Check spawning timers
-    if (now - gameState.lastPillSpawn > gameState.pillSpawnDelay) {
-      const newPill = new Pill({ screen: gameState.screen, type: 'standard' })
-      createObject(newPill, 'pills')
-      gameState.lastPillSpawn = now
-    }
-    // Check pickup timer
-    if (now - gameState.lastShipPickupSpawn >= gameState.shipPickupInterval) {
-      spawnShipPickup()
-      gameState.lastShipPickupSpawn = now
-    }
-
-    // Check token spawn timer
-    if (now - gameState.lastTokenSpawn > gameState.tokenSpawnDelay) {
-      const newToken = new Token({ screen: gameState.screen, type: 'standard' })
-      createObject(newToken, 'tokens')
-      gameState.lastTokenSpawn = now
-    }
-
-    // Update all game objects
-    updateObjects(gameState.particles, 'particles')
-    updateObjects(gameState.asteroids, 'asteroids')
-    updateObjects(gameState.bullets, 'bullets')
-    updateObjects(gameState.pills, 'pills')
-    updateObjects(gameState.tokens, 'tokens')
-    updateObjects(gameState.ship, 'ship')
-    updateObjects(gameState.shipPickups, 'shipPickups')
-
-    // Get current ship
-    const currentShip = gameState.ship[0]
-
-    if (currentShip && !currentShip.delete) {
-      // Check for collisions
-      checkCollisionsWith(gameState.bullets, gameState.asteroids)
-      checkCollisionsWith(gameState.ship, gameState.asteroids)
-
-      // Check for pill collisions
-      gameState.pills.forEach((pill) => {
-        if (checkCollision(currentShip, pill)) {
-          pill.destroy()
-          addInventoryItem('pills', 1)
-          soundManager.playSound('collect')
-          activatePowerups()
-          setTimeout(deactivatePowerups, 10000)
-        }
-      })
-
-      // Check token collisions
-      gameState.tokens.forEach((token) => {
-        if (checkCollision(currentShip, token)) {
-          token.destroy()
-          addInventoryItem('tokens', 1)
-          soundManager.playSound('collect')
-        }
-      })
-
-      // Check ship pickup collisions
-      gameState.shipPickups.forEach((pickup) => {
-        if (checkCollision(currentShip, pickup)) {
-          pickup.destroy()
-          addInventoryItem('ships', 1)
-          soundManager.playSound('collect')
-        }
-      })
-
-      // Handle shooting
-      if (
-        gameState.keys.space &&
-        Date.now() - gameState.lastShot > (powerups.rapidFire ? 50 : 250)
-      ) {
-        try {
-          const bullet = new Bullet({
-            ship: currentShip,
-            powered: powerups.rapidFire,
-          })
-          createObject(bullet, 'bullets')
-          gameState.lastShot = Date.now()
-        } catch (error) {
-          console.warn('Failed to create bullet:', error)
-        }
-      }
-    }
-
-    // Next level check
-    if (!gameState.asteroids.length) {
-      gameState.asteroidCount = Math.min(gameState.asteroidCount + 1, 10)
-      useLevelStore.getState().incrementLevel()
-      generateAsteroids(gameState.asteroidCount)
-    }
-
-    context.restore()
-  }
-
+  // Initialize game
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -310,85 +54,68 @@ const GameScreen = () => {
       togglePause()
     }
 
+    // Clear canvas
     context.clearRect(
       0,
       0,
-      gameStateRef.current.screen.width * gameStateRef.current.screen.ratio,
-      gameStateRef.current.screen.height * gameStateRef.current.screen.ratio
+      screen.width * screen.ratio,
+      screen.height * screen.ratio
     )
 
-    gameStateRef.current.context = context
-    gameStateRef.current.inGame = true
+    // Initialize engine with context
+    initializeEngine(context)
 
+    // Start background music
     soundManager.playMusic('gameMusic', {
       fadeIn: true,
       loop: true,
     })
 
+    // Create initial ship
     const ship = new Ship({
       position: {
-        x: gameStateRef.current.screen.width / 2,
-        y: gameStateRef.current.screen.height / 2,
+        x: screen.width / 2,
+        y: screen.height / 2,
       },
-      create: createObject,
+      create: addEntity,
       onDie: () => {
-        if (gameStateRef.current.inGame) {
-          soundManager.transitionMusic('gameMusic', 'gameOverMusic', {
-            crossFadeDuration: 1000,
-          })
-          gameStateRef.current.inGame = false
-          useLevelStore.getState().resetLevel()
-          setGameState('GAME_OVER')
-        }
+        soundManager.transitionMusic('gameMusic', 'gameOverMusic', {
+          crossFadeDuration: 1000,
+        })
+        useLevelStore.getState().resetLevel()
+        setGameState('GAME_OVER')
+        stopGameLoop()
       },
     })
-    createObject(ship, 'ship')
+    addEntity(ship, 'ship')
 
-    generateAsteroids(gameStateRef.current.asteroidCount)
+    // Generate initial asteroids
+    useEngineStore.getState().spawnAsteroids(2)
 
-    gameStateRef.current.lastPillSpawn = Date.now()
-    gameStateRef.current.lastShipPickupSpawn = Date.now()
-    gameStateRef.current.lastTokenSpawn = Date.now()
-
-    context.save()
-    context.scale(
-      gameStateRef.current.screen.ratio,
-      gameStateRef.current.screen.ratio
-    )
-    context.fillStyle = '#000'
-    context.fillRect(
-      0,
-      0,
-      gameStateRef.current.screen.width,
-      gameStateRef.current.screen.height
-    )
-    context.restore()
-
-    requestRef.current = requestAnimationFrame(update)
+    // Start game loop
+    startGameLoop()
 
     return () => {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current)
-      }
-      gameStateRef.current.inGame = false
+      stopGameLoop()
+      resetEngine()
       if (soundManager.currentMusic) {
         soundManager.stopMusic('gameMusic', { fadeOut: true })
       }
     }
   }, [])
 
+  // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (!gameStateRef.current.inGame) return
-
-      // Handle pause before other inputs
+      // Handle pause
       if (e.keyCode === KEY.ESC || e.keyCode === KEY.P) {
         togglePause()
         soundManager.playSound(!isPaused ? 'ready' : 'collect')
 
-        // If unpausing, restart the animation loop
         if (isPaused) {
-          requestRef.current = requestAnimationFrame(update)
+          startGameLoop()
+        } else {
+          stopGameLoop()
         }
         return
       }
@@ -396,26 +123,48 @@ const GameScreen = () => {
       // Don't process game inputs if paused
       if (isPaused) return
 
-      if (e.keyCode === KEY.LEFT || e.keyCode === KEY.A)
-        gameStateRef.current.keys.left = 1
-      if (e.keyCode === KEY.RIGHT || e.keyCode === KEY.D)
-        gameStateRef.current.keys.right = 1
-      if (e.keyCode === KEY.UP || e.keyCode === KEY.W)
-        gameStateRef.current.keys.up = 1
-      if (e.keyCode === KEY.SPACE) gameStateRef.current.keys.space = 1
-      if (e.key.toLowerCase() === 'c') {
-        toggleOverlayChat()
+      // Handle movement keys
+      switch (e.keyCode) {
+        case KEY.LEFT:
+        case KEY.A:
+          setKey('left', 1)
+          break
+        case KEY.RIGHT:
+        case KEY.D:
+          setKey('right', 1)
+          break
+        case KEY.UP:
+        case KEY.W:
+          setKey('up', 1)
+          break
+        case KEY.SPACE:
+          setKey('space', 1)
+          break
+        default:
+          if (e.key.toLowerCase() === 'c') {
+            toggleOverlayChat()
+          }
       }
     }
 
     const handleKeyUp = (e) => {
-      if (e.keyCode === KEY.LEFT || e.keyCode === KEY.A)
-        gameStateRef.current.keys.left = 0
-      if (e.keyCode === KEY.RIGHT || e.keyCode === KEY.D)
-        gameStateRef.current.keys.right = 0
-      if (e.keyCode === KEY.UP || e.keyCode === KEY.W)
-        gameStateRef.current.keys.up = 0
-      if (e.keyCode === KEY.SPACE) gameStateRef.current.keys.space = 0
+      switch (e.keyCode) {
+        case KEY.LEFT:
+        case KEY.A:
+          setKey('left', 0)
+          break
+        case KEY.RIGHT:
+        case KEY.D:
+          setKey('right', 0)
+          break
+        case KEY.UP:
+        case KEY.W:
+          setKey('up', 0)
+          break
+        case KEY.SPACE:
+          setKey('space', 0)
+          break
+      }
     }
 
     window.addEventListener('keyup', handleKeyUp)
@@ -425,18 +174,14 @@ const GameScreen = () => {
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [togglePause, isPaused])
+  }, [isPaused, togglePause, startGameLoop, stopGameLoop, setKey])
 
   return (
     <>
       <canvas
         ref={canvasRef}
-        width={
-          gameStateRef.current.screen.width * gameStateRef.current.screen.ratio
-        }
-        height={
-          gameStateRef.current.screen.height * gameStateRef.current.screen.ratio
-        }
+        width={screen.width * screen.ratio}
+        height={screen.height * screen.ratio}
         className='block bg-black absolute inset-0 w-full h-full'
       />
       <OverlayChat />
