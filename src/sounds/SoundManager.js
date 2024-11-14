@@ -7,6 +7,9 @@ class Sound {
     this.isPlaying = false;
     this.fadeInterval = null;
     this.loopInterval = null;
+    this.category = options.category || 'sfx';
+    this.effectType = options.effectType || null;
+    this.volumeLevel = options.volumeLevel || 'normal';
     this.options = {
       loop: false,
       fadeInDuration: 1000,
@@ -16,6 +19,33 @@ class Sound {
       onEnd: null,
       ...options
     };
+  }
+
+  // Calculate final volume based on master, channel, and effect volumes
+  updateVolume(volumes, effectSettings) {
+    const masterVolume = volumes.master;
+    const channelVolume = volumes[this.category];
+
+    // Get effect volume multiplier based on settings
+    let effectMultiplier = 1;
+    if (this.category === 'sfx' && effectSettings[this.effectType]) {
+      switch (effectSettings[this.effectType]) {
+        case 'off':
+          effectMultiplier = 0;
+          break;
+        case 'quiet':
+          effectMultiplier = 0.5;
+          break;
+        case 'normal':
+          effectMultiplier = 1;
+          break;
+      }
+    }
+
+    // Combine all volume factors
+    const finalVolume = masterVolume * channelVolume * effectMultiplier;
+    this.audio.volume = Math.max(0, Math.min(1, finalVolume));
+
   }
 
   async fadeIn(targetVolume) {
@@ -88,79 +118,202 @@ class SoundManager {
     if (SoundManager.instance) return SoundManager.instance;
 
     SoundManager.instance = this;
-    this.volume = 0.5;
+    this.volumes = {
+      master: 0.5,
+      music: 0.5,
+      sfx: 0.5
+    };
+    this.effectSettings = {
+      shoot: 'normal',
+      explosion: 'normal',
+      thrust: 'normal',
+      collect: 'normal',
+      quarterInsert: 'normal',
+      countdownPing: 'normal',
+      gameOver: 'normal',
+      spaceWind: 'normal'
+    };
     this.sounds = new Map();
     this.music = new Map();
     this.initialized = false;
     this.currentMusic = null;
+
+    // Try to load saved settings
+    this.loadSettings();
   }
 
-  async init() {
+
+  async init(onProgress = () => { }) {
     if (this.initialized) return;
     console.log('Initializing SoundManager...');
 
     try {
-      // Sound effects
-      await Promise.all([
-        this.loadSoundEffect('thrust', '/sounds/thrust.wav'),
-        this.loadSoundEffect('shoot', '/sounds/shoot.wav'),
-        this.loadSoundEffect('explosion', '/sounds/explosion.wav'),
-        this.loadSoundEffect('collect', '/sounds/collect-pill.mp3'),
-        this.loadSoundEffect('quarterInsert', '/sounds/coin.wav'),
-        this.loadSoundEffect('countdownPing', '/sounds/ping.wav'),
-        this.loadSoundEffect('gameOver', '/sounds/gameover.wav'),
-        this.loadSoundEffect('spaceWind', '/sounds/space-wind.wav')
+      const totalAssets = 12; // Total number of sounds to load
+      let loadedAssets = 0;
 
+      const updateProgress = () => {
+        loadedAssets++;
+        const progress = (loadedAssets / totalAssets) * 100;
+        onProgress(progress);
+      };
+
+      // Sound effects with progress tracking
+      await Promise.all([
+        this.loadSoundEffect('thrust', '/sounds/thrust.wav')
+          .then(updateProgress),
+        this.loadSoundEffect('shoot', '/sounds/shoot.wav')
+          .then(updateProgress),
+        this.loadSoundEffect('explosion', '/sounds/explosion.wav')
+          .then(updateProgress),
+        this.loadSoundEffect('collect', '/sounds/collect-pill.mp3')
+          .then(updateProgress),
+        this.loadSoundEffect('quarterInsert', '/sounds/coin.wav')
+          .then(updateProgress),
+        this.loadSoundEffect('countdownPing', '/sounds/ping.wav')
+          .then(updateProgress),
+        this.loadSoundEffect('gameOver', '/sounds/gameover.wav')
+          .then(updateProgress),
+        this.loadSoundEffect('spaceWind', '/sounds/space-wind.wav')
+          .then(updateProgress)
       ]);
 
-      // Music tracks
+      // Music tracks with progress tracking
       await Promise.all([
-        this.loadMusic('titleMusic', '/sounds/arcis.mp3'),
-        this.loadMusic('readyMusic', '/sounds/ready.wav'),
-        this.loadMusic('gameMusic', '/sounds/arcis.mp3'),
+        this.loadMusic('titleMusic', '/sounds/arcis.mp3')
+          .then(updateProgress),
+        this.loadMusic('readyMusic', '/sounds/ready.wav')
+          .then(updateProgress),
+        this.loadMusic('gameMusic', '/sounds/arcis.mp3')
+          .then(updateProgress),
         this.loadMusic('gameOverMusic', '/sounds/arcis.mp3')
+          .then(updateProgress)
       ]);
 
       this.initialized = true;
       console.log('SoundManager initialized successfully');
+      onProgress(100);
     } catch (error) {
       console.error('Error initializing SoundManager:', error);
+      throw error;
     }
   }
 
-  async loadSoundEffect(name, url) {
+  async loadSoundEffect(name, url, options = {}) {
     try {
       console.log(`Loading sound effect: ${name}`);
-      const audio = new Audio(url);
-      await new Promise((resolve, reject) => {
-        audio.addEventListener('canplaythrough', resolve);
-        audio.addEventListener('error', reject);
-        audio.load();
+      // Create a Sound instance instead of raw Audio
+      const sound = new Sound(url, {
+        category: 'sfx',
+        effectType: name,
+        ...options
       });
-      this.sounds.set(name, audio);
+
+      await new Promise((resolve, reject) => {
+        sound.audio.addEventListener('canplaythrough', resolve);
+        sound.audio.addEventListener('error', reject);
+        sound.audio.load();
+      });
+
+      this.sounds.set(name, sound);  // Store Sound instance
       console.log(`Sound effect loaded: ${name}`);
     } catch (error) {
       console.error(`Error loading sound effect ${name}:`, error);
     }
   }
 
-  async loadMusic(name, url) {
+  async loadMusic(name, url, options = {}) {
     try {
       console.log(`Loading music track: ${name}`);
-      const audio = new Audio(url);
-      await new Promise((resolve, reject) => {
-        audio.addEventListener('canplaythrough', resolve);
-        audio.addEventListener('error', reject);
-        audio.load();
+      // Create a Sound instance instead of raw Audio
+      const music = new Sound(url, {
+        category: 'music',
+        effectType: name,
+        ...options
       });
-      this.music.set(name, audio);
+
+      await new Promise((resolve, reject) => {
+        music.audio.addEventListener('canplaythrough', resolve);
+        music.audio.addEventListener('error', reject);
+        music.audio.load();
+      });
+
+      this.music.set(name, music);  // Store Sound instance
       console.log(`Music track loaded: ${name}`);
     } catch (error) {
       console.error(`Error loading music track ${name}:`, error);
     }
   }
 
+  setVolume(channel, value) {
+    const normalizedValue = Math.max(0, Math.min(1, value));
+    this.volumes[channel] = normalizedValue;
+
+    // Update all sound volumes
+    const updateVolume = (sound) => {
+      if (sound instanceof Sound) {
+        sound.updateVolume(this.volumes, this.effectSettings);
+      } else if (sound instanceof Audio) {
+        // Legacy support for plain Audio objects
+        sound.volume = this.calculateVolume(channel, normalizedValue);
+      }
+    };
+
+    this.sounds.forEach(updateVolume);
+    this.music.forEach(updateVolume);
+  }
+
+  setEffectSetting(effectType, setting) {
+    if (this.effectSettings.hasOwnProperty(effectType)) {
+      this.effectSettings[effectType] = setting;
+
+      // Update volumes for affected sounds
+      this.sounds.forEach(sound => {
+        if (sound.effectType === effectType) {
+          sound.updateVolume(this.volumes, this.effectSettings);
+        }
+      });
+    }
+  }
+
+  calculateVolume(channel, value) {
+    const masterVolume = this.volumes.master;
+    const channelVolume = this.volumes[channel];
+    return masterVolume * channelVolume * value;
+  }
+
+  getSettings() {
+    return {
+      volumes: { ...this.volumes },
+      effectSettings: { ...this.effectSettings }
+    };
+  }
+
+  saveSettings() {
+    try {
+      localStorage.setItem('soundSettings', JSON.stringify({
+        volumes: this.volumes,
+        effectSettings: this.effectSettings
+      }));
+    } catch (error) {
+      console.error('Failed to save sound settings:', error);
+    }
+  }
+
+  loadSettings() {
+    try {
+      const saved = localStorage.getItem('soundSettings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        this.volumes = { ...this.volumes, ...settings.volumes };
+        this.effectSettings = { ...this.effectSettings, ...settings.effectSettings };
+      }
+    } catch (error) {
+      console.error('Failed to load sound settings:', error);
+    }
+  }
+
   async playSound(name) {
+    console.log('Attempting to play sound:', name);
     try {
       const sound = this.sounds.get(name);
       if (!sound) {
@@ -168,15 +321,21 @@ class SoundManager {
         return;
       }
 
-      sound.volume = this.volume;
-      sound.currentTime = 0;
-      await sound.play();
+      // Now sound is a Sound instance, not an Audio element
+      sound.updateVolume(this.volumes, this.effectSettings);
+
+      if (sound.audio.currentTime > 0) {
+        sound.audio.currentTime = 0;
+      }
+
+      await sound.audio.play();
     } catch (error) {
       console.error(`Error playing sound ${name}:`, error);
     }
   }
 
   async playMusic(name, options = {}) {
+    console.log('Attempting to play music:', name, options);
     try {
       const music = this.music.get(name);
       if (!music) {
@@ -186,19 +345,20 @@ class SoundManager {
 
       // Stop current music if playing
       if (this.currentMusic && this.currentMusic !== music) {
-        await this.stopMusic(this.currentMusic.dataset.name);
+        await this.stopMusic(this.currentMusic.effectType);
       }
 
-      music.dataset.name = name;
-      music.volume = options.fadeIn ? 0 : this.volume;
-      music.loop = options.loop !== false;
+      music.updateVolume(this.volumes, this.effectSettings);
+      music.audio.loop = options.loop !== false;
 
-      await music.play();
+      await music.audio.play();
       this.currentMusic = music;
 
-      if (options.fadeIn) {
-        this.fadeIn(music);
-      }
+      console.log('Music playing:', {
+        track: name,
+        volume: music.audio.volume,
+        loop: music.audio.loop
+      });
     } catch (error) {
       console.error(`Error playing music ${name}:`, error);
     }
