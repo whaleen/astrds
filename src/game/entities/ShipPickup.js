@@ -20,17 +20,29 @@ export default class ShipPickup {
   render(state) {
     const context = state.context
 
+    // Set up subtle pulsing effect for the circle outline
+    const pulseScale = 1 + Math.sin(Date.now() / 300) * 0.05
+
     context.save()
     context.translate(this.position.x, this.position.y)
-
-    // Add subtle pulsing effect
-    const pulseScale = 1 + Math.sin(Date.now() / 200) * 0.1
     context.scale(pulseScale, pulseScale)
 
-    // Ship shape
-    context.strokeStyle = '#CE222D'
-    context.fillStyle = '#000000'
-    context.lineWidth = 2
+    // Draw a smaller pulsing, glowing white circle outline behind the ship shape
+    context.beginPath()
+    context.arc(0, 0, this.radius - 5, 0, Math.PI * 2)  // Slightly smaller radius
+    context.strokeStyle = '#FFFFFF'
+    context.lineWidth = 1  // Outline thickness
+    context.shadowBlur = 10   // Glow effect
+    context.shadowColor = '#FFFFFF'
+    context.stroke()  // Draw only the outline, no fill
+
+    // Reset shadow settings for the ship shape
+    context.shadowBlur = 0
+
+    // Draw the ship shape with a blue outline only, no fill
+    context.strokeStyle = '#1E90FF'  // Solid blue outline
+    context.lineWidth = 1    // Thin outline
+
     context.beginPath()
     context.moveTo(0, -15)
     context.lineTo(10, 10)
@@ -38,9 +50,10 @@ export default class ShipPickup {
     context.lineTo(-5, 7)
     context.lineTo(-10, 10)
     context.closePath()
-    context.fill()
-    context.stroke()
+    context.stroke()  // Outline only, no fill
 
     context.restore()
   }
+
+
 }

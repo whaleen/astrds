@@ -106,6 +106,7 @@
 │   ├── stores
 │   │   ├── audioStore.js
 │   │   ├── chatStore.js
+│   │   ├── engineStore.js
 │   │   ├── gameStore.js
 │   │   ├── inventoryStore.js
 │   │   ├── levelStore.js
@@ -116,4 +117,4 @@
 ├── tree.txt
 └── vite.config.js
 
-24 directories, 93 files
+24 directories, 94 files

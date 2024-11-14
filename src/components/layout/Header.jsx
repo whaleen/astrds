@@ -3,12 +3,12 @@ import React from 'react'
 import { useEffect } from 'react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { MessageSquare } from 'lucide-react'
-import VolumeControl from '../VolumeControl'
 import { StyledWalletButton } from '../ui/Buttons'
 import { useChatStore } from '../../stores/chatStore'
 import { useLevelStore } from '../../stores/levelStore'
 import { useGameStore } from '../../stores/gameStore'
 import { getHighScores } from '../../api/scores'
+import VolumeControl from '../ui/sound/VolumeControl'
 
 const GameStats = () => {
   const level = useLevelStore((state) => state.level)
@@ -74,10 +74,10 @@ const Header = () => {
     >
       <div className='max-w-7xl mx-auto flex justify-between items-center gap-4'>
         {/* Left section */}
-        <div className='flex items-center gap-4'>
+        {/* <div className='flex items-center gap-4'>
           {shouldShowVolumeControl && <VolumeControl />}
-        </div>
-
+        </div> */}
+        <VolumeControl />
         {/* Center section */}
         <div
           className={`transition-opacity duration-300 
