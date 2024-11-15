@@ -1,6 +1,6 @@
 // src/stores/engineStore.js
 import { create } from 'zustand'
-import { rotatePoint, randomNumBetween } from '../helpers/helpers'
+import { randomNumBetween } from '@/utils/helpers'
 import { useGameStore } from './gameStore'
 import { usePowerupStore } from './powerupStore'
 import Bullet from '../game/entities/Bullet'

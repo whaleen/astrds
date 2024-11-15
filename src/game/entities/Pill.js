@@ -1,5 +1,5 @@
 // src/game/entities/Pill.js
-import { randomNumBetween } from '../../helpers/helpers'
+import { randomNumBetween } from '@/utils/helpers'
 
 export default class Pill {
   constructor(args) {

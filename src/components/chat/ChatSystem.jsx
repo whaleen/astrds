@@ -2,7 +2,7 @@
 import React from 'react'
 import FullChat from './FullChat'
 import OverlayChat from './OverlayChat'
-import { useChatStore } from '../../stores/chatStore'
+import { useChatStore } from '@/stores/chatStore'
 
 const ChatSystem = () => {
   const chatMode = useChatStore((state) => state.chatMode)

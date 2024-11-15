@@ -1,4 +1,4 @@
-// getScores.js
+// netlify/functions/getScores.js
 import { getStore } from "@netlify/blobs";
 
 export const handler = async (event, context) => {
@@ -22,7 +22,6 @@ export const handler = async (event, context) => {
 
     console.log('Fetching scores...');
     const scoresData = await store.get("scores");
-    // console.log('Retrieved scores:', scoresData);
 
     return {
       statusCode: 200,

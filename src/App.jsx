@@ -6,13 +6,12 @@ import {
 } from '@solana/wallet-adapter-react'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
-import GameLayout from './components/layout/GameLayout'
-import GameStateManager from './components/game/GameStateManager'
+import GameLayout from './screens/game/components/GameLayout'
+import GameStateManager from './screens/game/components/GameStateManager'
 import ChatSystem from './components/chat/ChatSystem'
-import SoundSettings from './components/ui/sound/SoundSettings'
+import SoundSettings from './components/sound/SoundSettings'
 import { useSettingsPanelStore } from './stores/settingsPanelStore'
 import { useAudio } from './hooks/useAudio'
-// import AudioTest from './components/test/AudioTest'
 
 // Loading overlay component
 const LoadingOverlay = ({ progress }) => (
@@ -44,18 +43,11 @@ const App = () => {
   const endpoint = useMemo(() => import.meta.env.VITE_SOLANA_RPC_ENDPOINT, [])
 
   // Initialize sound system
+  // Is 'isInitialized' only reffering to the sound system? Or are there other things this affects
   useEffect(() => {
-    // The new audio system initializes itself, we just need to wait for it
-    const checkInitialization = () => {
-      if (isInitialized) {
-        setIsLoading(false)
-      } else {
-        // Check again in 100ms
-        setTimeout(checkInitialization, 100)
-      }
+    if (isInitialized) {
+      setIsLoading(false)
     }
-
-    checkInitialization()
   }, [isInitialized])
 
   // Keyboard controls
@@ -122,7 +114,6 @@ const App = () => {
               <LoadingOverlay progress={loadingProgress} />
             ) : (
               <>
-                {/* <AudioTest /> */}
                 <GameStateManager />
                 <ChatSystem />
                 <SoundSettings />

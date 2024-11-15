@@ -1,5 +1,5 @@
 // src/game/entities/Bullet.js
-import { rotatePoint } from '../../helpers/helpers'
+import { rotatePoint } from '@/utils/helpers'
 import { audioService } from '../../services/audio/AudioService'
 
 export default class Bullet {

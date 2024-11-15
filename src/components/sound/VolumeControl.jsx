@@ -1,8 +1,8 @@
 // src/components/ui/sound/VolumeControl.jsx
 import React from 'react'
 import { Volume2, Volume1, VolumeX, Settings } from 'lucide-react'
-import { useAudio } from '../../../hooks/useAudio'
-import { useSettingsPanelStore } from '../../../stores/settingsPanelStore'
+import { useAudio } from '@/hooks/useAudio'
+import { useSettingsPanelStore } from '@/stores/settingsPanelStore'
 
 const VolumeControl = () => {
   const {

@@ -1,6 +1,6 @@
 // src/components/game/GameOverlay.jsx
 import React from 'react'
-import { useGameStore } from '../../stores/gameStore'
+import { useGameStore } from '@/stores/gameStore'
 
 const GameOverlay = () => {
   const score = useGameStore((state) => state.score)

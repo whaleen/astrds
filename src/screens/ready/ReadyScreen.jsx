@@ -2,11 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Connection } from '@solana/web3.js'
-import { verifyWalletSignature } from '../../auth'
+import { verifyWalletSignature } from '@/auth/auth'
 import { useAudio } from '../../hooks/useAudio'
 import { SOUND_TYPES, MUSIC_TRACKS } from '../../services/audio/AudioTypes'
-import ScreenContainer from '../layout/ScreenContainer'
-import GameTitle from '../ui/GameTitle'
+import ScreenContainer from '@/components/common/ScreenContainer'
+import GameTitle from '@/components/common/GameTitle'
 import { useGameStore } from '../../stores/gameStore'
 
 const ReadyScreen = () => {
@@ -17,10 +17,8 @@ const ReadyScreen = () => {
   const mountedRef = useRef(true)
 
   const setGameState = useGameStore((state) => state.setGameState)
-  const { playSound, playMusic, stopMusic, transitionMusic, isInitialized } =
-    useAudio()
+  const { playSound, playMusic, stopMusic, transitionMusic } = useAudio()
 
-  // Component mount/unmount handling
   useEffect(() => {
     console.log('ReadyScreen mounted, setting up game sequence...')
     mountedRef.current = true
@@ -28,15 +26,11 @@ const ReadyScreen = () => {
     return () => {
       console.log('ReadyScreen cleanup triggered')
       mountedRef.current = false
-      // Ensure all ready screen sounds are stopped on unmount
       stopMusic(MUSIC_TRACKS.READY, { fadeOut: true })
     }
   }, [stopMusic])
 
-  // Game sequence
   useEffect(() => {
-    if (!isInitialized) return // Wait for audio system to be ready
-
     const startGameSequence = async () => {
       if (hasStarted.current) return
       hasStarted.current = true
@@ -100,15 +94,7 @@ const ReadyScreen = () => {
     }
 
     startGameSequence()
-  }, [
-    wallet,
-    playSound,
-    playMusic,
-    stopMusic,
-    transitionMusic,
-    setGameState,
-    isInitialized,
-  ])
+  }, [wallet, playSound, playMusic, stopMusic, transitionMusic, setGameState])
 
   if (verificationError) {
     return (

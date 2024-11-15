@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Coins } from 'lucide-react'
-import { verifyTokenBalance } from '../../helpers/tokenBalances'
+import { verifyTokenBalance } from '@/utils/tokenBalances'
 
 const PaymentOption = ({ selected, onSelect, type, amount, symbol, label }) => (
   <button

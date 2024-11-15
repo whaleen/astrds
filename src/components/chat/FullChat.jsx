@@ -1,9 +1,9 @@
 // REPLACE ENTIRE FILE: src/components/chat/FullChat.jsx
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { getChatMessages, postChatMessage } from '../../api/chat'
-import { gameChannel } from '../../api/pusher'
-import { useChatStore } from '../../stores/chatStore'
+import { getChatMessages, postChatMessage } from '@/api/chat'
+import { gameChannel } from '@/api/pusher'
+import { useChatStore } from '@/stores/chatStore'
 
 const shortenAddress = (address) => {
   if (!address || address === 'Anonymous') return 'Anonymous'

@@ -1,11 +1,11 @@
 // src/components/game/GameStateManager.jsx
 import React from 'react'
-import { useGameStore } from '../../stores/gameStore'
-import TitleScreen from '../screens/TitleScreen'
-import ReadyScreen from '../screens/ReadyScreen'
-import GameScreen from './GameScreen'
-import GameOverScreen from '../screens/GameOverScreen'
-import LeaderboardScreen from '../screens/LeaderboardScreen'
+import { useGameStore } from '@/stores/gameStore'
+import TitleScreen from '@/screens/title/TitleScreen'
+import ReadyScreen from '@/screens/ready/ReadyScreen'
+import GameScreen from '../GameScreen'
+import GameOverScreen from '@/screens/gameover/GameOverScreen'
+import LeaderboardScreen from '@/screens/leaderboard/LeaderboardScreen'
 
 const GameStateManager = () => {
   const gameState = useGameStore((state) => state.gameState)

@@ -68,7 +68,7 @@ export const AUDIO_CONFIG = {
       path: '/sounds/arcis.mp3',
       volume: 0.4,
       fadeInDuration: 1000,
-      loop: true
+      loop: false
     }
   },
 

@@ -1,5 +1,5 @@
 // src/game/entities/Token.js
-import { randomNumBetween } from '../../helpers/helpers'
+import { randomNumBetween } from '@/utils/helpers'
 
 export default class Token {
   constructor(args) {

@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useGameStore } from '../../stores/gameStore'
-import ScreenContainer from '../layout/ScreenContainer'
-import GameTitle from '../ui/GameTitle'
-import ActionButtons from '../ui/ActionButtons'
-import { QuarterButton } from '../ui/Buttons'
-import PaymentModal from '../ui/PaymentModal'
+import ScreenContainer from '@/components/common/ScreenContainer'
+import GameTitle from '@/components/common/GameTitle'
+import ActionButtons from '@/components/common/ActionButtons'
+import { QuarterButton } from '@/components/common/Buttons'
+import PaymentModal from './PaymentModal'
 import { useAudio } from '../../hooks/useAudio'
 import { MUSIC_TRACKS, SOUND_TYPES } from '../../services/audio/AudioTypes'
 
@@ -23,37 +23,12 @@ const TitleScreen = () => {
 
   // Start title music when component mounts
   useEffect(() => {
-    console.log('TitleScreen mount effect starting') // Add this
-
-    let mounted = true
-
-    const startMusic = async () => {
-      try {
-        if (mounted) {
-          console.log('Attempting to play title music...')
-
-          await playMusic(MUSIC_TRACKS.TITLE, {
-            fadeIn: true,
-            loop: true,
-          })
-          console.log('Title music should be playing now')
-        }
-      } catch (error) {
-        console.log('TitleScreen cleanup triggered. Mounted:', mounted) // Add this
-        mounted = false
-        console.log('Cleaning up title music...')
-        stopMusic(MUSIC_TRACKS.TITLE, { fadeOut: true })
-      }
-    }
-
-    startMusic()
-
-    return () => {
-      mounted = false
-      console.log('Cleaning up title music...')
-      stopMusic(MUSIC_TRACKS.TITLE, { fadeOut: true })
-    }
-  }, []) // Empty dependency array since we know audio is initialized
+    playMusic(MUSIC_TRACKS.TITLE, {
+      fadeIn: true,
+      loop: true,
+    })
+    // No cleanup needed - next screen will handle transition
+  }, [])
 
   // Original quarter insert method with signature (for development)
   const handleDevQuarterInsert = async () => {

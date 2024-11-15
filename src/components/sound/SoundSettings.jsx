@@ -1,8 +1,8 @@
 // src/components/ui/sound/SoundSettings.jsx
 import React from 'react'
 import { X, RotateCcw, Volume2, Play } from 'lucide-react'
-import { useAudio } from '../../../hooks/useAudio'
-import { useSettingsPanelStore } from '../../../stores/settingsPanelStore'
+import { useAudio } from '@/hooks/useAudio'
+import { useSettingsPanelStore } from '@/stores/settingsPanelStore'
 import VolumeSlider from './VolumeSlider'
 import EffectToggle from './EffectToggle'
 

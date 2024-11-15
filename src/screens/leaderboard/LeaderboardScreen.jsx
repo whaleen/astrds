@@ -2,15 +2,18 @@
 import React, { useState, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { getHighScores } from '../../api/scores'
-import { QuarterButton } from '../ui/Buttons'
-import GameTitle from '../ui/GameTitle'
+import { QuarterButton } from '@/components/common/Buttons'
+import GameTitle from '@/components/common/GameTitle'
 import LeaderboardTable from './LeaderboardTable'
 import { useGameStore } from '../../stores/gameStore'
+import { MUSIC_TRACKS } from '../../services/audio/AudioTypes'
+import { useAudio } from '../../hooks/useAudio'
 
 const LeaderboardScreen = () => {
   const wallet = useWallet()
   const topScore = useGameStore((state) => state.topScore)
   const setGameState = useGameStore((state) => state.setGameState)
+  const { transitionMusic, currentMusic, stopMusic } = useAudio()
 
   const [scores, setScores] = useState([])
   const [loading, setLoading] = useState(true)
@@ -19,6 +22,22 @@ const LeaderboardScreen = () => {
     topScore: 0,
     rank: null,
   })
+
+  useEffect(() => {
+    // Transition from the current music track to the title music
+    // But only if the current track is the game over music
+    if (currentMusic === MUSIC_TRACKS.GAME_OVER) {
+      transitionMusic(MUSIC_TRACKS.GAME_OVER, MUSIC_TRACKS.TITLE, {
+        crossFadeDuration: 1000,
+        allowOverlap: true,
+      })
+    }
+
+    return () => {
+      // Ensure the game over music is stopped when the component unmounts
+      stopMusic(MUSIC_TRACKS.GAME_OVER, { fadeOut: true })
+    }
+  }, [transitionMusic, currentMusic, stopMusic])
 
   useEffect(() => {
     const fetchScores = async () => {
@@ -61,11 +80,6 @@ const LeaderboardScreen = () => {
             }
           }
         }
-
-        // soundManager.playSound('spaceWind', {
-        //   fadeIn: true,
-        //   loop: true,
-        // })
       } catch (err) {
         console.error('Failed to fetch scores:', err)
         setError('Failed to load high scores')

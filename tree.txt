@@ -86,9 +86,6 @@
 │   │   │   ├── LeaderboardTable.jsx
 │   │   │   ├── ReadyScreen.jsx
 │   │   │   └── TitleScreen.jsx
-│   │   ├── test
-│   │   │   ├── AudioTest.jsx
-│   │   │   └── PowerupTest.jsx
 │   │   └── ui
 │   │       ├── ActionButtons.jsx
 │   │       ├── Buttons.jsx
@@ -127,8 +124,6 @@
 │   │       ├── AudioEventEmitter.js
 │   │       ├── AudioService.js
 │   │       └── AudioTypes.js
-│   ├── sounds
-│   │   └── SoundManager.js
 │   ├── stores
 │   │   ├── audioStore.js
 │   │   ├── chatStore.js
@@ -144,4 +139,4 @@
 ├── tree.txt
 └── vite.config.js
 
-29 directories, 116 files
+27 directories, 113 files

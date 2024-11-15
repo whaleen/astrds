@@ -1,5 +1,5 @@
 import React from 'react'
-import { useLevelStore } from '../../stores/levelStore'
+import { useLevelStore } from '@/stores/levelStore'
 
 const LevelDisplay = () => {
   const level = useLevelStore((state) => state.level)

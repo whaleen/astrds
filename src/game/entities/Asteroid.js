@@ -1,5 +1,5 @@
 // src/game/entities/Asteroid.js
-import { asteroidVertices, randomNumBetween } from '../../helpers/helpers'
+import { asteroidVertices, randomNumBetween } from '@/utils/helpers'
 import { useGameStore } from '../../stores/gameStore'
 import { useEngineStore } from '../../stores/engineStore'
 import Particle from './Particle'

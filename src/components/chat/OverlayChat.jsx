@@ -1,7 +1,7 @@
 // src/components/chat/OverlayChat.jsx
 import React, { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useChatStore } from '../../stores/chatStore'
+import { useChatStore } from '@/stores/chatStore'
 
 const shortenAddress = (address) => {
   if (!address || address === 'Anonymous') return 'Anonymous'

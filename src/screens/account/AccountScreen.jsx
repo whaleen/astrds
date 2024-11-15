@@ -13,7 +13,7 @@ import {
   Coins,
 } from 'lucide-react'
 import { getHighScores } from '../../api/scores'
-import { getTokenBalances } from '../../helpers/tokenBalances'
+import { getTokenBalances } from '@/utils/tokenBalances'
 
 const MetricCard = ({ icon: Icon, label, value, sublabel }) => (
   <div className='bg-black/30 border border-white/10 rounded-lg p-4 hover:border-game-blue/50 transition-colors group'>

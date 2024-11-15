@@ -1,8 +1,8 @@
 // src/components/ui/InventoryHUD.jsx
 import React, { useState } from 'react'
-import { useGameStore } from '../../stores/gameStore'
-import { useInventoryStore } from '../../stores/inventoryStore'
-import { useAudioStore } from '../../stores/audioStore'
+import { useGameStore } from '@/stores/gameStore'
+import { useInventoryStore } from '@/stores/inventoryStore'
+import { useAudioStore } from '@/stores/audioStore'
 
 // SVG Icons as components
 const ShipIcon = () => (

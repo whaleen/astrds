@@ -2,12 +2,12 @@
 import React, { useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useGameStore } from '../../stores/gameStore'
-import { QuarterButton } from '../ui/Buttons'
+import { QuarterButton } from '@/components/common/Buttons'
 import { useAudio } from '../../hooks/useAudio'
 import { SOUND_TYPES, MUSIC_TRACKS } from '../../services/audio/AudioTypes'
-import GameTitle from '../ui/GameTitle'
+import GameTitle from '@/components/common/GameTitle'
+import ScreenContainer from '@/components/common/ScreenContainer'
 
-import ScreenContainer from '../layout/ScreenContainer'
 const GameOverScreen = () => {
   const wallet = useWallet()
   const score = useGameStore((state) => state.score)
@@ -15,16 +15,15 @@ const GameOverScreen = () => {
   const setGameState = useGameStore((state) => state.setGameState)
   const { playSound, transitionMusic, stopMusic } = useAudio()
 
+  // Music / SFX
   useEffect(() => {
     playSound(SOUND_TYPES.GAME_OVER)
     transitionMusic(MUSIC_TRACKS.GAME, MUSIC_TRACKS.GAME_OVER, {
       crossFadeDuration: 1000,
+      allowOverlap: true,
     })
-
-    return () => {
-      stopMusic(MUSIC_TRACKS.GAME_OVER, { fadeOut: true })
-    }
-  }, [playSound, transitionMusic, stopMusic])
+    // No cleanup needed - next screen will handle transition
+  }, [])
 
   const handlePlayAgain = () => {
     setGameState('READY_TO_PLAY')

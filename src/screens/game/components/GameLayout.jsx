@@ -1,10 +1,8 @@
 // src/components/layout/GameLayout.jsx
 import React from 'react'
-import Header from './Header'
-import InventoryHUD from '../ui/InventoryHUD'
-import { useGameStore } from '../../stores/gameStore'
-// For testing purposes:
-// import PowerupTest from '../test/PowerupTest'
+import Header from '@/components/common/Header'
+import InventoryHUD from './InventoryHUD'
+import { useGameStore } from '@/stores/gameStore'
 
 const GameLayout = ({ children }) => {
   const gameState = useGameStore((state) => state.gameState)
@@ -18,7 +16,6 @@ const GameLayout = ({ children }) => {
       {gameState === 'PLAYING' && (
         <>
           <InventoryHUD />
-          {/* <PowerupTest /> */}
         </>
       )}
     </div>

@@ -1,8 +1,8 @@
 // src/components/chat/ChatBase.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { gameChannel } from '../../api/pusher'
-import { getChatMessages, postChatMessage } from '../../api/chat'
+import { gameChannel } from '@/api/pusher'
+import { getChatMessages, postChatMessage } from '@/api/chat'
 
 const shortenAddress = (address) => {
   if (!address || address === 'Anonymous') return 'Anonymous'

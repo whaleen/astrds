@@ -1,6 +1,6 @@
 // src/components/game/PauseOverlay.jsx
 import React from 'react'
-import { useGameStore } from '../../stores/gameStore'
+import { useGameStore } from '@/stores/gameStore'
 
 const PauseOverlay = () => {
   const isPaused = useGameStore((state) => state.isPaused)

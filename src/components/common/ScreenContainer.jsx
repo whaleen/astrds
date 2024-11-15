@@ -1,6 +1,7 @@
 // src/components/layout/ScreenContainer.jsx
 import React from 'react'
 // Import all background images
+// Don't reference 'public' directory - just start with /assets
 import joiGif from '/assets/wojak.png'
 import wojakPng from '/assets/dying.gif'
 

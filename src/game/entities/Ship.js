@@ -1,5 +1,5 @@
 // src/game/entities/Ship.js
-import { rotatePoint, randomNumBetween } from '../../helpers/helpers'
+import { rotatePoint, randomNumBetween } from '@/utils/helpers'
 import { useGameStore } from '../../stores/gameStore'
 import { usePowerupStore } from '../../stores/powerupStore'
 import { useEngineStore } from '../../stores/engineStore'

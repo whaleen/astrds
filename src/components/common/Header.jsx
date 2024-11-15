@@ -3,13 +3,13 @@ import React from 'react'
 import { useEffect, useState } from 'react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { MessageSquare, User } from 'lucide-react'
-import { StyledWalletButton } from '../ui/Buttons'
+import { StyledWalletButton } from './Buttons'
 import { useChatStore } from '../../stores/chatStore'
 import { useLevelStore } from '../../stores/levelStore'
 import { useGameStore } from '../../stores/gameStore'
 import { getHighScores } from '../../api/scores'
-import VolumeControl from '../ui/sound/VolumeControl'
-import AccountScreen from '../screens/AccountScreen'
+import VolumeControl from '../sound/VolumeControl'
+import AccountScreen from '@/screens/account/AccountScreen'
 
 const GameStats = () => {
   const level = useLevelStore((state) => state.level)
