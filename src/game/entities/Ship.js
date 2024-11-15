@@ -1,10 +1,10 @@
 // src/game/entities/Ship.js
 import { rotatePoint, randomNumBetween } from '../../helpers/helpers'
-import { soundManager } from '../../sounds/SoundManager'
 import { useGameStore } from '../../stores/gameStore'
 import { usePowerupStore } from '../../stores/powerupStore'
 import { useEngineStore } from '../../stores/engineStore'
 import Particle from './Particle'
+import { audioService } from '../../services/audio/AudioService'
 
 export default class Ship {
   constructor(args) {
@@ -25,11 +25,14 @@ export default class Ship {
   }
 
   destroy() {
+    // const { playSound } = useAudio()
     const powerups = usePowerupStore.getState().powerups
     if (powerups.invincible) return
 
     this.delete = true
-    soundManager.playSound('explosion')
+    // soundManager.playSound('explosion')
+    // playSound('explosion')
+    audioService.playSound('explosion')
 
     // Submit final score before game over
     const gameStore = useGameStore.getState()
@@ -76,7 +79,8 @@ export default class Ship {
     this.velocity.y -= Math.cos((-this.rotation * Math.PI) / 180) * this.speed
 
     // Play thrust sound
-    soundManager.playSound('thrust')
+    // soundManager.playSound('thrust')
+    audioService.playSound('thrust')
 
     // Create thruster particles
     let posDelta = rotatePoint(

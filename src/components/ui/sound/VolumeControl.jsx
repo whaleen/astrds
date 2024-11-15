@@ -1,11 +1,21 @@
 // src/components/ui/sound/VolumeControl.jsx
 import React from 'react'
 import { Volume2, Volume1, VolumeX, Settings } from 'lucide-react'
-import { useAudioStore } from '../../../stores/audioStore'
+import { useAudio } from '../../../hooks/useAudio'
+import { useSettingsPanelStore } from '../../../stores/settingsPanelStore'
 
 const VolumeControl = () => {
-  const { volumes, setVolume, toggleSettingsPanel, toggleMute, isMuted } =
-    useAudioStore()
+  const {
+    volumes,
+    setVolume,
+    currentMusic, // New from audio service
+  } = useAudio()
+
+  const toggleSettingsPanel = useSettingsPanelStore((state) => state.toggle)
+
+  // We need to maintain the mute state differently since it's managed differently
+  // in the new audio system (through volume rather than a separate flag)
+  const isMuted = volumes.master === 0
 
   // Helper to get appropriate volume icon
   const getVolumeIcon = () => {
@@ -16,10 +26,18 @@ const VolumeControl = () => {
 
   const VolumeIcon = getVolumeIcon()
 
+  const handleMute = () => {
+    setVolume('master', isMuted ? 0.5 : 0) // Toggle between muted and mid volume
+  }
+
+  const handleVolumeChange = (value) => {
+    setVolume('master', value)
+  }
+
   return (
     <div className='flex items-center gap-4'>
       <button
-        onClick={toggleMute}
+        onClick={handleMute}
         className='text-game-blue hover:text-white transition-colors'
         title={isMuted ? 'Unmute' : 'Mute'}
       >
@@ -33,7 +51,7 @@ const VolumeControl = () => {
           max='1'
           step='0.01'
           value={volumes.master}
-          onChange={(e) => setVolume('master', parseFloat(e.target.value))}
+          onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
           className='w-full h-1 bg-game-blue/30 rounded-lg appearance-none 
                    cursor-pointer opacity-70 hover:opacity-100 transition-opacity
                    [&::-webkit-slider-thumb]:appearance-none
@@ -53,6 +71,11 @@ const VolumeControl = () => {
       >
         <Settings size={20} />
       </button>
+
+      {/* Optional: Display current music track for debugging */}
+      {currentMusic && (
+        <div className='text-xs text-white/50'>Now Playing: {currentMusic}</div>
+      )}
     </div>
   )
 }

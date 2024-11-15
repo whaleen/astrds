@@ -1,14 +1,15 @@
 // src/components/layout/Header.jsx
 import React from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, User } from 'lucide-react'
 import { StyledWalletButton } from '../ui/Buttons'
 import { useChatStore } from '../../stores/chatStore'
 import { useLevelStore } from '../../stores/levelStore'
 import { useGameStore } from '../../stores/gameStore'
 import { getHighScores } from '../../api/scores'
 import VolumeControl from '../ui/sound/VolumeControl'
+import AccountScreen from '../screens/AccountScreen'
 
 const GameStats = () => {
   const level = useLevelStore((state) => state.level)
@@ -49,6 +50,7 @@ const GameStats = () => {
 }
 
 const Header = () => {
+  const [showAccount, setShowAccount] = useState(false)
   const { toggleFullChat } = useChatStore()
   const { overlayVisible, toggleOverlay } = useChatStore()
   const gameState = useGameStore((state) => state.gameState)
@@ -67,45 +69,45 @@ const Header = () => {
   }
 
   return (
-    <header
-      className={`fixed top-0 w-full z-50 ${getHeaderBackground()} 
+    <>
+      <header
+        className={`fixed top-0 w-full z-50 ${getHeaderBackground()} 
                  backdrop-blur-sm border-b border-white/10 px-4 py-3
                  transition-colors duration-300`}
-    >
-      <div className='max-w-7xl mx-auto flex justify-between items-center gap-4'>
-        {/* Left section */}
-        {/* <div className='flex items-center gap-4'>
-          {shouldShowVolumeControl && <VolumeControl />}
-        </div> */}
-        <VolumeControl />
-        {/* Center section */}
-        <div
-          className={`transition-opacity duration-300 
+      >
+        <div className='max-w-7xl mx-auto flex justify-between items-center gap-4'>
+          {/* Left section */}
+          <div className='flex items-center gap-4'>
+            {shouldShowVolumeControl && <VolumeControl />}
+          </div>
+          {/* Center section */}
+          <div
+            className={`transition-opacity duration-300 
                         ${shouldShowGameStats ? 'opacity-100' : 'opacity-0'}`}
-        >
-          {shouldShowGameStats && <GameStats />}
-        </div>
+          >
+            {shouldShowGameStats && <GameStats />}
+          </div>
 
-        {/* Right section */}
-        <div className='flex items-center gap-4'>
-          {shouldShowChatButton && (
-            <button
-              onClick={toggleFullChat}
-              className='h-12 px-4 flex items-center justify-center
+          {/* Right section */}
+          <div className='flex items-center gap-4'>
+            {shouldShowChatButton && (
+              <button
+                onClick={toggleFullChat}
+                className='h-12 px-4 flex items-center justify-center
                          bg-game-blue text-black rounded-sm hover:bg-white 
                          transition-colors duration-200'
-            >
-              <MessageSquare
-                size={20}
-                className='mr-2'
-              />
-              Chat
-            </button>
-          )}
-          {shouldShowChatToggle && (
-            <button
-              onClick={toggleOverlay}
-              className={`h-[48px] px-6 flex items-center justify-center
+              >
+                <MessageSquare
+                  size={20}
+                  className='mr-2'
+                />
+                Chat
+              </button>
+            )}
+            {shouldShowChatToggle && (
+              <button
+                onClick={toggleOverlay}
+                className={`h-[48px] px-6 flex items-center justify-center
                 border-2 transition-colors duration-200
                 ${
                   !overlayVisible
@@ -113,28 +115,41 @@ const Header = () => {
                     : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/80'
                 }
                 transition-all duration-300`}
-            >
-              <MessageSquare size={20} />
-            </button>
-          )}
+              >
+                <MessageSquare size={20} />
+              </button>
+            )}
 
-          {shouldShowWalletButton && (
-            <div
-              className={`transition-opacity duration-300 
+            {shouldShowWalletButton && (
+              <>
+                <div
+                  className={`transition-opacity duration-300 
                            ${
                              gameState === 'INITIAL'
                                ? 'opacity-100 scale-110'
                                : 'opacity-80 hover:opacity-100'
                            }`}
-            >
-              <StyledWalletButton>
-                <WalletMultiButton />
-              </StyledWalletButton>
-            </div>
-          )}
+                >
+                  <StyledWalletButton>
+                    <WalletMultiButton />
+                  </StyledWalletButton>
+                </div>
+                {/* Add Profile Button */}
+                <button
+                  onClick={() => setShowAccount(true)}
+                  className='h-[48px] px-6 flex items-center justify-center
+          border-2 border-game-blue bg-transparent text-game-blue
+          hover:bg-game-blue hover:text-black transition-colors duration-200'
+                >
+                  <User size={20} />
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+      {showAccount && <AccountScreen onClose={() => setShowAccount(false)} />}
+    </>
   )
 }
 

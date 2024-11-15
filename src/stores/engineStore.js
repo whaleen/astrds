@@ -1,7 +1,6 @@
 // src/stores/engineStore.js
 import { create } from 'zustand'
 import { rotatePoint, randomNumBetween } from '../helpers/helpers'
-import { soundManager } from '../sounds/SoundManager'
 import { useGameStore } from './gameStore'
 import { usePowerupStore } from './powerupStore'
 import Bullet from '../game/entities/Bullet'
@@ -11,6 +10,7 @@ import Token from '../game/entities/Token'
 import ShipPickup from '../game/entities/ShipPickup'
 import { useInventoryStore } from './inventoryStore'
 import { useLevelStore } from './levelStore'
+import { audioService } from '../services/audio/AudioService'
 
 const INITIAL_STATE = {
   entities: {
@@ -114,7 +114,7 @@ export const useEngineStore = create((set, get) => ({
         if (state.checkCollision(ship[0], pill)) {
           pill.destroy()
           useInventoryStore.getState().addItem('pills', 1)
-          soundManager.playSound('collect')
+          audioService.playSound('collect')
 
           // Clear any existing powerup timeout
           if (state.powerupTimeout) {
@@ -143,7 +143,7 @@ export const useEngineStore = create((set, get) => ({
           token.destroy()
           // Make sure we're using the addItem method from inventory store
           useInventoryStore.getState().addItem('tokens', 1)
-          soundManager.playSound('collect')
+          audioService.playSound('collect')
         }
       })
     }
@@ -154,7 +154,7 @@ export const useEngineStore = create((set, get) => ({
         if (state.checkCollision(ship[0], pickup)) {
           pickup.destroy()
           useInventoryStore.getState().addItem('ships', 1)
-          soundManager.playSound('collect')
+          audioService.playSound('collect')
         }
       })
     }

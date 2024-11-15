@@ -10,8 +10,9 @@ import GameLayout from './components/layout/GameLayout'
 import GameStateManager from './components/game/GameStateManager'
 import ChatSystem from './components/chat/ChatSystem'
 import SoundSettings from './components/ui/sound/SoundSettings'
-import { useAudioStore } from './stores/audioStore'
-import { soundManager } from './sounds/SoundManager'
+import { useSettingsPanelStore } from './stores/settingsPanelStore'
+import { useAudio } from './hooks/useAudio'
+// import AudioTest from './components/test/AudioTest'
 
 // Loading overlay component
 const LoadingOverlay = ({ progress }) => (
@@ -35,40 +36,27 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
 
-  const {
-    setMasterVolume,
-    toggleMute,
-    toggleSettingsPanel,
-    initializeSettings,
-  } = useAudioStore()
+  // Use new audio system
+  const { setVolume, isInitialized } = useAudio()
+
+  const toggleSettingsPanel = useSettingsPanelStore((state) => state.toggle)
 
   const endpoint = useMemo(() => import.meta.env.VITE_SOLANA_RPC_ENDPOINT, [])
 
   // Initialize sound system
   useEffect(() => {
-    const initializeAudio = async () => {
-      try {
-        // Load saved settings first
-        initializeSettings()
-
-        // Initialize sound manager with progress updates
-        await soundManager.init((progress) => {
-          setLoadingProgress(progress)
-        })
-
-        // Short delay to ensure everything is ready
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
+    // The new audio system initializes itself, we just need to wait for it
+    const checkInitialization = () => {
+      if (isInitialized) {
         setIsLoading(false)
-      } catch (error) {
-        console.error('Failed to initialize audio:', error)
-        // Even if there's an error, we should still show the game
-        setIsLoading(false)
+      } else {
+        // Check again in 100ms
+        setTimeout(checkInitialization, 100)
       }
     }
 
-    initializeAudio()
-  }, [initializeSettings])
+    checkInitialization()
+  }, [isInitialized])
 
   // Keyboard controls
   useEffect(() => {
@@ -82,7 +70,8 @@ const App = () => {
           toggleSettingsPanel()
           break
         case 'm':
-          toggleMute()
+          // Toggle between 0 and previous volume
+          setVolume('master', volumes.master > 0 ? 0 : 0.5)
           break
         case '1':
         case '2':
@@ -90,7 +79,7 @@ const App = () => {
         case '4':
         case '5':
           const volumeLevel = parseInt(e.key) / 5
-          setMasterVolume(volumeLevel)
+          setVolume('master', volumeLevel)
           break
         default:
           break
@@ -99,7 +88,7 @@ const App = () => {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [toggleMute, setMasterVolume, toggleSettingsPanel])
+  }, [toggleSettingsPanel, setVolume])
 
   // Wallet configuration
   const wallets = useMemo(
@@ -133,6 +122,7 @@ const App = () => {
               <LoadingOverlay progress={loadingProgress} />
             ) : (
               <>
+                {/* <AudioTest /> */}
                 <GameStateManager />
                 <ChatSystem />
                 <SoundSettings />

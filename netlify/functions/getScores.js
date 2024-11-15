@@ -22,7 +22,7 @@ export const handler = async (event, context) => {
 
     console.log('Fetching scores...');
     const scoresData = await store.get("scores");
-    console.log('Retrieved scores:', scoresData);
+    // console.log('Retrieved scores:', scoresData);
 
     return {
       statusCode: 200,

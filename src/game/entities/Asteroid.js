@@ -1,9 +1,9 @@
 // src/game/entities/Asteroid.js
 import { asteroidVertices, randomNumBetween } from '../../helpers/helpers'
-import { soundManager } from '../../sounds/SoundManager'
 import { useGameStore } from '../../stores/gameStore'
 import { useEngineStore } from '../../stores/engineStore'
 import Particle from './Particle'
+import { audioService } from '../../services/audio/AudioService'
 
 export default class Asteroid {
   constructor(args) {
@@ -23,7 +23,7 @@ export default class Asteroid {
 
   destroy() {
     this.delete = true
-    soundManager.playSound('explosion')
+    audioService.playSound('explosion')
 
     // Add points using the store
     const gameStore = useGameStore.getState()

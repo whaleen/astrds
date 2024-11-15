@@ -1,5 +1,4 @@
 // src/game/entities/ShipPickup.js
-import { soundManager } from '../../sounds/SoundManager'
 
 export default class ShipPickup {
   constructor(args) {
@@ -14,7 +13,7 @@ export default class ShipPickup {
 
   destroy() {
     this.delete = true
-    soundManager.playSound('collect')
+    // soundManager.playSound('collect')
   }
 
   render(state) {

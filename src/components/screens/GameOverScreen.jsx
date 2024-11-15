@@ -3,8 +3,9 @@ import React, { useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useGameStore } from '../../stores/gameStore'
 import { QuarterButton } from '../ui/Buttons'
-// import GameTitle from '../ui/GameTitle'
-import { soundManager } from '../../sounds/SoundManager'
+import { useAudio } from '../../hooks/useAudio'
+import { SOUND_TYPES, MUSIC_TRACKS } from '../../services/audio/AudioTypes'
+import GameTitle from '../ui/GameTitle'
 
 import ScreenContainer from '../layout/ScreenContainer'
 const GameOverScreen = () => {
@@ -12,19 +13,18 @@ const GameOverScreen = () => {
   const score = useGameStore((state) => state.score)
   const lastGameStats = useGameStore((state) => state.lastGameStats)
   const setGameState = useGameStore((state) => state.setGameState)
+  const { playSound, transitionMusic, stopMusic } = useAudio()
 
   useEffect(() => {
-    // Play game over sound when the screen mounts
-    soundManager.playSound('gameOver')
-    soundManager.transitionMusic('gameMusic', 'gameOverMusic', {
+    playSound(SOUND_TYPES.GAME_OVER)
+    transitionMusic(MUSIC_TRACKS.GAME, MUSIC_TRACKS.GAME_OVER, {
       crossFadeDuration: 1000,
     })
 
-    // Fade out the music when the component unmounts
     return () => {
-      soundManager.stopMusic('gameOverMusic', { fadeOut: true })
+      stopMusic(MUSIC_TRACKS.GAME_OVER, { fadeOut: true })
     }
-  }, [])
+  }, [playSound, transitionMusic, stopMusic])
 
   const handlePlayAgain = () => {
     setGameState('READY_TO_PLAY')
@@ -59,6 +59,7 @@ const GameOverScreen = () => {
       <div className='fixed inset-0 flex items-center justify-center z-40 bg-black/75 backdrop-blur-sm'>
         <div className='max-w-lg w-full mx-4 text-center'>
           <div className='bg-black/50 border border-white p-8 animate-fadeIn'>
+            <GameTitle />
             <h1 className='text-game-red text-4xl mb-8'>GAME OVER</h1>
 
             {renderAchievement()}

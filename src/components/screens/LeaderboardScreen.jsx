@@ -5,7 +5,6 @@ import { getHighScores } from '../../api/scores'
 import { QuarterButton } from '../ui/Buttons'
 import GameTitle from '../ui/GameTitle'
 import LeaderboardTable from './LeaderboardTable'
-import { soundManager } from '../../sounds/SoundManager'
 import { useGameStore } from '../../stores/gameStore'
 
 const LeaderboardScreen = () => {
@@ -63,10 +62,10 @@ const LeaderboardScreen = () => {
           }
         }
 
-        soundManager.playSound('spaceWind', {
-          fadeIn: true,
-          loop: true,
-        })
+        // soundManager.playSound('spaceWind', {
+        //   fadeIn: true,
+        //   loop: true,
+        // })
       } catch (err) {
         console.error('Failed to fetch scores:', err)
         setError('Failed to load high scores')

@@ -1,6 +1,5 @@
 // src/stores/audioStore.js
 import { create } from 'zustand'
-import { soundManager } from '../sounds/SoundManager'
 
 export const useAudioStore = create((set, get) => ({
   // Volume States

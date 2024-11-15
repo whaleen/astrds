@@ -1,7 +1,6 @@
 // src/components/game/GameScreen.jsx
 import React, { useEffect, useRef } from 'react'
 import Ship from '../../game/entities/Ship'
-import { soundManager } from '../../sounds/SoundManager'
 import OverlayChat from '../chat/OverlayChat'
 import PauseOverlay from './PauseOverlay'
 import { useChatStore } from '../../stores/chatStore'
@@ -66,10 +65,10 @@ const GameScreen = () => {
     initializeEngine(context)
 
     // Start background music
-    soundManager.playMusic('gameMusic', {
-      fadeIn: true,
-      loop: true,
-    })
+    // soundManager.playMusic('gameMusic', {
+    //   fadeIn: true,
+    //   loop: true,
+    // })
 
     // Create initial ship
     const ship = new Ship({
@@ -79,9 +78,9 @@ const GameScreen = () => {
       },
       create: addEntity,
       onDie: () => {
-        soundManager.transitionMusic('gameMusic', 'gameOverMusic', {
-          crossFadeDuration: 1000,
-        })
+        // soundManager.transitionMusic('gameMusic', 'gameOverMusic', {
+        //   crossFadeDuration: 1000,
+        // })
         useLevelStore.getState().resetLevel()
         setGameState('GAME_OVER')
         stopGameLoop()
@@ -98,9 +97,9 @@ const GameScreen = () => {
     return () => {
       stopGameLoop()
       resetEngine()
-      if (soundManager.currentMusic) {
-        soundManager.stopMusic('gameMusic', { fadeOut: true })
-      }
+      // if (soundManager.currentMusic) {
+      //   soundManager.stopMusic('gameMusic', { fadeOut: true })
+      // }
     }
   }, [])
 
@@ -110,7 +109,7 @@ const GameScreen = () => {
       // Handle pause
       if (e.keyCode === KEY.ESC || e.keyCode === KEY.P) {
         togglePause()
-        soundManager.playSound(!isPaused ? 'ready' : 'collect')
+        // soundManager.playSound(!isPaused ? 'ready' : 'collect')
 
         if (isPaused) {
           startGameLoop()

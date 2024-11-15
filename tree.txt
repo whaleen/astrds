@@ -29,9 +29,12 @@
 │   ├── raw
 │   │   ├── Ana-de-Armas-in-Blade-Runner-2049.webp
 │   │   ├── dying.jpg
+│   │   ├── joi.gif
 │   │   ├── joi.jpg
-│   │   └── skyline.jpg
+│   │   ├── skyline.jpg
+│   │   └── wireframes.pxd
 │   └── sounds
+│       ├── 321-go.m4a
 │       ├── arcis.mp3
 │       ├── coin.wav
 │       ├── collect-pill.mp3
@@ -39,12 +42,19 @@
 │       ├── danger.wav
 │       ├── explosion.wav
 │       ├── game-music.wav
+│       ├── gameover-2.wav
 │       ├── gameover.wav
 │       ├── glass-and-buffalo-warrior-travel.mp3
+│       ├── joi
+│       │   ├── im-not-wearing-a-helmet-either.mp3
+│       │   ├── lets-fly-this-thing-out-of here.mp3
+│       │   ├── we-are-space.mp3
+│       │   └── whoa-that-guy-was-no-match-for-you.mp3
 │       ├── ping.wav
 │       ├── ready.wav
 │       ├── shoot.wav
 │       ├── space-wind.wav
+│       ├── thrust.flac
 │       └── thrust.wav
 ├── src
 │   ├── App.jsx
@@ -54,7 +64,6 @@
 │   │   └── scores.js
 │   ├── auth.js
 │   ├── components
-│   │   ├── VolumeControl.jsx
 │   │   ├── chat
 │   │   │   ├── ChatBase.jsx
 │   │   │   ├── ChatSystem.jsx
@@ -70,6 +79,7 @@
 │   │   │   ├── Header.jsx
 │   │   │   └── ScreenContainer.jsx
 │   │   ├── screens
+│   │   │   ├── AccountScreen.jsx
 │   │   │   ├── GameOverScreen.jsx
 │   │   │   ├── LeaderboardRank.jsx
 │   │   │   ├── LeaderboardScreen.jsx
@@ -77,6 +87,7 @@
 │   │   │   ├── ReadyScreen.jsx
 │   │   │   └── TitleScreen.jsx
 │   │   ├── test
+│   │   │   ├── AudioTest.jsx
 │   │   │   └── PowerupTest.jsx
 │   │   └── ui
 │   │       ├── ActionButtons.jsx
@@ -85,7 +96,13 @@
 │   │       ├── GameTitle.jsx
 │   │       ├── InventoryHUD.jsx
 │   │       ├── LevelDisplay.jsx
-│   │       └── StyledComponents.jsx
+│   │       ├── PaymentModal.jsx
+│   │       ├── StyledComponents.jsx
+│   │       └── sound
+│   │           ├── EffectToggle.jsx
+│   │           ├── SoundSettings.jsx
+│   │           ├── VolumeControl.jsx
+│   │           └── VolumeSlider.jsx
 │   ├── game
 │   │   ├── entities
 │   │   │   ├── Asteroid.js
@@ -99,8 +116,17 @@
 │   │   └── systems
 │   │       └── InventoryManager.js
 │   ├── helpers
-│   │   └── helpers.js
+│   │   ├── helpers.js
+│   │   └── tokenBalances.js
+│   ├── hooks
+│   │   └── useAudio.js
 │   ├── index.jsx
+│   ├── services
+│   │   └── audio
+│   │       ├── AudioConfig.js
+│   │       ├── AudioEventEmitter.js
+│   │       ├── AudioService.js
+│   │       └── AudioTypes.js
 │   ├── sounds
 │   │   └── SoundManager.js
 │   ├── stores
@@ -110,11 +136,12 @@
 │   │   ├── gameStore.js
 │   │   ├── inventoryStore.js
 │   │   ├── levelStore.js
-│   │   └── powerupStore.js
+│   │   ├── powerupStore.js
+│   │   └── settingsPanelStore.js
 │   └── styles
 │       └── style.css
 ├── tailwind.config.js
 ├── tree.txt
 └── vite.config.js
 
-24 directories, 94 files
+29 directories, 116 files

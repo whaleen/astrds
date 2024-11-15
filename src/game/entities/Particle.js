@@ -1,4 +1,5 @@
 // src/game/entities/Particle.js
+
 export default class Particle {
   constructor(args) {
     this.id = `particle-${Date.now()}-${Math.random()}`

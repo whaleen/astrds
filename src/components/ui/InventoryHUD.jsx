@@ -188,7 +188,7 @@ const InventoryHUD = () => {
   const isGameOver = gameState === 'GAME_OVER'
 
   return (
-    <div className='fixed top-20 right-5 flex flex-col gap-2 z-10'>
+    <div className='fixed top-20 left-5 flex flex-col gap-2 z-10'>
       <ItemCounter
         icon={<ShipIcon />}
         count={items.ships}

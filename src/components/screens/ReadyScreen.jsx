@@ -3,11 +3,11 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Connection } from '@solana/web3.js'
 import { verifyWalletSignature } from '../../auth'
-import { soundManager } from '../../sounds/SoundManager'
+import { useAudio } from '../../hooks/useAudio'
+import { SOUND_TYPES, MUSIC_TRACKS } from '../../services/audio/AudioTypes'
 import ScreenContainer from '../layout/ScreenContainer'
 import GameTitle from '../ui/GameTitle'
 import { useGameStore } from '../../stores/gameStore'
-import { useAudioStore } from '../../stores/audioStore'
 
 const ReadyScreen = () => {
   const wallet = useWallet()
@@ -16,13 +16,11 @@ const ReadyScreen = () => {
   const hasStarted = useRef(false)
   const mountedRef = useRef(true)
 
-  // Store selectors
   const setGameState = useGameStore((state) => state.setGameState)
-  const playMusic = useAudioStore((state) => state.playMusic)
-  const transitionMusic = useAudioStore((state) => state.transitionMusic)
-  const playSound = useAudioStore((state) => state.playSound)
+  const { playSound, playMusic, stopMusic, transitionMusic, isInitialized } =
+    useAudio()
 
-  // Separate useEffect for game sequence initialization
+  // Component mount/unmount handling
   useEffect(() => {
     console.log('ReadyScreen mounted, setting up game sequence...')
     mountedRef.current = true
@@ -30,12 +28,14 @@ const ReadyScreen = () => {
     return () => {
       console.log('ReadyScreen cleanup triggered')
       mountedRef.current = false
+      // Ensure all ready screen sounds are stopped on unmount
+      stopMusic(MUSIC_TRACKS.READY, { fadeOut: true })
     }
-  }, [])
+  }, [stopMusic])
 
-  // Separate useEffect for game sequence execution
+  // Game sequence
   useEffect(() => {
-    let countdownTimer
+    if (!isInitialized) return // Wait for audio system to be ready
 
     const startGameSequence = async () => {
       if (hasStarted.current) return
@@ -43,22 +43,16 @@ const ReadyScreen = () => {
 
       try {
         console.log('Starting game sequence...')
-        console.log('Mounted status:', mountedRef.current)
 
         // Transition from title to ready music
-        console.log('Transitioning music...')
-        await transitionMusic('titleMusic', 'readyMusic', {
+        console.log('Transitioning to ready music...')
+        await transitionMusic(MUSIC_TRACKS.TITLE, MUSIC_TRACKS.READY, {
           crossFadeDuration: 1000,
         })
-        console.log('Music transition complete')
 
-        if (!mountedRef.current) {
-          console.log('Component unmounted during music transition, aborting')
-          return
-        }
+        if (!mountedRef.current) return
 
-        // Initialize Solana connection using environment variable
-        console.log('Initializing Solana connection...')
+        // Initialize Solana connection
         const connection = new Connection(
           import.meta.env.VITE_SOLANA_RPC_ENDPOINT,
           {
@@ -71,41 +65,25 @@ const ReadyScreen = () => {
           }
         )
 
-        console.log('Verifying wallet signature...')
         const isVerified = await verifyWalletSignature(wallet, connection)
         if (!isVerified) throw new Error('Wallet signature verification failed')
+        if (!mountedRef.current) return
 
-        if (!mountedRef.current) {
-          console.log('Component unmounted during verification, aborting')
-          return
-        }
-
-        console.log('Wallet verified, starting countdown...')
-        console.log('Mounted status before countdown:', mountedRef.current)
-
-        // Start countdown immediately
+        // Countdown sequence
         setCountdown(3)
-
-        // Use a Promise-based delay instead of setInterval
         for (let i = 3; i >= 0; i--) {
-          if (!mountedRef.current) {
-            console.log('Component unmounted during countdown, aborting')
-            return
-          }
+          if (!mountedRef.current) return
 
           setCountdown(i)
-          console.log('Countdown:', i)
-
           if (i > 0) {
-            playSound('countdownPing')
+            await playSound(SOUND_TYPES.COUNTDOWN_PING)
             await new Promise((resolve) => setTimeout(resolve, 1000))
           }
         }
 
-        // Final check before starting game
+        // Start game if still mounted
         if (mountedRef.current) {
-          console.log('Starting game and transitioning music')
-          transitionMusic('readyMusic', 'gameMusic', {
+          await transitionMusic(MUSIC_TRACKS.READY, MUSIC_TRACKS.GAME, {
             crossFadeDuration: 1000,
           })
           setGameState('PLAYING')
@@ -113,20 +91,24 @@ const ReadyScreen = () => {
       } catch (error) {
         console.error('Game start sequence failed:', error)
         if (mountedRef.current) {
-          soundManager.stopAll()
+          // Clean up audio and show error
+          await stopMusic(MUSIC_TRACKS.READY, { fadeOut: true })
+          await stopMusic(MUSIC_TRACKS.GAME, { fadeOut: true })
           setVerificationError(error.message)
         }
       }
     }
 
     startGameSequence()
-
-    return () => {
-      if (countdownTimer) {
-        clearInterval(countdownTimer)
-      }
-    }
-  }, [wallet, playSound, transitionMusic, setGameState])
+  }, [
+    wallet,
+    playSound,
+    playMusic,
+    stopMusic,
+    transitionMusic,
+    setGameState,
+    isInitialized,
+  ])
 
   if (verificationError) {
     return (
@@ -136,7 +118,10 @@ const ReadyScreen = () => {
           <div className='text-game-red text-xl mb-6'>Failed to start game</div>
           <p className='text-gray-400 mb-4'>{verificationError}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              stopMusic(MUSIC_TRACKS.READY)
+              setGameState('INITIAL')
+            }}
             className='text-game-blue hover:text-white transition-colors'
           >
             Return to Title
@@ -153,12 +138,10 @@ const ReadyScreen = () => {
         <div className='my-12 h-32 flex items-center justify-center'>
           <div
             className='text-8xl font-bold text-game-blue animate-[fadeIn_0.3s_ease-out]
-                         [text-shadow:0_0_10px_#4dc1f9,0_0_20px_#4dc1f9,0_0_30px_#4dc1f9]'
+                       [text-shadow:0_0_10px_#4dc1f9,0_0_20px_#4dc1f9,0_0_30px_#4dc1f9]'
           >
             {countdown === null ? (
-              <>
-                <div className='text-4xl'>Inserting Quarter...</div>
-              </>
+              <div className='text-4xl'>Inserting Quarter...</div>
             ) : countdown === 0 ? (
               'GO!'
             ) : (

@@ -1,6 +1,6 @@
 // src/game/entities/Bullet.js
 import { rotatePoint } from '../../helpers/helpers'
-import { soundManager } from '../../sounds/SoundManager'
+import { audioService } from '../../services/audio/AudioService'
 
 export default class Bullet {
   constructor(args) {
@@ -32,7 +32,9 @@ export default class Bullet {
     this.powered = args.powered
     this.delete = false
 
-    soundManager.playSound('shoot')
+    // soundManager.playSound('shoot')
+    audioService.playSound('shoot')
+    console.log('shooting mfers in space')
   }
 
   destroy() {
