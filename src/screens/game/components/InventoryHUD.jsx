@@ -1,4 +1,4 @@
-// src/components/ui/InventoryHUD.jsx
+// src/screens/game/components/InventoryHUD.jsx
 import React, { useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { useInventoryStore } from '@/stores/inventoryStore'

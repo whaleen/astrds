@@ -1,6 +1,7 @@
 .
 ├── README.md
 ├── index.html
+├── jsconfig.json
 ├── netlify
 │   ├── blobs
 │   │   └── scores.json
@@ -62,44 +63,26 @@
 │   │   ├── chat.js
 │   │   ├── pusher.js
 │   │   └── scores.js
-│   ├── auth.js
+│   ├── auth
+│   │   └── auth.js
 │   ├── components
 │   │   ├── chat
 │   │   │   ├── ChatBase.jsx
 │   │   │   ├── ChatSystem.jsx
 │   │   │   ├── FullChat.jsx
 │   │   │   └── OverlayChat.jsx
-│   │   ├── game
-│   │   │   ├── GameOverlay.jsx
-│   │   │   ├── GameScreen.jsx
-│   │   │   ├── GameStateManager.jsx
-│   │   │   └── PauseOverlay.jsx
-│   │   ├── layout
-│   │   │   ├── GameLayout.jsx
+│   │   ├── common
+│   │   │   ├── ActionButtons.jsx
+│   │   │   ├── Buttons.jsx
+│   │   │   ├── GameTitle.jsx
 │   │   │   ├── Header.jsx
-│   │   │   └── ScreenContainer.jsx
-│   │   ├── screens
-│   │   │   ├── AccountScreen.jsx
-│   │   │   ├── GameOverScreen.jsx
-│   │   │   ├── LeaderboardRank.jsx
-│   │   │   ├── LeaderboardScreen.jsx
-│   │   │   ├── LeaderboardTable.jsx
-│   │   │   ├── ReadyScreen.jsx
-│   │   │   └── TitleScreen.jsx
-│   │   └── ui
-│   │       ├── ActionButtons.jsx
-│   │       ├── Buttons.jsx
-│   │       ├── CountdownAnimation.jsx
-│   │       ├── GameTitle.jsx
-│   │       ├── InventoryHUD.jsx
-│   │       ├── LevelDisplay.jsx
-│   │       ├── PaymentModal.jsx
-│   │       ├── StyledComponents.jsx
-│   │       └── sound
-│   │           ├── EffectToggle.jsx
-│   │           ├── SoundSettings.jsx
-│   │           ├── VolumeControl.jsx
-│   │           └── VolumeSlider.jsx
+│   │   │   ├── ScreenContainer.jsx
+│   │   │   └── StyledComponents.jsx
+│   │   └── sound
+│   │       ├── EffectToggle.jsx
+│   │       ├── SoundSettings.jsx
+│   │       ├── VolumeControl.jsx
+│   │       └── VolumeSlider.jsx
 │   ├── game
 │   │   ├── entities
 │   │   │   ├── Asteroid.js
@@ -112,12 +95,33 @@
 │   │   ├── index.js
 │   │   └── systems
 │   │       └── InventoryManager.js
-│   ├── helpers
-│   │   ├── helpers.js
-│   │   └── tokenBalances.js
 │   ├── hooks
 │   │   └── useAudio.js
 │   ├── index.jsx
+│   ├── screens
+│   │   ├── account
+│   │   │   └── AccountScreen.jsx
+│   │   ├── game
+│   │   │   ├── GameScreen.jsx
+│   │   │   └── components
+│   │   │       ├── GameLayout.jsx
+│   │   │       ├── GameOverlay.jsx
+│   │   │       ├── GameStateManager.jsx
+│   │   │       ├── InventoryHUD.jsx
+│   │   │       ├── LevelDisplay.jsx
+│   │   │       └── PauseOverlay.jsx
+│   │   ├── gameover
+│   │   │   └── GameOverScreen.jsx
+│   │   ├── leaderboard
+│   │   │   ├── LeaderboardRank.jsx
+│   │   │   ├── LeaderboardScreen.jsx
+│   │   │   └── LeaderboardTable.jsx
+│   │   ├── ready
+│   │   │   ├── CountdownAnimation.jsx
+│   │   │   └── ReadyScreen.jsx
+│   │   └── title
+│   │       ├── PaymentModal.jsx
+│   │       └── TitleScreen.jsx
 │   ├── services
 │   │   └── audio
 │   │       ├── AudioConfig.js
@@ -133,10 +137,14 @@
 │   │   ├── levelStore.js
 │   │   ├── powerupStore.js
 │   │   └── settingsPanelStore.js
-│   └── styles
-│       └── style.css
+│   ├── styles
+│   │   └── style.css
+│   └── utils
+│       ├── helpers.js
+│       └── tokenBalances.js
 ├── tailwind.config.js
 ├── tree.txt
+├── vite-env.d.ts
 └── vite.config.js
 
-27 directories, 113 files
+33 directories, 115 files

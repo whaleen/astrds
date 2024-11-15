@@ -1,4 +1,4 @@
-// src/components/game/GameOverlay.jsx
+// src/screens/game/components/GameOverlay.jsx
 import React from 'react'
 import { useGameStore } from '@/stores/gameStore'
 

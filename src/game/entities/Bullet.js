@@ -32,7 +32,6 @@ export default class Bullet {
     this.powered = args.powered
     this.delete = false
 
-    // soundManager.playSound('shoot')
     audioService.playSound('shoot')
     console.log('shooting mfers in space')
   }

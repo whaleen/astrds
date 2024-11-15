@@ -1,4 +1,4 @@
-// REPLACE ENTIRE FILE: src/components/chat/FullChat.jsx
+// src/components/chat/FullChat.jsx
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { getChatMessages, postChatMessage } from '@/api/chat'

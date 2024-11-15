@@ -13,7 +13,6 @@ export default class ShipPickup {
 
   destroy() {
     this.delete = true
-    // soundManager.playSound('collect')
   }
 
   render(state) {

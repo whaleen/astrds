@@ -1,4 +1,4 @@
-// src/components/screens/TitleScreen.jsx
+// src/screens/title/TitleScreen.jsx
 import React, { useEffect, useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useGameStore } from '../../stores/gameStore'
@@ -11,24 +11,21 @@ import { useAudio } from '../../hooks/useAudio'
 import { MUSIC_TRACKS, SOUND_TYPES } from '../../services/audio/AudioTypes'
 
 const TitleScreen = () => {
-  console.log('TitleScreen rendering')
-
   const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false)
   const wallet = useWallet()
   const setGameState = useGameStore((state) => state.setGameState)
   const isProcessing = useGameStore((state) => state.isProcessing)
 
-  const { playMusic, playSound, stopMusic, isInitialized, currentMusic } =
-    useAudio()
+  const { playMusic, playSound } = useAudio()
 
   // Start title music when component mounts
-  useEffect(() => {
-    playMusic(MUSIC_TRACKS.TITLE, {
-      fadeIn: true,
-      loop: true,
-    })
-    // No cleanup needed - next screen will handle transition
-  }, [])
+  // useEffect(() => {
+  //   playMusic(MUSIC_TRACKS.TITLE, {
+  //     fadeIn: true,
+  //     loop: true,
+  //   })
+  //   // No cleanup needed - next screen will handle transition
+  // }, [playMusic])
 
   // Original quarter insert method with signature (for development)
   const handleDevQuarterInsert = async () => {
@@ -55,7 +52,7 @@ const TitleScreen = () => {
 
   const handlePaymentSelected = async (paymentType) => {
     try {
-      setShowPaymentModal(false)
+      setIsPaymentModalVisible(false)
       playSound(SOUND_TYPES.QUARTER_INSERT)
       // After payment verification, start the game
       setGameState('READY_TO_PLAY')

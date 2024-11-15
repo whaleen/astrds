@@ -1,8 +1,9 @@
-// src/components/ui/PaymentModal.jsx
+// src/screens/title/PaymentModal.jsx
 import React, { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { useConnection } from '@solana/wallet-adapter-react'
 import { Coins } from 'lucide-react'
-import { verifyTokenBalance } from '@/utils/tokenBalances'
+import { verifyWalletSignature } from '@/auth/auth'
 
 const PaymentOption = ({ selected, onSelect, type, amount, symbol, label }) => (
   <button
@@ -38,6 +39,7 @@ const PaymentModal = ({ onClose, onPaymentSelected }) => {
   const [error, setError] = useState(null)
   const [processing, setProcessing] = useState(false)
   const wallet = useWallet()
+  const { connection } = useConnection()
 
   const handlePaymentSubmit = async () => {
     if (!selectedOption || !wallet.publicKey) return
@@ -46,16 +48,10 @@ const PaymentModal = ({ onClose, onPaymentSelected }) => {
     setError(null)
 
     try {
-      const verified = await verifyTokenBalance(
-        wallet.publicKey.toString(),
-        selectedOption === 'SOL'
-          ? 'SOL'
-          : '8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP',
-        selectedOption === 'SOL' ? 0.005 : 5000
-      )
+      const verified = await verifyWalletSignature(wallet, connection)
 
       if (!verified) {
-        setError(`Insufficient ${selectedOption} balance`)
+        setError(`Payment verification failed`)
         return
       }
 

@@ -1,4 +1,4 @@
-// src/components/screens/LeaderboardRank.jsx
+// src/screens/leaderboard/LeaderboardRank.jsx
 import React from 'react'
 
 const LeaderboardRank = ({ rank }) => {

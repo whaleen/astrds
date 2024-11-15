@@ -66,19 +66,15 @@ export const useAudio = () => {
     currentMusic,
     error,
 
-
-
     // Audio controls
     playSound: (soundId) => {
       try {
         return audioService.playSound(soundId)
       } catch (err) {
         setError(err)
+        throw err
       }
     },
-
-    // Audio controls
-    playSound: audioService.playSound.bind(audioService),
     playMusic: audioService.playMusic.bind(audioService),
     stopMusic: audioService.stopMusic.bind(audioService),
     transitionMusic: audioService.transitionMusic.bind(audioService),

@@ -1,4 +1,4 @@
-// src/components/ui/sound/VolumeControl.jsx
+// src/components/sound/VolumeControl.jsx
 import React from 'react'
 import { Volume2, Volume1, VolumeX, Settings } from 'lucide-react'
 import { useAudio } from '@/hooks/useAudio'

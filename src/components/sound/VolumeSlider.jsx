@@ -1,4 +1,4 @@
-// src/components/ui/sound/VolumeSlider.jsx
+// src/components/sound/VolumeSlider.jsx
 import React from 'react'
 import { Volume2, VolumeX } from 'lucide-react'
 

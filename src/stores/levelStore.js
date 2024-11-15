@@ -1,32 +1,57 @@
 // src/stores/levelStore.js
 import { create } from 'zustand'
+import { audioService } from '../services/audio/AudioService'
 
-export const useLevelStore = create((set) => ({
+export const useLevelStore = create((set, get) => ({
   level: 1,
-  levelProgress: 0,
-  levelRequirement: 5, // Base requirement for level advancement
+  lives: 3,
+  isLevelTransition: false,
+  isRespawning: false,
 
-  incrementLevel: () => set((state) => ({
-    level: state.level + 1,
-    levelProgress: 0,
-    levelRequirement: Math.floor(state.levelRequirement * 1.5) // Increase requirement each level
-  })),
+  // Level management
+  incrementLevel: () => {
+    const newLevel = get().level + 1
+    set({
+      level: newLevel,
+      isLevelTransition: true
+    })
 
-  updateProgress: () => set((state) => {
-    const newProgress = state.levelProgress + 1
-    if (newProgress >= state.levelRequirement) {
-      return {
-        level: state.level + 1,
-        levelProgress: 0,
-        levelRequirement: Math.floor(state.levelRequirement * 1.5)
-      }
+    // Hide level message after 2 seconds
+    setTimeout(() => set({ isLevelTransition: false }), 2000)
+  },
+
+  // Lives management
+  handlePlayerDeath: async () => {
+    const state = get()
+    const remainingLives = state.lives - 1
+
+    if (remainingLives >= 0) {
+      set({
+        lives: remainingLives,
+        isRespawning: true
+      })
+
+      // Respawn after 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      set({ isRespawning: false })
+
+      return true // Continue game
+    } else {
+      // Game Over
+      audioService.fadeOut('gameMusic', 2000)
+      audioService.playSound('gameOver')
+
+      return false // End game
     }
-    return { levelProgress: newProgress }
-  }),
+  },
 
-  resetLevel: () => set({
-    level: 1,
-    levelProgress: 0,
-    levelRequirement: 5
-  })
+  resetLevel: () => {
+    set({
+      lives: 3,
+      isLevelTransition: false,
+      isRespawning: false
+    })
+  }
 }))
+
+export default useLevelStore

@@ -1,5 +1,4 @@
 // src/game/systems/InventoryManager.js
-
 export class InventoryManager {
   constructor() {
     this.items = {

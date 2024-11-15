@@ -3,6 +3,7 @@ import { rotatePoint, randomNumBetween } from '@/utils/helpers'
 import { useGameStore } from '../../stores/gameStore'
 import { usePowerupStore } from '../../stores/powerupStore'
 import { useEngineStore } from '../../stores/engineStore'
+import { useInventoryStore } from '../../stores/inventoryStore'
 import Particle from './Particle'
 import { audioService } from '../../services/audio/AudioService'
 
@@ -22,29 +23,61 @@ export default class Ship {
     this.lastShot = 0
     this.onDie = args.onDie
     this.delete = false
+    this.isInvulnerable = args.isRespawning || false
+    this.invulnerabilityTime = args.isRespawning ? Date.now() : 0
   }
 
   destroy() {
-    // const { playSound } = useAudio()
     const powerups = usePowerupStore.getState().powerups
-    if (powerups.invincible) return
+    if (powerups.invincible || this.isInvulnerable) return
 
     this.delete = true
-    // soundManager.playSound('explosion')
-    // playSound('explosion')
     audioService.playSound('explosion')
 
-    // Submit final score before game over
-    const gameStore = useGameStore.getState()
-    const wallet = window.solana?.publicKey?.toString()
+    // Check for extra ships
+    const inventory = useInventoryStore.getState()
+    console.log('Ships remaining:', inventory.items.ships)
 
-    if (wallet) {
-      gameStore.submitFinalScore(wallet)
-        .then(() => {
-          this.onDie?.()
+    if (inventory.items.ships > 0) {
+      console.log('Using a ship from inventory')
+
+      // Update inventory state directly
+      useInventoryStore.setState(state => ({
+        items: {
+          ...state.items,
+          ships: state.items.ships - 1
+        }
+      }))
+
+      // Respawn with brief invulnerability
+      setTimeout(() => {
+        const engineStore = useEngineStore.getState()
+        const screen = engineStore.screen
+        const newShip = new Ship({
+          position: {
+            x: screen.width / 2,
+            y: screen.height / 2
+          },
+          isRespawning: true,
+          onDie: this.onDie
         })
+        console.log('Spawning new ship with invulnerability')
+        engineStore.addEntity(newShip, 'ship')
+      }, 2000)
     } else {
-      this.onDie?.()
+      console.log('No ships left - game over')
+      // No ships left - game over
+      const gameStore = useGameStore.getState()
+      const wallet = window.solana?.publicKey?.toString()
+
+      if (wallet) {
+        gameStore.submitFinalScore(wallet)
+          .then(() => {
+            this.onDie?.()
+          })
+      } else {
+        this.onDie?.()
+      }
     }
 
     // Create explosion particles
@@ -79,7 +112,6 @@ export default class Ship {
     this.velocity.y -= Math.cos((-this.rotation * Math.PI) / 180) * this.speed
 
     // Play thrust sound
-    // soundManager.playSound('thrust')
     audioService.playSound('thrust')
 
     // Create thruster particles
@@ -105,6 +137,10 @@ export default class Ship {
   }
 
   render(state) {
+    // Update invulnerability
+    if (this.isInvulnerable && Date.now() - this.invulnerabilityTime > 3000) {
+      this.isInvulnerable = false
+    }
 
     // Handle ship controls
     if (state.keys.left) this.rotate('LEFT')
@@ -136,9 +172,8 @@ export default class Ship {
     context.save()
     context.translate(this.position.x, this.position.y)
 
-    // Add invincibility effect
-    const powerups = usePowerupStore.getState().powerups
-    if (powerups.invincible) {
+    // Add invulnerability effect
+    if (this.isInvulnerable || usePowerupStore.getState().powerups.invincible) {
       context.shadowColor = '#4dc1f9'
       context.shadowBlur = 10
       const pulseScale = 1 + Math.sin(Date.now() / 200) * 0.1

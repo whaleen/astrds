@@ -1,4 +1,4 @@
-// src/components/game/PauseOverlay.jsx
+// src/screens/game/components/PauseOverlay.jsx
 import React from 'react'
 import { useGameStore } from '@/stores/gameStore'
 

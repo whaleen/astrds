@@ -1,3 +1,4 @@
+//src/components/common/StyledComponents.jsx
 import React from 'react'
 
 export const StyledWalletButton = ({ children }) => (

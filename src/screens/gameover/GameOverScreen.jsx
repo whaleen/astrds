@@ -1,4 +1,4 @@
-// src/components/screens/GameOverScreen.jsx
+// src/screens/gameover/GameOverScreen.jsx
 import React, { useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useGameStore } from '../../stores/gameStore'
@@ -64,15 +64,15 @@ const GameOverScreen = () => {
             {renderAchievement()}
 
             <div className='mb-8'>
-              <div className='text-2xl mb-2'>Final Score</div>
-              <div className='text-4xl text-game-blue font-bold'>
+              <div className='text-lg mb-2'>Final Score</div>
+              <div className='text-2xl text-game-blue font-bold'>
                 {score.toLocaleString()}
               </div>
             </div>
 
             {lastGameStats && (
               <div className='mb-8 space-y-2'>
-                <div className='text-gray-400'>
+                <div className='text-gray-400 text-xs'>
                   Rank: #{lastGameStats.rank} of {lastGameStats.totalPlayers}
                 </div>
               </div>
@@ -83,7 +83,7 @@ const GameOverScreen = () => {
                 onClick={handlePlayAgain}
                 disabled={!wallet.connected}
               >
-                Insert Quarter, Play Again
+                Play Again
               </QuarterButton>
 
               <button
@@ -94,7 +94,7 @@ const GameOverScreen = () => {
               </button>
             </div>
 
-            <div className='mt-8 text-sm text-gray-500'>
+            <div className='mt-8 text-xs text-gray-500'>
               Tip: Practice makes perfect! Keep playing to improve your score.
             </div>
           </div>

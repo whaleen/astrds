@@ -1,4 +1,4 @@
-// src/components/screens/AccountScreen.jsx
+// src/screens/accounts/AccountScreen.jsx
 import React from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {

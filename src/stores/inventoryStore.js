@@ -8,7 +8,7 @@ const MAX_LIMITS = {
   pills: 99
 }
 
-export const useInventoryStore = create((set) => ({
+export const useInventoryStore = create((set, get) => ({
   // Initial state
   items: {
     ships: 3,
@@ -28,17 +28,18 @@ export const useInventoryStore = create((set) => ({
       }
     })),
 
-  useItem: (itemType) =>
-    set((state) => {
-      if (state.items[itemType] <= 0) return state
+  useItem: (itemType) => {
+    const currentCount = get().items[itemType]
+    if (currentCount <= 0) return false
 
-      return {
-        items: {
-          ...state.items,
-          [itemType]: state.items[itemType] - 1
-        }
+    set(state => ({
+      items: {
+        ...state.items,
+        [itemType]: state.items[itemType] - 1
       }
-    }),
+    }))
+    return true
+  },
 
   // Reset inventory
   resetInventory: () =>

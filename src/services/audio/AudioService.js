@@ -232,7 +232,7 @@ class AudioService {
     })
   }
 
-  async init(onProgress = () => { }) {
+  async init(onProgress = (progress) => { }) {
     if (this.initialized) return
 
     try {
@@ -343,10 +343,8 @@ class AudioService {
 
     // Update music if playing
     if (this.currentMusic) {
-      const music = this.music.get(this.currentMusic)
-      if (music) {
-        music.audio.volume = this.calculateVolume('music') * music.config.volume
-      }
+      const { audio, config } = this.currentMusic  // Access properties directly from currentMusic
+      audio.volume = this.calculateVolume('music') * config.volume
     }
   }
 
@@ -373,6 +371,7 @@ class AudioService {
     this.music.clear()
     this.initialized = false
   }
+
 }
 
 // Create and export singleton instance

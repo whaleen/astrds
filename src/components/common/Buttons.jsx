@@ -1,4 +1,4 @@
-// src/components/ui/Buttons.jsx
+// src/components/common/Buttons.jsx
 import React from 'react'
 
 export const BaseButton = ({

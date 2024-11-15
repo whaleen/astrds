@@ -85,4 +85,5 @@ export const useGameStore = create((set, get) => ({
     score: 0,
     lastGameStats: null
   })
+
 }))

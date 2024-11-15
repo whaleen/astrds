@@ -1,4 +1,4 @@
-// src/components/ui/sound/EffectToggle.jsx
+// src/components/sound/EffectToggle.jsx
 import React from 'react'
 
 const EffectToggle = ({

@@ -1,8 +1,10 @@
-// src/components/layout/ScreenContainer.jsx
+// src/components/common/ScreenContainer.jsx
 import React from 'react'
 // Import all background images
 // Don't reference 'public' directory - just start with /assets
+// @ts-ignore
 import joiGif from '/assets/wojak.png'
+// @ts-ignore
 import wojakPng from '/assets/dying.gif'
 
 // Background configurations for different screens

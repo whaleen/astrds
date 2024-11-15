@@ -1,4 +1,4 @@
-// src/components/screens/LeaderboardScreen.jsx
+// src/screens/leaderboard/LeaderboardScreen.jsx
 import React, { useState, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { getHighScores } from '../../api/scores'

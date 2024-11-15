@@ -1,4 +1,4 @@
-// src/components/ui/ActionButtons.jsx
+// src/components/common/ActionButtons.jsx
 import React from 'react'
 
 const ActionButtons = ({ children, className = '' }) => (

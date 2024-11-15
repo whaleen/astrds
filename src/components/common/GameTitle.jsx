@@ -1,4 +1,4 @@
-// src/components/ui/GameTitle.jsx
+// src/components/common/GameTitle.jsx
 import React from 'react'
 
 const GameTitle = () => (

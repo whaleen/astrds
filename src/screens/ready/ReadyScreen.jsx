@@ -1,4 +1,4 @@
-// src/components/screens/ReadyScreen.jsx
+// src/screens/ready/ReadyScreen.jsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Connection } from '@solana/web3.js'
@@ -174,5 +174,4 @@ const ReadyScreen = () => {
     </ScreenContainer>
   )
 }
-
 export default ReadyScreen

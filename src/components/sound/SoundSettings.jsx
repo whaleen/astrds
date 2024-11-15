@@ -1,4 +1,4 @@
-// src/components/ui/sound/SoundSettings.jsx
+// src/components/sound/SoundSettings.jsx
 import React from 'react'
 import { X, RotateCcw, Volume2, Play } from 'lucide-react'
 import { useAudio } from '@/hooks/useAudio'

@@ -1,4 +1,4 @@
-// src/components/ui/CountdownAnimation.jsx
+// src/screens/ready/CountdownAnimation.jsx
 import React from 'react'
 
 export const CountdownDigit = ({ number, onComplete }) => {

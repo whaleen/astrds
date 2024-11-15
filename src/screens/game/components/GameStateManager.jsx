@@ -1,4 +1,4 @@
-// src/components/game/GameStateManager.jsx
+// src/screens/game/components/GameStateManager.jsx
 import React from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import TitleScreen from '@/screens/title/TitleScreen'

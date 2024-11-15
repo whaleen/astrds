@@ -1,4 +1,4 @@
-// src/components/game/GameScreen.jsx
+// src/screens/game/GameScreen.jsx
 import React, { useEffect, useRef } from 'react'
 import Ship from '../../game/entities/Ship'
 import OverlayChat from '@/components/chat/OverlayChat'
@@ -30,7 +30,7 @@ const GameScreen = () => {
   const isPaused = useGameStore((state) => state.isPaused)
   const togglePause = useGameStore((state) => state.togglePause)
   const setGameState = useGameStore((state) => state.setGameState)
-  const { playMusic, stopMusic, transitionMusic } = useAudio()
+  const { playMusic, stopMusic, transitionMusic, currentMusic } = useAudio()
 
   // Engine store selectors
   const {
