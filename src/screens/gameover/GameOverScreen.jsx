@@ -7,6 +7,7 @@ import { useAudio } from '../../hooks/useAudio'
 import { SOUND_TYPES, MUSIC_TRACKS } from '../../services/audio/AudioTypes'
 import GameTitle from '@/components/common/GameTitle'
 import ScreenContainer from '@/components/common/ScreenContainer'
+import { useInventoryStore } from '@/stores/inventoryStore' // Add this import
 
 const GameOverScreen = () => {
   const wallet = useWallet()
@@ -14,6 +15,7 @@ const GameOverScreen = () => {
   const lastGameStats = useGameStore((state) => state.lastGameStats)
   const setGameState = useGameStore((state) => state.setGameState)
   const { playSound, transitionMusic, stopMusic } = useAudio()
+  const resetInventory = useInventoryStore((state) => state.resetInventory) // Add this
 
   // Music / SFX
   useEffect(() => {
@@ -26,11 +28,8 @@ const GameOverScreen = () => {
   }, [])
 
   const handlePlayAgain = () => {
+    resetInventory() // Reset inventory before starting new game
     setGameState('READY_TO_PLAY')
-  }
-
-  const handleViewLeaderboard = () => {
-    setGameState('LEADERBOARD')
   }
 
   const renderAchievement = () => {
@@ -85,13 +84,6 @@ const GameOverScreen = () => {
               >
                 Play Again
               </QuarterButton>
-
-              <button
-                onClick={handleViewLeaderboard}
-                className='text-game-blue hover:text-white transition-colors'
-              >
-                View Leaderboard
-              </button>
             </div>
 
             <div className='mt-8 text-xs text-gray-500'>

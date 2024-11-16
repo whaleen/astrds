@@ -8,9 +8,13 @@ import ScreenContainer from '@/components/common/ScreenContainer'
 import GameTitle from '@/components/common/GameTitle'
 import { useGameStore } from '../../stores/gameStore'
 
+// Duration of the quarter insert sound in milliseconds
+const QUARTER_INSERT_DURATION = 1200 // Adjust this value to match your actual sound duration
+
 const ReadyScreen = () => {
   const wallet = useWallet()
   const [countdown, setCountdown] = useState(null)
+  const [isQuarterInserting, setIsQuarterInserting] = useState(true)
   const [verificationError, setVerificationError] = useState(null)
   const hasStarted = useRef(false)
   const mountedRef = useRef(true)
@@ -42,6 +46,15 @@ const ReadyScreen = () => {
         })
 
         if (!mountedRef.current) return
+
+        // Play quarter insert sound and wait for its full duration
+        await playSound(SOUND_TYPES.QUARTER_INSERT)
+        await new Promise((resolve) =>
+          setTimeout(resolve, QUARTER_INSERT_DURATION)
+        )
+
+        if (!mountedRef.current) return
+        setIsQuarterInserting(false)
 
         // Verify wallet status
         const isVerified = await verifyWallet()
@@ -91,7 +104,6 @@ const ReadyScreen = () => {
     clearAuth,
   ])
 
-  // Rest of your component remains the same
   if (verificationError) {
     return (
       <ScreenContainer>
@@ -122,7 +134,7 @@ const ReadyScreen = () => {
             className='text-8xl font-bold text-game-blue animate-[fadeIn_0.3s_ease-out]
                        [text-shadow:0_0_10px_#4dc1f9,0_0_20px_#4dc1f9,0_0_30px_#4dc1f9]'
           >
-            {countdown === null ? (
+            {isQuarterInserting ? (
               <div className='text-4xl'>Inserting Quarter...</div>
             ) : countdown === 0 ? (
               'GO!'
@@ -133,7 +145,7 @@ const ReadyScreen = () => {
         </div>
 
         <div className='space-y-6 transition-opacity duration-300'>
-          {countdown !== null && (
+          {!isQuarterInserting && countdown !== null && (
             <>
               <p
                 className={`text-xl text-gray-300 ${

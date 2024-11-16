@@ -125,6 +125,8 @@
 │   │   │   ├── Header.jsx
 │   │   │   ├── ScreenContainer.jsx
 │   │   │   └── StyledComponents.jsx
+│   │   ├── icons
+│   │   │   └── GameIcons.jsx
 │   │   ├── overlay
 │   │   │   └── OverlayManager.jsx
 │   │   └── sound
@@ -155,6 +157,7 @@
 │   │   ├── game
 │   │   │   ├── GameScreen.jsx
 │   │   │   └── components
+│   │   │       ├── DeathScreen.jsx
 │   │   │       ├── GameLayout.jsx
 │   │   │       ├── GameOverlay.jsx
 │   │   │       ├── GameStateManager.jsx
@@ -201,4 +204,4 @@
 ├── vite-env.d.ts
 └── vite.config.js
 
-40 directories, 162 files
+41 directories, 164 files

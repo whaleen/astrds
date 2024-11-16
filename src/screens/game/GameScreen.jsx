@@ -9,7 +9,8 @@ import { useEngineStore } from '../../stores/engineStore'
 import { useLevelStore } from '../../stores/levelStore'
 import { useAudio } from '../../hooks/useAudio'
 import { MUSIC_TRACKS } from '../../services/audio/AudioTypes'
-import DeathScreen from './components/DeathScreen' // Add this import
+import DeathScreen from './components/DeathScreen'
+import { useInventoryStore } from '@/stores/inventoryStore' // Add this import
 
 const KEY = {
   LEFT: 37,
@@ -26,6 +27,7 @@ const KEY = {
 const GameScreen = () => {
   const canvasRef = useRef(null)
   const { activeOverlay } = useOverlayStore()
+  const resetInventory = useInventoryStore((state) => state.resetInventory) // Add this
 
   // Game state selectors
   const isPaused = useGameStore((state) => state.isPaused)
@@ -54,6 +56,8 @@ const GameScreen = () => {
 
     const context = canvas.getContext('2d')
     if (!context) return
+
+    resetInventory()
 
     // Reset pause state at start of new game
     if (isPaused) {

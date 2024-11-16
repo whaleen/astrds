@@ -7,6 +7,7 @@ import FullChat from '@/components/chat/FullChat'
 import LeaderboardScreen from '@/screens/leaderboard/LeaderboardScreen'
 import { useGameStore } from '@/stores/gameStore'
 import { useSettingsPanelStore } from '@/stores/settingsPanelStore'
+import { useEngineStore } from '@/stores/engineStore'
 
 export const OVERLAY_TYPES = {
   NONE: null,
@@ -16,12 +17,12 @@ export const OVERLAY_TYPES = {
   LEADERBOARD: 'leaderboard',
 }
 
-// Determine which overlays should blur the background
-const BLUR_BACKDROP = {
-  [OVERLAY_TYPES.SOUND]: true,
-  [OVERLAY_TYPES.ACCOUNT]: true,
-  [OVERLAY_TYPES.CHAT]: true,
-  [OVERLAY_TYPES.LEADERBOARD]: false, // No blur for leaderboard
+// Determine which overlays should blur the background and pause the game
+const OVERLAY_BEHAVIOR = {
+  [OVERLAY_TYPES.SOUND]: { blur: true, shouldPause: true },
+  [OVERLAY_TYPES.ACCOUNT]: { blur: true, shouldPause: true },
+  [OVERLAY_TYPES.CHAT]: { blur: true, shouldPause: true },
+  [OVERLAY_TYPES.LEADERBOARD]: { blur: false, shouldPause: false }, // Leaderboard doesn't pause or blur
 }
 
 export const useOverlayStore = create((set, get) => ({
@@ -29,40 +30,48 @@ export const useOverlayStore = create((set, get) => ({
   wasGamePaused: false,
 
   openOverlay: (overlay) => {
-    const gameState = useGameStore.getState()
+    console.log('🔵 Opening overlay:', overlay)
     const currentOverlay = get().activeOverlay
+    const gameState = useGameStore.getState()
+    const engineState = useEngineStore.getState()
     const settingsPanel = useSettingsPanelStore.getState()
+    const overlayBehavior = OVERLAY_BEHAVIOR[overlay]
 
     if (currentOverlay === overlay) {
+      console.log('🔄 Closing same overlay')
       get().closeOverlay()
       return
     }
 
-    // Special handling for sound settings
     if (overlay === OVERLAY_TYPES.SOUND) {
       settingsPanel.toggle()
     }
 
-    if (gameState.gameState === 'PLAYING' && !gameState.isPaused) {
-      gameState.setPause(true)
-      set({ wasGamePaused: true }) // Track that we paused the game
+    if (gameState.gameState === 'PLAYING' && overlayBehavior?.shouldPause) {
+      if (!gameState.isPaused) {
+        gameState.setPause(true)
+        engineState.togglePause(true)
+        set({ wasGamePaused: true })
+      }
     }
 
     set({ activeOverlay: overlay })
   },
 
   closeOverlay: () => {
+    console.log('🔴 Closing overlay')
     const { wasGamePaused, activeOverlay } = get()
     const gameState = useGameStore.getState()
+    const engineState = useEngineStore.getState()
     const settingsPanel = useSettingsPanelStore.getState()
 
-    // Special handling for sound settings
     if (activeOverlay === OVERLAY_TYPES.SOUND) {
       settingsPanel.close()
     }
 
     if (wasGamePaused && gameState.gameState === 'PLAYING') {
       gameState.setPause(false)
+      engineState.togglePause(false)
     }
 
     set({
@@ -81,9 +90,12 @@ const OverlayManager = () => {
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        console.log('⌨️ Key press ignored (input/textarea focused)')
         return
+      }
 
+      console.log('⌨️ Key pressed:', e.key.toLowerCase())
       switch (e.key.toLowerCase()) {
         case 's':
           openOverlay(OVERLAY_TYPES.SOUND)
@@ -110,18 +122,22 @@ const OverlayManager = () => {
   }, [activeOverlay, openOverlay, closeOverlay])
 
   const handlePlayClick = () => {
+    console.log('🎮 Play button clicked')
     closeOverlay()
     setGameState('READY_TO_PLAY')
   }
 
   // Wrapper component that adds conditional backdrop
   const OverlayWrapper = ({ children, type }) => {
+    console.log('🎭 Rendering overlay wrapper for type:', type)
     if (!children) return null
+
+    const { blur } = OVERLAY_BEHAVIOR[type] || {}
 
     return (
       <div
         className={`fixed inset-0 z-50 
-        ${BLUR_BACKDROP[type] ? 'bg-black/75 backdrop-blur-sm' : ''}`}
+        ${blur ? 'bg-black/75 backdrop-blur-sm' : ''}`}
       >
         {children}
       </div>
@@ -130,6 +146,7 @@ const OverlayManager = () => {
 
   // Render active overlay with consistent backdrop handling
   const renderActiveOverlay = () => {
+    console.log('🎨 Rendering overlay:', activeOverlay)
     switch (activeOverlay) {
       case OVERLAY_TYPES.SOUND:
         return (
