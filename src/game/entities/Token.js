@@ -57,50 +57,44 @@ export default class Token {
 
   render(state) {
     // Move
-    this.position.x += this.velocity.x
-    this.position.y += this.velocity.y
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
 
     // Screen wrapping
     if (this.position.x > state.screen.width + this.radius)
-      this.position.x = -this.radius
+      this.position.x = -this.radius;
     else if (this.position.x < -this.radius)
-      this.position.x = state.screen.width + this.radius
+      this.position.x = state.screen.width + this.radius;
     if (this.position.y > state.screen.height + this.radius)
-      this.position.y = -this.radius
+      this.position.y = -this.radius;
     else if (this.position.y < -this.radius)
-      this.position.y = state.screen.height + this.radius
+      this.position.y = state.screen.height + this.radius;
 
     // Check if token should expire
     if (Date.now() - this.creation > this.timeToLive) {
-      this.destroy()
+      this.destroy();
     }
 
     // Pulsing animation
-    this.pulsePhase += this.pulseRate
-    const pulseScale = 1 + Math.sin(this.pulsePhase) * 0.2
-    const currentRadius = this.radius * pulseScale
+    this.pulsePhase += this.pulseRate;
+    const pulseScale = 1 + Math.sin(this.pulsePhase) * 0.2;
+    const currentRadius = this.radius * pulseScale;
 
     // Draw
-    const context = state.context
-    context.save()
-    context.translate(this.position.x, this.position.y)
+    const context = state.context;
+    context.save();
+    context.translate(this.position.x, this.position.y);
 
-    // Subtle glow
-    const gradient = context.createRadialGradient(0, 0, 0, 0, 0, currentRadius * 1.5)
-    gradient.addColorStop(0, this.color)
-    gradient.addColorStop(1, 'rgba(255, 100, 45, 0)')
+    // Draw stroke with no fill
+    context.lineWidth = 1; // Adjust the stroke thickness
+    context.strokeStyle = this.color; // Red stroke
+    context.fillStyle = 'rgba(0, 0, 0, 0)'; // Transparent fill
 
-    context.fillStyle = gradient
-    context.beginPath()
-    context.arc(0, 0, currentRadius * 1.5, 0, 2 * Math.PI)
-    context.fill()
-
-    // Main token
-    context.fillStyle = this.color
-    context.beginPath()
-    context.arc(0, 0, currentRadius, 0, 2 * Math.PI)
-    context.fill()
-
-    context.restore()
+    // Draw the main token
+    context.beginPath();
+    context.arc(0, 0, currentRadius, 0, 2 * Math.PI);
+    context.fill(); // Fill is effectively transparent
+    context.stroke(); // Apply the stroke
+    context.restore();
   }
 }

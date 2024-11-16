@@ -41,13 +41,11 @@ export const useOverlayStore = create((set, get) => ({
     // Special handling for sound settings
     if (overlay === OVERLAY_TYPES.SOUND) {
       settingsPanel.toggle()
-      set({ activeOverlay: overlay })
-      return
     }
 
     if (gameState.gameState === 'PLAYING' && !gameState.isPaused) {
       gameState.setPause(true)
-      set({ wasGamePaused: true })
+      set({ wasGamePaused: true }) // Track that we paused the game
     }
 
     set({ activeOverlay: overlay })

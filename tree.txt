@@ -1,5 +1,51 @@
 .
 ├── README.md
+├── dist
+│   ├── assets
+│   │   ├── dying.gif
+│   │   ├── dying.jpg
+│   │   ├── dying.webp
+│   │   ├── index-9KqcOqrT.js
+│   │   ├── index-9KqcOqrT.js.map
+│   │   ├── index-D_co-4J2.css
+│   │   ├── joe.gif
+│   │   ├── joe.jpg
+│   │   ├── joi.gif
+│   │   ├── joi.webp
+│   │   ├── wojak-on-moon.png
+│   │   ├── wojak.jpg
+│   │   └── wojak.png
+│   ├── index.html
+│   ├── raw
+│   │   ├── Ana-de-Armas-in-Blade-Runner-2049.webp
+│   │   ├── dying.jpg
+│   │   ├── joi.gif
+│   │   ├── joi.jpg
+│   │   ├── skyline.jpg
+│   │   └── wireframes.pxd
+│   └── sounds
+│       ├── 321-go.m4a
+│       ├── arcis.mp3
+│       ├── coin.wav
+│       ├── collect-pill.mp3
+│       ├── collect.wav
+│       ├── danger.wav
+│       ├── explosion.wav
+│       ├── game-music.wav
+│       ├── gameover-2.wav
+│       ├── gameover.wav
+│       ├── glass-and-buffalo-warrior-travel.mp3
+│       ├── joi
+│       │   ├── im-not-wearing-a-helmet-either.mp3
+│       │   ├── lets-fly-this-thing-out-of here.mp3
+│       │   ├── we-are-space.mp3
+│       │   └── whoa-that-guy-was-no-match-for-you.mp3
+│       ├── ping.wav
+│       ├── ready.wav
+│       ├── shoot.wav
+│       ├── space-wind.wav
+│       ├── thrust.flac
+│       └── thrust.wav
 ├── index.html
 ├── jsconfig.json
 ├── netlify
@@ -64,6 +110,7 @@
 │   │   ├── pusher.js
 │   │   └── scores.js
 │   ├── auth
+│   │   ├── AuthService.js
 │   │   └── auth.js
 │   ├── components
 │   │   ├── chat
@@ -78,6 +125,8 @@
 │   │   │   ├── Header.jsx
 │   │   │   ├── ScreenContainer.jsx
 │   │   │   └── StyledComponents.jsx
+│   │   ├── overlay
+│   │   │   └── OverlayManager.jsx
 │   │   └── sound
 │   │       ├── EffectToggle.jsx
 │   │       ├── SoundSettings.jsx
@@ -96,7 +145,9 @@
 │   │   └── systems
 │   │       └── InventoryManager.js
 │   ├── hooks
-│   │   └── useAudio.js
+│   │   ├── useAudio.js
+│   │   ├── useAuth.js
+│   │   └── usePhantom.js
 │   ├── index.jsx
 │   ├── screens
 │   │   ├── account
@@ -109,6 +160,7 @@
 │   │   │       ├── GameStateManager.jsx
 │   │   │       ├── InventoryHUD.jsx
 │   │   │       ├── LevelDisplay.jsx
+│   │   │       ├── LevelTransition.jsx
 │   │   │       └── PauseOverlay.jsx
 │   │   ├── gameover
 │   │   │   └── GameOverScreen.jsx
@@ -123,11 +175,13 @@
 │   │       ├── PaymentModal.jsx
 │   │       └── TitleScreen.jsx
 │   ├── services
-│   │   └── audio
-│   │       ├── AudioConfig.js
-│   │       ├── AudioEventEmitter.js
-│   │       ├── AudioService.js
-│   │       └── AudioTypes.js
+│   │   ├── audio
+│   │   │   ├── AudioConfig.js
+│   │   │   ├── AudioEventEmitter.js
+│   │   │   ├── AudioService.js
+│   │   │   └── AudioTypes.js
+│   │   └── wallet
+│   │       └── PhantomService.js
 │   ├── stores
 │   │   ├── audioStore.js
 │   │   ├── chatStore.js
@@ -147,4 +201,4 @@
 ├── vite-env.d.ts
 └── vite.config.js
 
-33 directories, 115 files
+40 directories, 162 files

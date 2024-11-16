@@ -9,6 +9,7 @@ import { useEngineStore } from '../../stores/engineStore'
 import { useLevelStore } from '../../stores/levelStore'
 import { useAudio } from '../../hooks/useAudio'
 import { MUSIC_TRACKS } from '../../services/audio/AudioTypes'
+import DeathScreen from './components/DeathScreen' // Add this import
 
 const KEY = {
   LEFT: 37,
@@ -211,6 +212,7 @@ const GameScreen = () => {
       />
       <OverlayChat />
       <PauseOverlay />
+      <DeathScreen /> {/* Add this line */}
     </>
   )
 }

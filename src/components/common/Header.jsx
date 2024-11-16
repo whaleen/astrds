@@ -5,6 +5,7 @@ import { MessageSquare, User, Trophy } from 'lucide-react'
 import { StyledWalletButton } from './StyledComponents'
 import { useOverlayStore, OVERLAY_TYPES } from '../overlay/OverlayManager'
 import VolumeControl from '../sound/VolumeControl'
+import { ShipIcon } from '@/components/icons/GameIcons'
 
 const HeaderButton = ({ icon: Icon, label, overlayType, shortcut }) => {
   const { isOverlayActive, openOverlay } = useOverlayStore()
@@ -36,6 +37,13 @@ const Header = () => {
       <div className='max-w-7xl mx-auto flex justify-between items-center gap-4'>
         {/* Left section */}
         <div className='flex items-center gap-4'>
+          {/* <button
+            onClick={() => {}}
+            className='text-white hover:text-white transition-colors duration-200 p-2'
+            title='Return to Title Screen'
+          >
+            <ShipIcon className='w-8 h-8' />
+          </button> */}
           <VolumeControl />
         </div>
 

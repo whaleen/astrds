@@ -10,7 +10,7 @@ export const useAuth = () => {
   const [error, setError] = useState(null)
   const setGameState = useGameStore(state => state.setGameState)
 
-  const verifyWallet = useCallback(async () => {
+  const verifyWallet = useCallback(async (paymentType = 'SOL') => {
     if (!wallet.connected) {
       setError('Please connect your wallet')
       return false
@@ -20,13 +20,14 @@ export const useAuth = () => {
     setError(null)
 
     try {
-      const success = await authService.verifyWalletSignature(wallet)
+      const success = await authService.verifyWalletSignature(wallet, paymentType)
       if (success) {
         setGameState('READY_TO_PLAY')
         return true
       }
       return false
     } catch (err) {
+      console.error('Verification error:', err)
       setError(err.message)
       return false
     } finally {

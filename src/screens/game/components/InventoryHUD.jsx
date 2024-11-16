@@ -2,58 +2,7 @@
 import React, { useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { useInventoryStore } from '@/stores/inventoryStore'
-import { useAudioStore } from '@/stores/audioStore'
-
-// SVG Icons as components
-const ShipIcon = () => (
-  <svg
-    viewBox='0 0 24 24'
-    className='w-6 h-6 text-game-blue'
-  >
-    <path
-      fill='currentColor'
-      d='M12 2L4 14l1.2 1.6L12 13l6.8 2.6L20 14z'
-    />
-    <path
-      fill='currentColor'
-      d='M12 13v7l-3-2v-3.5zm0 0v7l3-2v-3.5z'
-      opacity='0.8'
-    />
-  </svg>
-)
-
-const TokenIcon = () => (
-  <svg
-    viewBox='0 0 24 24'
-    className='w-6 h-6 text-game-blue'
-  >
-    <circle
-      cx='12'
-      cy='12'
-      r='10'
-      stroke='currentColor'
-      fill='none'
-      strokeWidth='2'
-    />
-    <path
-      d='M12 6v12M8 12h8'
-      stroke='currentColor'
-      strokeWidth='2'
-    />
-  </svg>
-)
-
-const PillIcon = () => (
-  <svg
-    viewBox='0 0 24 24'
-    className='w-6 h-6 text-game-blue'
-  >
-    <path
-      fill='currentColor'
-      d='M4.22 11.29l7.07-7.07a6 6 0 018.48 8.48l-7.07 7.07a6 6 0 11-8.48-8.48zm1.41 1.42a4 4 0 005.66 5.66l7.07-7.07a4 4 0 00-5.66-5.66l-7.07 7.07z'
-    />
-  </svg>
-)
+import { ShipIcon, TokenIcon, PillIcon } from '@/components/icons/GameIcons'
 
 const ItemCounter = ({
   icon,
@@ -68,12 +17,9 @@ const ItemCounter = ({
   const [showTooltip, setShowTooltip] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
 
-  const playSound = useAudioStore((state) => state.playSound)
-
   const handleClick = () => {
     if (!disabled && count > 0 && !cooldown) {
       setIsAnimating(true)
-      playSound('collect')
       onClick()
       setTimeout(() => setIsAnimating(false), 200)
     }
@@ -152,10 +98,8 @@ const InventoryHUD = () => {
     pills: 0,
   })
 
-  // Store state selectors
   const gameState = useGameStore((state) => state.gameState)
   const items = useInventoryStore((state) => state.items)
-  const addItem = useInventoryStore((state) => state.addItem)
   const useItem = useInventoryStore((state) => state.useItem)
 
   const startCooldown = (itemType, duration) => {
@@ -173,11 +117,10 @@ const InventoryHUD = () => {
     if (items[itemType] > 0 && !cooldowns[itemType]) {
       const success = useItem(itemType)
       if (success) {
-        // Different cooldowns for different items
         const cooldownDurations = {
-          ships: 5000, // 5 seconds
-          tokens: 3000, // 3 seconds
-          pills: 10000, // 10 seconds
+          ships: 5000,
+          tokens: 3000,
+          pills: 10000,
         }
         startCooldown(itemType, cooldownDurations[itemType])
       }

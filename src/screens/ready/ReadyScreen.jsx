@@ -154,7 +154,7 @@ const ReadyScreen = () => {
                   countdown === 0 ? 'opacity-100' : 'opacity-0'
                 }`}
               >
-                Good luck, pilot!
+                Good luck, Anon!
               </p>
             </>
           )}

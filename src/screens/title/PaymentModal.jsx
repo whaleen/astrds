@@ -62,8 +62,8 @@ const PaymentModal = ({ onClose, onPaymentSelected }) => {
         console.log('Wallet already connected or connection declined')
       }
 
-      // Attempt verification
-      const success = await verifyWallet()
+      // Attempt verification with selected payment type
+      const success = await verifyWallet(selectedOption)
 
       if (success) {
         onPaymentSelected(selectedOption)
@@ -80,7 +80,7 @@ const PaymentModal = ({ onClose, onPaymentSelected }) => {
     if (!wallet.connected) return 'Connect Wallet'
     if (isVerifying) return 'Verifying...'
     if (!selectedOption) return 'Select Payment Method'
-    return 'Play Now'
+    return 'Pay'
   }
 
   const isButtonDisabled = !wallet.connected || isVerifying || !selectedOption

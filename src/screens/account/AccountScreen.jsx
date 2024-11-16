@@ -69,6 +69,7 @@ const AccountScreen = ({ onClose }) => {
   const [tokenBalances, setTokenBalances] = React.useState({
     SOL: 0,
     '8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP': 0, // $ASTRDS Devnet
+    TEROIDS: 420, // Hardcoded temporary value
   })
   const [stats, setStats] = React.useState({
     totalGames: 0,
@@ -140,7 +141,7 @@ const AccountScreen = ({ onClose }) => {
     <div className='w-full max-h-[90vh] overflow-y-auto'>
       <div className='max-w-7xl mx-auto p-4'>
         <div className='grid grid-cols-1 md:grid-cols-12 gap-8'>
-          {/* Left Column - Player Info */}
+          {/* Left Column - Balances */}
           <div className='md:col-span-3 space-y-6'>
             {/* Token Balances Section */}
             <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
@@ -170,6 +171,109 @@ const AccountScreen = ({ onClose }) => {
               </div>
             </div>
 
+            {/* Claim Balance Section */}
+            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
+              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
+                <Award size={20} />
+                Claim Balance
+              </h2>
+              <div className='space-y-4'>
+                <TokenBalance
+                  label='TEROIDS Balance'
+                  // balance={tokenBalances.TEROIDS}
+                  balance='420'
+                  symbol='TEROIDS'
+                  loading={false}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Center Column - Stats Grid and Recent Games */}
+          <div className='md:col-span-6 space-y-6'>
+            {/* Performance Stats Section */}
+            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
+              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
+                <BarChart3 size={20} />
+                Performance Stats
+              </h2>
+              <div className='grid grid-cols-2 gap-4'>
+                <MetricCard
+                  icon={Gamepad2}
+                  label='Total Games'
+                  value={stats.totalGames}
+                  sublabel='Career games played'
+                />
+                <MetricCard
+                  icon={Trophy}
+                  label='Best Score'
+                  value={stats.bestScore.toLocaleString()}
+                  sublabel='Personal record'
+                />
+                <MetricCard
+                  icon={Target}
+                  label='Average Score'
+                  value={stats.averageScore.toLocaleString()}
+                  sublabel='Points per game'
+                />
+                <MetricCard
+                  icon={Crosshair}
+                  label='Accuracy'
+                  value={`${stats.accuracy}%`}
+                  sublabel='Hit ratio'
+                />
+                <MetricCard
+                  icon={Clock}
+                  label='Play Time'
+                  value={`${stats.totalPlayTime}m`}
+                  sublabel='Total time played'
+                />
+                <MetricCard
+                  icon={Award}
+                  label='Favorite Level'
+                  value={stats.favoriteLevel}
+                  sublabel='Most played level'
+                />
+              </div>
+            </div>
+
+            {/* Recent Games Section - Moved from right column */}
+            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
+              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
+                <Clock size={20} />
+                Recent Games
+              </h2>
+              <div className='space-y-3'>
+                {scores.map((score, index) => (
+                  <div
+                    key={score.date}
+                    className='bg-black/30 border border-white/10 rounded-lg p-3
+                               hover:border-game-blue/30 transition-colors'
+                  >
+                    <div className='flex justify-between items-center mb-1'>
+                      <span className='text-xs text-gray-400'>
+                        {new Date(score.date).toLocaleDateString()}
+                      </span>
+                      <span className='text-xs text-gray-500'>
+                        #{index + 1}
+                      </span>
+                    </div>
+                    <div className='text-lg font-mono text-game-blue'>
+                      {score.score.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+                {scores.length === 0 && (
+                  <div className='text-center text-gray-500 text-sm py-4'>
+                    No games played yet
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Player Info */}
+          <div className='md:col-span-3 space-y-6'>
             {/* Profile Section */}
             <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
               <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
@@ -221,90 +325,6 @@ const AccountScreen = ({ onClose }) => {
               </div>
               <div className='text-center mt-4 text-xs text-gray-500'>
                 More achievements coming soon!
-              </div>
-            </div>
-          </div>
-
-          {/* Center Column - Stats Grid */}
-          <div className='md:col-span-6 space-y-6'>
-            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
-              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
-                <BarChart3 size={20} />
-                Performance Stats
-              </h2>
-              <div className='grid grid-cols-2 gap-4'>
-                <MetricCard
-                  icon={Gamepad2}
-                  label='Total Games'
-                  value={stats.totalGames}
-                  sublabel='Career games played'
-                />
-                <MetricCard
-                  icon={Trophy}
-                  label='Best Score'
-                  value={stats.bestScore.toLocaleString()}
-                  sublabel='Personal record'
-                />
-                <MetricCard
-                  icon={Target}
-                  label='Average Score'
-                  value={stats.averageScore.toLocaleString()}
-                  sublabel='Points per game'
-                />
-                <MetricCard
-                  icon={Crosshair}
-                  label='Accuracy'
-                  value={`${stats.accuracy}%`}
-                  sublabel='Hit ratio'
-                />
-                <MetricCard
-                  icon={Clock}
-                  label='Play Time'
-                  value={`${stats.totalPlayTime}m`}
-                  sublabel='Total time played'
-                />
-                <MetricCard
-                  icon={Award}
-                  label='Favorite Level'
-                  value={stats.favoriteLevel}
-                  sublabel='Most played level'
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Recent Games */}
-          <div className='md:col-span-3 space-y-6'>
-            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
-              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
-                <Clock size={20} />
-                Recent Games
-              </h2>
-              <div className='space-y-3'>
-                {scores.map((score, index) => (
-                  <div
-                    key={score.date}
-                    className='bg-black/30 border border-white/10 rounded-lg p-3
-                               hover:border-game-blue/30 transition-colors'
-                  >
-                    <div className='flex justify-between items-center mb-1'>
-                      <span className='text-xs text-gray-400'>
-                        {new Date(score.date).toLocaleDateString()}
-                      </span>
-                      <span className='text-xs text-gray-500'>
-                        #{index + 1}
-                      </span>
-                    </div>
-                    <div className='text-lg font-mono text-game-blue'>
-                      {score.score.toLocaleString()}
-                    </div>
-                  </div>
-                ))}
-                {scores.length === 0 && (
-                  <div className='text-center text-gray-500 text-sm py-4'>
-                    No games played yet
-                  </div>
-                )}
               </div>
             </div>
           </div>

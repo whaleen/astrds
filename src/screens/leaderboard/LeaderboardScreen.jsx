@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { getHighScores } from '../../api/scores'
-import { QuarterButton } from '@/components/common/Buttons'
-import GameTitle from '@/components/common/GameTitle'
 import LeaderboardTable from './LeaderboardTable'
 import { useGameStore } from '../../stores/gameStore'
 import { MUSIC_TRACKS } from '../../services/audio/AudioTypes'
@@ -122,17 +120,6 @@ const LeaderboardScreen = () => {
     <div className='fixed inset-0 flex items-center justify-center z-40 bg-black/75 backdrop-blur-sm'>
       <div className='w-full min-h-screen py-8 px-4'>
         <div className='max-w-7xl mx-auto'>
-          <div className='text-center mb-8'>
-            <GameTitle />
-            <QuarterButton
-              onClick={handlePlayAgain}
-              disabled={!wallet.connected}
-              className='mt-4'
-            >
-              Insert Quarter, Play Again
-            </QuarterButton>
-          </div>
-
           <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
             {/* Left Column - Player Stats */}
             <div className='space-y-6'>

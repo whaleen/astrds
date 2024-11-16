@@ -167,7 +167,7 @@ const FullChat = ({ onClose, onPlayClick }) => {
   }
 
   return (
-    <div className='max-w-2xl w-full mx-auto h-[80vh] flex flex-col bg-black border border-game-blue p-6'>
+    <div className='max-w-2xl w-full mx-auto h-[80vh] top-20 mt-10 flex flex-col bg-black border border-game-blue p-6'>
       <button
         onClick={onClose}
         className='absolute top-4 right-4 text-gray-400 hover:text-white transition-colors'
