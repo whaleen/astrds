@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react'
 import Ship from '../../game/entities/Ship'
 import OverlayChat from '@/components/chat/OverlayChat'
 import PauseOverlay from './components/PauseOverlay'
-import { useChatStore } from '../../stores/chatStore'
+import { useOverlayStore } from '@/components/overlay/OverlayManager'
 import { useGameStore } from '../../stores/gameStore'
 import { useEngineStore } from '../../stores/engineStore'
 import { useLevelStore } from '../../stores/levelStore'
@@ -23,8 +23,8 @@ const KEY = {
 }
 
 const GameScreen = () => {
-  const { toggleOverlay: toggleOverlayChat } = useChatStore()
   const canvasRef = useRef(null)
+  const { activeOverlay } = useOverlayStore()
 
   // Game state selectors
   const isPaused = useGameStore((state) => state.isPaused)
@@ -45,7 +45,7 @@ const GameScreen = () => {
 
   // Initialize game
   useEffect(() => {
-    let mounted = true // Add mounted flag
+    let mounted = true
     console.log('GameScreen mount effect starting')
 
     const canvas = canvasRef.current
@@ -70,11 +70,10 @@ const GameScreen = () => {
     // Initialize engine with context
     initializeEngine(context)
 
-    // Transition music based on the current track
+    // Handle music transitions
     const startGameMusic = async () => {
       try {
         if (mounted) {
-          console.log('Transitioning music...')
           if (currentMusic === MUSIC_TRACKS.TITLE) {
             await transitionMusic(MUSIC_TRACKS.TITLE, MUSIC_TRACKS.GAME, {
               crossFadeDuration: 1000,
@@ -89,7 +88,6 @@ const GameScreen = () => {
               loop: true,
             })
           }
-          console.log('Game music should be playing now')
         }
       } catch (error) {
         console.error('Error playing game music:', error)
@@ -120,6 +118,7 @@ const GameScreen = () => {
     startGameLoop()
 
     return () => {
+      mounted = false
       stopGameLoop()
       resetEngine()
       stopMusic(MUSIC_TRACKS.TITLE, { fadeOut: true })
@@ -129,11 +128,12 @@ const GameScreen = () => {
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Handle pause
+      // Don't process game inputs if there's an active overlay
+      if (activeOverlay) return
+
+      // Handle pause only if no overlay is active
       if (e.keyCode === KEY.ESC || e.keyCode === KEY.P) {
         togglePause()
-        // soundManager.playSound(!isPaused ? 'ready' : 'collect')
-
         if (isPaused) {
           startGameLoop()
         } else {
@@ -142,10 +142,9 @@ const GameScreen = () => {
         return
       }
 
-      // Don't process game inputs if paused
+      // Don't process other game inputs if paused
       if (isPaused) return
 
-      // Handle movement keys
       switch (e.keyCode) {
         case KEY.LEFT:
         case KEY.A:
@@ -162,14 +161,11 @@ const GameScreen = () => {
         case KEY.SPACE:
           setKey('space', 1)
           break
-        default:
-          if (e.key.toLowerCase() === 'c') {
-            toggleOverlayChat()
-          }
       }
     }
 
     const handleKeyUp = (e) => {
+      // Always process key up events to prevent stuck keys
       switch (e.keyCode) {
         case KEY.LEFT:
         case KEY.A:
@@ -196,7 +192,14 @@ const GameScreen = () => {
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isPaused, togglePause, startGameLoop, stopGameLoop, setKey])
+  }, [
+    isPaused,
+    activeOverlay,
+    togglePause,
+    startGameLoop,
+    stopGameLoop,
+    setKey,
+  ])
 
   return (
     <>

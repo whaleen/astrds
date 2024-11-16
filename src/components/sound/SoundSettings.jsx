@@ -12,6 +12,7 @@ const EFFECT_GROUPS = {
   'Game Events': ['collect', 'quarterInsert', 'countdownPing', 'gameOver'],
   Ambient: ['spaceWind'],
 }
+
 const EFFECT_LABELS = {
   shoot: 'Weapon Fire',
   thrust: 'Engine Thrust',
@@ -23,7 +24,7 @@ const EFFECT_LABELS = {
   spaceWind: 'Space Wind',
 }
 
-const SoundSettings = () => {
+const SoundSettings = ({ onClose }) => {
   const {
     volumes,
     setVolume,
@@ -35,27 +36,19 @@ const SoundSettings = () => {
   } = useAudio()
   const { isOpen, close } = useSettingsPanelStore()
 
-  if (!isOpen || !isInitialized) return null
-
-  const getEffectLabel = (effect) => {
-    const labels = {
-      shoot: 'Weapon Fire',
-      thrust: 'Engine Thrust',
-      explosion: 'Explosions',
-      collect: 'Item Collect',
-      quarterInsert: 'Quarter Insert',
-      countdownPing: 'Countdown',
-      gameOver: 'Game Over',
-      spaceWind: 'Space Wind',
-    }
-    return labels[effect] || effect
-  }
+  if (!isInitialized || !isOpen) return null
 
   const handleTestSound = (effectType) => {
     if (effectSettings[effectType] !== 'off') {
       playSound(effectType)
     }
   }
+
+  const handleClose = () => {
+    close() // Close through settings panel store
+    onClose() // Close through overlay manager
+  }
+
   const EffectGroup = ({ groupName, effects }) => (
     <div key={groupName}>
       <h4 className='text-xs text-white/50 mb-3'>{groupName}</h4>
@@ -93,8 +86,8 @@ const SoundSettings = () => {
   )
 
   return (
-    <div className='fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50'>
-      <div className='bg-black border border-game-blue p-6 max-w-4xl w-full mx-4'>
+    <div className='max-w-4xl mx-auto w-full p-6'>
+      <div className='bg-black border border-game-blue p-6'>
         {/* Header */}
         <div className='flex items-center justify-between mb-6'>
           <h2 className='text-xl text-game-blue flex items-center gap-2'>
@@ -102,7 +95,7 @@ const SoundSettings = () => {
             Sound Settings
           </h2>
           <button
-            onClick={close}
+            onClick={handleClose}
             className='text-white/50 hover:text-white transition-colors'
             aria-label='Close settings'
           >
@@ -175,7 +168,7 @@ const SoundSettings = () => {
         {/* Footer */}
         <div className='mt-6 pt-4 border-t border-white/10 flex justify-between items-center'>
           <button
-            onClick={resetSettings} // Changed from resetSettings to this.resetSettings
+            onClick={resetSettings}
             className='flex items-center gap-2 text-sm text-white/50 
                    hover:text-white transition-colors group'
           >

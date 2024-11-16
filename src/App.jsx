@@ -9,11 +9,11 @@ import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 import GameLayout from './screens/game/components/GameLayout'
 import GameStateManager from './screens/game/components/GameStateManager'
 import ChatSystem from './components/chat/ChatSystem'
-import SoundSettings from './components/sound/SoundSettings'
+import OverlayManager from './components/overlay/OverlayManager'
 import { useSettingsPanelStore } from './stores/settingsPanelStore'
 import { useAudio } from './hooks/useAudio'
+import { usePhantom } from './hooks/usePhantom'
 
-// Loading overlay component
 const LoadingOverlay = ({ progress }) => (
   <div className='fixed inset-0 bg-black flex items-center justify-center z-50'>
     <div className='text-center'>
@@ -32,25 +32,21 @@ const LoadingOverlay = ({ progress }) => (
 )
 
 const App = () => {
+  usePhantom()
   const [isLoading, setIsLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
-
-  // Use new audio system
   const { setVolume, isInitialized } = useAudio()
-
   const toggleSettingsPanel = useSettingsPanelStore((state) => state.toggle)
-
   const endpoint = useMemo(() => import.meta.env.VITE_SOLANA_RPC_ENDPOINT, [])
 
   // Initialize sound system
-  // Is 'isInitialized' only reffering to the sound system? Or are there other things this affects
   useEffect(() => {
     if (isInitialized) {
       setIsLoading(false)
     }
   }, [isInitialized])
 
-  // Keyboard controls
+  // Keyboard controls for volume only - overlay shortcuts are handled by OverlayManager
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
@@ -58,9 +54,6 @@ const App = () => {
       }
 
       switch (e.key.toLowerCase()) {
-        case 's':
-          toggleSettingsPanel()
-          break
         case 'm':
           // Toggle between 0 and previous volume
           setVolume('master', volumes.master > 0 ? 0 : 0.5)
@@ -116,7 +109,7 @@ const App = () => {
               <>
                 <GameStateManager />
                 <ChatSystem />
-                <SoundSettings />
+                <OverlayManager /> {/* Mount the OverlayManager */}
               </>
             )}
           </GameLayout>

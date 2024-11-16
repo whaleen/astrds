@@ -1,9 +1,8 @@
 // src/screens/ready/ReadyScreen.jsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Connection } from '@solana/web3.js'
-import { verifyWalletSignature } from '@/auth/auth'
 import { useAudio } from '../../hooks/useAudio'
+import { useAuth } from '@/hooks/useAuth'
 import { SOUND_TYPES, MUSIC_TRACKS } from '../../services/audio/AudioTypes'
 import ScreenContainer from '@/components/common/ScreenContainer'
 import GameTitle from '@/components/common/GameTitle'
@@ -18,6 +17,7 @@ const ReadyScreen = () => {
 
   const setGameState = useGameStore((state) => state.setGameState)
   const { playSound, playMusic, stopMusic, transitionMusic } = useAudio()
+  const { verifyWallet, clearAuth } = useAuth()
 
   useEffect(() => {
     console.log('ReadyScreen mounted, setting up game sequence...')
@@ -37,30 +37,17 @@ const ReadyScreen = () => {
 
       try {
         console.log('Starting game sequence...')
-
-        // Transition from title to ready music
-        console.log('Transitioning to ready music...')
         await transitionMusic(MUSIC_TRACKS.TITLE, MUSIC_TRACKS.READY, {
           crossFadeDuration: 1000,
         })
 
         if (!mountedRef.current) return
 
-        // Initialize Solana connection
-        const connection = new Connection(
-          import.meta.env.VITE_SOLANA_RPC_ENDPOINT,
-          {
-            commitment: 'confirmed',
-            wsEndpoint: import.meta.env.VITE_SOLANA_RPC_ENDPOINT.replace(
-              'https',
-              'wss'
-            ),
-            confirmTransactionInitialTimeout: 60000,
-          }
-        )
-
-        const isVerified = await verifyWalletSignature(wallet, connection)
-        if (!isVerified) throw new Error('Wallet signature verification failed')
+        // Verify wallet status
+        const isVerified = await verifyWallet()
+        if (!isVerified) {
+          throw new Error('Wallet verification failed')
+        }
         if (!mountedRef.current) return
 
         // Countdown sequence
@@ -75,7 +62,6 @@ const ReadyScreen = () => {
           }
         }
 
-        // Start game if still mounted
         if (mountedRef.current) {
           await transitionMusic(MUSIC_TRACKS.READY, MUSIC_TRACKS.GAME, {
             crossFadeDuration: 1000,
@@ -85,17 +71,27 @@ const ReadyScreen = () => {
       } catch (error) {
         console.error('Game start sequence failed:', error)
         if (mountedRef.current) {
-          // Clean up audio and show error
           await stopMusic(MUSIC_TRACKS.READY, { fadeOut: true })
           await stopMusic(MUSIC_TRACKS.GAME, { fadeOut: true })
           setVerificationError(error.message)
+          clearAuth()
         }
       }
     }
 
     startGameSequence()
-  }, [wallet, playSound, playMusic, stopMusic, transitionMusic, setGameState])
+  }, [
+    wallet,
+    playSound,
+    playMusic,
+    stopMusic,
+    transitionMusic,
+    setGameState,
+    verifyWallet,
+    clearAuth,
+  ])
 
+  // Rest of your component remains the same
   if (verificationError) {
     return (
       <ScreenContainer>
@@ -174,4 +170,5 @@ const ReadyScreen = () => {
     </ScreenContainer>
   )
 }
+
 export default ReadyScreen

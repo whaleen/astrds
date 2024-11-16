@@ -57,7 +57,7 @@ const GameOverScreen = () => {
     <ScreenContainer screenType='GAME_OVER'>
       <div className='fixed inset-0 flex items-center justify-center z-40 bg-black/75 backdrop-blur-sm'>
         <div className='max-w-lg w-full mx-4 text-center'>
-          <div className='bg-black/50 border border-white p-8 animate-fadeIn'>
+          <div className='bg-black/50 border border-1 border-white p-8 animate-fadeIn'>
             <GameTitle />
             <h1 className='text-game-red text-4xl mb-8'>GAME OVER</h1>
 

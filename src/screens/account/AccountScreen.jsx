@@ -1,4 +1,4 @@
-// src/screens/accounts/AccountScreen.jsx
+// src/screens/account/AccountScreen.jsx
 import React from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
@@ -104,7 +104,6 @@ const AccountScreen = ({ onClose }) => {
             (s) => s.walletAddress === walletAddress && s.score === bestScore
           )
 
-          // Simulate some additional stats for demo
           setStats({
             totalGames: userScores.length,
             averageScore: Math.round(totalScore / userScores.length),
@@ -128,200 +127,196 @@ const AccountScreen = ({ onClose }) => {
 
   if (!wallet.connected) {
     return (
-      <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm'>
-        <div className='max-w-md mx-4 bg-black/90 border border-game-blue p-8 text-center'>
-          <h2 className='text-2xl text-game-blue mb-4'>Account</h2>
-          <p className='text-gray-400'>
-            Connect your wallet to view your profile
-          </p>
-        </div>
+      <div className='max-w-md mx-auto text-center'>
+        <h2 className='text-2xl text-game-blue mb-4'>Account</h2>
+        <p className='text-gray-400'>
+          Connect your wallet to view your profile
+        </p>
       </div>
     )
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm'>
-      <div className='w-full max-h-[90vh] overflow-y-auto'>
-        <div className='max-w-7xl mx-auto p-4'>
-          <div className='grid grid-cols-1 md:grid-cols-12 gap-8'>
-            {/* Left Column - Player Info */}
-            <div className='md:col-span-3 space-y-6'>
-              {/* Token Balances Section */}
-              <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
-                <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
-                  <Coins size={20} />
-                  Wallet Balance
-                </h2>
-                <div className='space-y-4'>
-                  <TokenBalance
-                    label='SOL Balance'
-                    balance={tokenBalances.SOL}
-                    symbol='SOL'
-                    address=''
-                    loading={loading}
-                  />
-                  <TokenBalance
-                    label='ASTRDS Balance' // or whatever name you want to give your token
-                    balance={
-                      tokenBalances[
-                        '8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP'
-                      ]
-                    }
-                    symbol='AST' // or whatever symbol you want to use
-                    address='8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP'
-                    loading={loading}
-                  />
-                </div>
+    <div className='w-full max-h-[90vh] overflow-y-auto'>
+      <div className='max-w-7xl mx-auto p-4'>
+        <div className='grid grid-cols-1 md:grid-cols-12 gap-8'>
+          {/* Left Column - Player Info */}
+          <div className='md:col-span-3 space-y-6'>
+            {/* Token Balances Section */}
+            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
+              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
+                <Coins size={20} />
+                Wallet Balance
+              </h2>
+              <div className='space-y-4'>
+                <TokenBalance
+                  label='SOL Balance'
+                  balance={tokenBalances.SOL}
+                  symbol='SOL'
+                  address=''
+                  loading={loading}
+                />
+                <TokenBalance
+                  label='ASTRDS Balance'
+                  balance={
+                    tokenBalances[
+                      '8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP'
+                    ]
+                  }
+                  symbol='AST'
+                  address='8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP'
+                  loading={loading}
+                />
               </div>
+            </div>
 
-              {/* Profile Section */}
-              <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
-                <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
-                  <Trophy size={20} />
-                  Player Profile
-                </h2>
-                <div className='space-y-4'>
-                  <div className='text-center p-4 border border-white/5 rounded-lg bg-black/30'>
-                    <div className='text-4xl text-game-blue font-mono mb-2'>
-                      #{stats.bestRank || '??'}
-                    </div>
-                    <div className='text-xs text-gray-400'>Best Rank</div>
+            {/* Profile Section */}
+            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
+              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
+                <Trophy size={20} />
+                Player Profile
+              </h2>
+              <div className='space-y-4'>
+                <div className='text-center p-4 border border-white/5 rounded-lg bg-black/30'>
+                  <div className='text-4xl text-game-blue font-mono mb-2'>
+                    #{stats.bestRank || '??'}
                   </div>
-                  <div className='flex items-center justify-between text-sm'>
-                    <span className='text-gray-400'>Wallet</span>
-                    <div className='flex items-center gap-2'>
-                      <span className='font-mono text-xs text-white/70'>
-                        {wallet.publicKey?.toString().slice(0, 4)}...
-                        {wallet.publicKey?.toString().slice(-4)}
-                      </span>
-                      <a
-                        href={`https://solscan.io/account/${wallet.publicKey?.toString()}`}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-gray-400 hover:text-white transition-colors'
-                      >
-                        <ExternalLink size={14} />
-                      </a>
-                    </div>
-                  </div>
+                  <div className='text-xs text-gray-400'>Best Rank</div>
                 </div>
-              </div>
-
-              {/* Achievement Badges */}
-              <div className='bg-black/50 border border-white/10 rounded-lg p-6'>
-                <h3 className='text-sm text-game-blue mb-4 flex items-center gap-2'>
-                  <Award size={16} />
-                  Achievements
-                </h3>
-                <div className='grid grid-cols-3 gap-2'>
-                  {[...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className='aspect-square rounded-lg bg-black/30 border border-white/5 flex items-center justify-center'
+                <div className='flex items-center justify-between text-sm'>
+                  <span className='text-gray-400'>Wallet</span>
+                  <div className='flex items-center gap-2'>
+                    <span className='font-mono text-xs text-white/70'>
+                      {wallet.publicKey?.toString().slice(0, 4)}...
+                      {wallet.publicKey?.toString().slice(-4)}
+                    </span>
+                    <a
+                      href={`https://solscan.io/account/${wallet.publicKey?.toString()}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='text-gray-400 hover:text-white transition-colors'
                     >
-                      <div className='w-8 h-8 rounded-full bg-game-blue/10 animate-pulse' />
-                    </div>
-                  ))}
-                </div>
-                <div className='text-center mt-4 text-xs text-gray-500'>
-                  More achievements coming soon!
+                      <ExternalLink size={14} />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Center Column - Stats Grid */}
-            <div className='md:col-span-6 space-y-6'>
-              <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
-                <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
-                  <BarChart3 size={20} />
-                  Performance Stats
-                </h2>
-                <div className='grid grid-cols-2 gap-4'>
-                  <MetricCard
-                    icon={Gamepad2}
-                    label='Total Games'
-                    value={stats.totalGames}
-                    sublabel='Career games played'
-                  />
-                  <MetricCard
-                    icon={Trophy}
-                    label='Best Score'
-                    value={stats.bestScore.toLocaleString()}
-                    sublabel='Personal record'
-                  />
-                  <MetricCard
-                    icon={Target}
-                    label='Average Score'
-                    value={stats.averageScore.toLocaleString()}
-                    sublabel='Points per game'
-                  />
-                  <MetricCard
-                    icon={Crosshair}
-                    label='Accuracy'
-                    value={`${stats.accuracy}%`}
-                    sublabel='Hit ratio'
-                  />
-                  <MetricCard
-                    icon={Clock}
-                    label='Play Time'
-                    value={`${stats.totalPlayTime}m`}
-                    sublabel='Total time played'
-                  />
-                  <MetricCard
-                    icon={Award}
-                    label='Favorite Level'
-                    value={stats.favoriteLevel}
-                    sublabel='Most played level'
-                  />
-                </div>
+            {/* Achievement Badges */}
+            <div className='bg-black/50 border border-white/10 rounded-lg p-6'>
+              <h3 className='text-sm text-game-blue mb-4 flex items-center gap-2'>
+                <Award size={16} />
+                Achievements
+              </h3>
+              <div className='grid grid-cols-3 gap-2'>
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className='aspect-square rounded-lg bg-black/30 border border-white/5 flex items-center justify-center'
+                  >
+                    <div className='w-8 h-8 rounded-full bg-game-blue/10 animate-pulse' />
+                  </div>
+                ))}
               </div>
-            </div>
-
-            {/* Right Column - Recent Games */}
-            <div className='md:col-span-3 space-y-6'>
-              <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
-                <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
-                  <Clock size={20} />
-                  Recent Games
-                </h2>
-                <div className='space-y-3'>
-                  {scores.map((score, index) => (
-                    <div
-                      key={score.date}
-                      className='bg-black/30 border border-white/10 rounded-lg p-3
-                               hover:border-game-blue/30 transition-colors'
-                    >
-                      <div className='flex justify-between items-center mb-1'>
-                        <span className='text-xs text-gray-400'>
-                          {new Date(score.date).toLocaleDateString()}
-                        </span>
-                        <span className='text-xs text-gray-500'>
-                          #{index + 1}
-                        </span>
-                      </div>
-                      <div className='text-lg font-mono text-game-blue'>
-                        {score.score.toLocaleString()}
-                      </div>
-                    </div>
-                  ))}
-                  {scores.length === 0 && (
-                    <div className='text-center text-gray-500 text-sm py-4'>
-                      No games played yet
-                    </div>
-                  )}
-                </div>
+              <div className='text-center mt-4 text-xs text-gray-500'>
+                More achievements coming soon!
               </div>
             </div>
           </div>
 
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className='fixed top-4 right-4 text-gray-400 hover:text-white transition-colors'
-          >
-            <span className='text-2xl'>✕</span>
-          </button>
+          {/* Center Column - Stats Grid */}
+          <div className='md:col-span-6 space-y-6'>
+            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
+              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
+                <BarChart3 size={20} />
+                Performance Stats
+              </h2>
+              <div className='grid grid-cols-2 gap-4'>
+                <MetricCard
+                  icon={Gamepad2}
+                  label='Total Games'
+                  value={stats.totalGames}
+                  sublabel='Career games played'
+                />
+                <MetricCard
+                  icon={Trophy}
+                  label='Best Score'
+                  value={stats.bestScore.toLocaleString()}
+                  sublabel='Personal record'
+                />
+                <MetricCard
+                  icon={Target}
+                  label='Average Score'
+                  value={stats.averageScore.toLocaleString()}
+                  sublabel='Points per game'
+                />
+                <MetricCard
+                  icon={Crosshair}
+                  label='Accuracy'
+                  value={`${stats.accuracy}%`}
+                  sublabel='Hit ratio'
+                />
+                <MetricCard
+                  icon={Clock}
+                  label='Play Time'
+                  value={`${stats.totalPlayTime}m`}
+                  sublabel='Total time played'
+                />
+                <MetricCard
+                  icon={Award}
+                  label='Favorite Level'
+                  value={stats.favoriteLevel}
+                  sublabel='Most played level'
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Recent Games */}
+          <div className='md:col-span-3 space-y-6'>
+            <div className='bg-black/50 border border-game-blue/20 rounded-lg p-6'>
+              <h2 className='text-xl text-game-blue mb-6 flex items-center gap-2'>
+                <Clock size={20} />
+                Recent Games
+              </h2>
+              <div className='space-y-3'>
+                {scores.map((score, index) => (
+                  <div
+                    key={score.date}
+                    className='bg-black/30 border border-white/10 rounded-lg p-3
+                               hover:border-game-blue/30 transition-colors'
+                  >
+                    <div className='flex justify-between items-center mb-1'>
+                      <span className='text-xs text-gray-400'>
+                        {new Date(score.date).toLocaleDateString()}
+                      </span>
+                      <span className='text-xs text-gray-500'>
+                        #{index + 1}
+                      </span>
+                    </div>
+                    <div className='text-lg font-mono text-game-blue'>
+                      {score.score.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+                {scores.length === 0 && (
+                  <div className='text-center text-gray-500 text-sm py-4'>
+                    No games played yet
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className='fixed top-4 right-4 text-gray-400 hover:text-white transition-colors'
+        >
+          <span className='text-2xl'>✕</span>
+        </button>
       </div>
     </div>
   )

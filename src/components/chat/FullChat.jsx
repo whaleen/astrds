@@ -54,7 +54,6 @@ const FullChat = ({ onClose, onPlayClick }) => {
 
   const handleNewMessage = useCallback(
     (message) => {
-      // No need to setMessages, the store handles this
       addMessage(message)
 
       if (message.walletAddress === wallet.publicKey?.toString()) {
@@ -167,130 +166,109 @@ const FullChat = ({ onClose, onPlayClick }) => {
     )
   }
 
-  useEffect(() => {
-    setUnreadMessages(false)
-  }, [])
-
   return (
-    <div className='fixed inset-0 bg-black/75 flex items-center justify-center z-50'>
-      <div className='bg-black border border-game-blue p-6 max-w-2xl w-full mx-4 h-[80vh] flex flex-col'>
-        <button
-          onClick={onClose}
-          className='[&>.wallet-adapter-button]:bg-transparent
-                  [&>.wallet-adapter-button]:border-2 
-                  [&>.wallet-adapter-button]:border-game-blue 
-                  [&>.wallet-adapter-button]:text-game-blue 
-                  [&>.wallet-adapter-button]:font-arcade 
-                  [&>.wallet-adapter-button]:px-6 
-                  [&>.wallet-adapter-button]:py-3 
-                  [&>.wallet-adapter-button]:text-sm 
-                  [&>.wallet-adapter-button]:transition-all 
-                  [&>.wallet-adapter-button]:duration-300
-                  [&>.wallet-adapter-button:hover]:bg-game-blue 
-                  [&>.wallet-adapter-button:hover]:text-black 
-                  [&>.wallet-adapter-button:hover]:shadow-[0_0_10px_#4dc1f9]
-                  [&>.wallet-adapter-button:not(:disabled):hover]:bg-game-blue'
-        >
-          ✕
-        </button>
+    <div className='max-w-2xl w-full mx-auto h-[80vh] flex flex-col bg-black border border-game-blue p-6'>
+      <button
+        onClick={onClose}
+        className='absolute top-4 right-4 text-gray-400 hover:text-white transition-colors'
+      >
+        <span className='text-2xl'>✕</span>
+      </button>
 
-        <div className='flex justify-between items-center mb-4 mt-12'>
-          <h2 className='text-xl text-game-blue'>Game Chat</h2>
-        </div>
+      <div className='flex justify-between items-center mb-4 mt-12'>
+        <h2 className='text-xl text-game-blue'>Game Chat</h2>
+      </div>
 
-        <div className='flex-1 relative'>
-          <div
-            ref={messagesContainerRef}
-            className='absolute inset-0 overflow-y-auto scrollbar-thin 
+      <div className='flex-1 relative'>
+        <div
+          ref={messagesContainerRef}
+          className='absolute inset-0 overflow-y-auto scrollbar-thin 
                        scrollbar-thumb-game-blue'
-            style={{ paddingBottom: '0.5rem' }}
-          >
-            <div className='min-h-full flex flex-col justify-end'>
-              <div className='space-y-4'>
-                {loading ? (
-                  <div className='text-center text-game-blue'>
-                    Loading messages...
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className='text-center text-gray-500'>
-                    No messages yet
-                  </div>
-                ) : (
-                  messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`space-y-1 px-2 ${
-                        msg.walletAddress === wallet.publicKey?.toString()
-                          ? 'opacity-100'
-                          : 'opacity-80'
-                      }`}
-                    >
-                      <div className='flex items-baseline gap-2'>
-                        <span className='text-game-blue font-bold flex items-center gap-1'>
-                          {shortenAddress(msg.walletAddress)}
-                          <a
-                            href={`https://solscan.io/account/${msg.walletAddress}`}
-                            target='_blank'
-                            title={`View ${msg.walletAddress} on Solscan`}
-                            rel='noopener noreferrer'
-                            className='text-gray-200 hover:text-white transition-colors text-3xl mb-5 ml-2 mr-4'
-                          >
-                            ⇗
-                          </a>
-                        </span>
-                        <span className='text-xs text-gray-500'>
-                          {new Date(msg.timestamp).toLocaleString()}
-                        </span>
-                      </div>
-                      <p className='text-white break-words'>{msg.message}</p>
+          style={{ paddingBottom: '0.5rem' }}
+        >
+          <div className='min-h-full flex flex-col justify-end'>
+            <div className='space-y-4'>
+              {loading ? (
+                <div className='text-center text-game-blue'>
+                  Loading messages...
+                </div>
+              ) : messages.length === 0 ? (
+                <div className='text-center text-gray-500'>No messages yet</div>
+              ) : (
+                messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`space-y-1 px-2 ${
+                      msg.walletAddress === wallet.publicKey?.toString()
+                        ? 'opacity-100'
+                        : 'opacity-80'
+                    }`}
+                  >
+                    <div className='flex items-baseline gap-2'>
+                      <span className='text-game-blue font-bold flex items-center gap-1'>
+                        {shortenAddress(msg.walletAddress)}
+                        <a
+                          href={`https://solscan.io/account/${msg.walletAddress}`}
+                          target='_blank'
+                          title={`View ${msg.walletAddress} on Solscan`}
+                          rel='noopener noreferrer'
+                          className='text-gray-200 hover:text-white transition-colors text-3xl mb-5 ml-2 mr-4'
+                        >
+                          ⇗
+                        </a>
+                      </span>
+                      <span className='text-xs text-gray-500'>
+                        {new Date(msg.timestamp).toLocaleString()}
+                      </span>
                     </div>
-                  ))
-                )}
-                <div ref={messagesEndRef} />
-              </div>
+                    <p className='text-white break-words'>{msg.message}</p>
+                  </div>
+                ))
+              )}
+              <div ref={messagesEndRef} />
             </div>
           </div>
-          <NewMessagesIndicator />
         </div>
+        <NewMessagesIndicator />
+      </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className='flex gap-2'
-        >
-          <input
-            type='text'
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={
-              wallet.connected ? 'Type a message...' : 'Connect wallet to chat'
-            }
-            disabled={!wallet.connected || sendingMessage}
-            className='flex-1 bg-transparent border border-game-blue p-2 text-white 
+      <form
+        onSubmit={handleSubmit}
+        className='flex gap-2'
+      >
+        <input
+          type='text'
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder={
+            wallet.connected ? 'Type a message...' : 'Connect wallet to chat'
+          }
+          disabled={!wallet.connected || sendingMessage}
+          className='flex-1 bg-transparent border border-game-blue p-2 text-white 
                      placeholder:text-gray-500 focus:outline-none focus:border-white
                      disabled:opacity-50 disabled:cursor-not-allowed'
-            maxLength={280}
-          />
-          <button
-            type='submit'
-            disabled={!wallet.connected || !newMessage.trim() || sendingMessage}
-            className='bg-game-blue text-black px-4 py-2 hover:bg-white 
+          maxLength={280}
+        />
+        <button
+          type='submit'
+          disabled={!wallet.connected || !newMessage.trim() || sendingMessage}
+          className='bg-game-blue text-black px-4 py-2 hover:bg-white 
                      transition-colors disabled:bg-gray-700 disabled:text-gray-500
                      min-w-[80px] flex items-center justify-center'
-          >
-            {sendingMessage ? (
-              <span className='flex items-center gap-2'>
-                <span className='w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin'></span>
-              </span>
-            ) : (
-              'Send'
-            )}
-          </button>
-        </form>
+        >
+          {sendingMessage ? (
+            <span className='flex items-center gap-2'>
+              <span className='w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin'></span>
+            </span>
+          ) : (
+            'Send'
+          )}
+        </button>
+      </form>
 
-        {error && (
-          <div className='mt-2 text-red-500 text-sm text-center'>{error}</div>
-        )}
-      </div>
+      {error && (
+        <div className='mt-2 text-red-500 text-sm text-center'>{error}</div>
+      )}
     </div>
   )
 }

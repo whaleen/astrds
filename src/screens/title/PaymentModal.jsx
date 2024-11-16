@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useConnection } from '@solana/wallet-adapter-react'
 import { Coins } from 'lucide-react'
-import { verifyWalletSignature } from '@/auth/auth'
+import { useAuth } from '@/hooks/useAuth'
 
 const PaymentOption = ({ selected, onSelect, type, amount, symbol, label }) => (
   <button
@@ -37,32 +37,53 @@ const PaymentOption = ({ selected, onSelect, type, amount, symbol, label }) => (
 const PaymentModal = ({ onClose, onPaymentSelected }) => {
   const [selectedOption, setSelectedOption] = useState(null)
   const [error, setError] = useState(null)
-  const [processing, setProcessing] = useState(false)
   const wallet = useWallet()
   const { connection } = useConnection()
+  const { isVerifying, error: authError, verifyWallet } = useAuth()
 
   const handlePaymentSubmit = async () => {
-    if (!selectedOption || !wallet.publicKey) return
+    if (!selectedOption || !wallet.connected) {
+      setError('Please connect your wallet and select a payment option')
+      return
+    }
 
-    setProcessing(true)
     setError(null)
 
     try {
-      const verified = await verifyWalletSignature(wallet, connection)
-
-      if (!verified) {
-        setError(`Payment verification failed`)
-        return
+      // Ensure wallet is ready
+      if (!wallet.publicKey) {
+        throw new Error('Wallet not connected')
       }
 
-      onPaymentSelected(selectedOption)
+      // First ensure we can connect to the wallet
+      try {
+        await wallet.connect()
+      } catch (err) {
+        console.log('Wallet already connected or connection declined')
+      }
+
+      // Attempt verification
+      const success = await verifyWallet()
+
+      if (success) {
+        onPaymentSelected(selectedOption)
+      } else {
+        setError(authError || 'Verification failed')
+      }
     } catch (error) {
-      console.error('Payment verification failed:', error)
-      setError('Payment verification failed')
-    } finally {
-      setProcessing(false)
+      console.error('Payment process failed:', error)
+      setError(error.message || 'Payment verification failed')
     }
   }
+
+  const getButtonText = () => {
+    if (!wallet.connected) return 'Connect Wallet'
+    if (isVerifying) return 'Verifying...'
+    if (!selectedOption) return 'Select Payment Method'
+    return 'Play Now'
+  }
+
+  const isButtonDisabled = !wallet.connected || isVerifying || !selectedOption
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm'>
@@ -75,7 +96,7 @@ const PaymentModal = ({ onClose, onPaymentSelected }) => {
         <div className='space-y-4 mb-8'>
           <PaymentOption
             type='SOL'
-            amount={0.005}
+            amount={0.05}
             symbol='SOL'
             label='Pay with SOL'
             selected={selectedOption === 'SOL'}
@@ -83,7 +104,7 @@ const PaymentModal = ({ onClose, onPaymentSelected }) => {
           />
           <PaymentOption
             type='ASTRDS'
-            amount={5000}
+            amount={1000}
             symbol='ASTRDS'
             label='Pay with ASTRDS'
             selected={selectedOption === 'ASTRDS'}
@@ -98,15 +119,15 @@ const PaymentModal = ({ onClose, onPaymentSelected }) => {
         <div className='flex gap-4'>
           <button
             onClick={handlePaymentSubmit}
-            disabled={!selectedOption || processing}
+            disabled={isButtonDisabled}
             className={`flex-1 py-3 border-2 transition-colors font-arcade text-sm
               ${
-                processing
+                isButtonDisabled
                   ? 'border-gray-600 text-gray-600 cursor-not-allowed'
                   : 'border-game-blue text-game-blue hover:bg-game-blue hover:text-black'
               }`}
           >
-            {processing ? 'Verifying...' : 'Play Now'}
+            {getButtonText()}
           </button>
           <button
             onClick={onClose}
@@ -118,7 +139,9 @@ const PaymentModal = ({ onClose, onPaymentSelected }) => {
         </div>
 
         <div className='mt-4 text-center text-xs text-gray-500'>
-          Choose your preferred payment method
+          {wallet.connected
+            ? 'Choose your preferred payment method'
+            : 'Connect your wallet to continue'}
         </div>
       </div>
     </div>
