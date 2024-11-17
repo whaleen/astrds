@@ -7,13 +7,10 @@ const {
   ASSOCIATED_TOKEN_PROGRAM_ID
 } = require('@solana/spl-token');
 const BN = require('bn.js');
-const crypto = require('crypto');  // Added this line
+const crypto = require('crypto');
 
 function getInstructionDiscriminator(name) {
-  // Anchor prefixes the name with 'global:' namespace
   const preimage = `global:${name}`;
-
-  // Create a buffer for sha256 hash
   let hash = Buffer.from(
     crypto
       .createHash('sha256')
@@ -35,7 +32,6 @@ exports.handler = async (event, context) => {
   try {
     const { playerPublicKey, tokenCount } = JSON.parse(event.body);
 
-    // Validate token count against program constraints
     if (tokenCount <= 0) {
       throw new Error('No tokens collected');
     }
@@ -69,17 +65,25 @@ exports.handler = async (event, context) => {
     ]);
 
     console.log('Instruction data:', data.toString('hex'));
+    console.log('Player ATA:', playerATA.toBase58());
+    console.log('Mint Authority:', mintAuthority.publicKey.toBase58());
+
+    // First verify the mint account exists
+    const mintAccount = await connection.getAccountInfo(MINT_PUBKEY);
+    if (!mintAccount) {
+      throw new Error('Mint account does not exist');
+    }
 
     // Create mint instruction
     const mintInstruction = new TransactionInstruction({
       programId: PROGRAM_ID,
       keys: [
         // Order matches IDL exactly
-        { pubkey: MINT_PUBKEY, isSigner: false, isWritable: true },
-        { pubkey: playerATA, isSigner: false, isWritable: true },
-        { pubkey: mintAuthority.publicKey, isSigner: true, isWritable: true },
-        { pubkey: playerPubkey, isSigner: true, isWritable: false },
-        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: MINT_PUBKEY, isSigner: false, isWritable: true },          // mint
+        { pubkey: playerATA, isSigner: false, isWritable: true },            // playerTokenAccount
+        { pubkey: mintAuthority.publicKey, isSigner: true, isWritable: true },// mintAuthority
+        { pubkey: playerPubkey, isSigner: true, isWritable: false },         // player
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },    // tokenProgram
       ],
       data
     });
@@ -90,9 +94,10 @@ exports.handler = async (event, context) => {
     // Check if ATA needs to be created
     const accountInfo = await connection.getAccountInfo(playerATA);
     if (!accountInfo) {
+      console.log('Creating ATA:', playerATA.toBase58());
       transaction.add(
         createAssociatedTokenAccountInstruction(
-          mintAuthority.publicKey,
+          playerPubkey,  // Changed payer to player
           playerATA,
           playerPubkey,
           MINT_PUBKEY,
@@ -122,7 +127,12 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         success: true,
         serializedTransaction,
-        message: 'Transaction built successfully'
+        message: 'Transaction built successfully',
+        debug: {
+          mint: MINT_PUBKEY.toBase58(),
+          ata: playerATA.toBase58(),
+          authority: mintAuthority.publicKey.toBase58()
+        }
       }),
     };
 
