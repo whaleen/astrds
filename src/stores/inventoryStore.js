@@ -45,7 +45,7 @@ export const useInventoryStore = create((set, get) => ({
   resetInventory: () => set({
     items: {
       ships: 1,
-      tokens: 420,
+      tokens: 20,
       pills: 0
     }
   })

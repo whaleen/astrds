@@ -9,24 +9,30 @@ const {
 const BN = require('bn.js');
 const crypto = require('crypto');
 
+function sighash(nameSpace, ixName) {
+  const name = `${nameSpace}:${ixName}`;
+  const preimage = Buffer.from(name);
+  return Buffer.from(crypto.createHash('sha256').update(preimage).digest()).slice(0, 8);
+}
+
 // Function to serialize the instruction data according to Anchor's format
 function createInstructionData(collectedTokens) {
-  // We can get this from anchor build
-  const instructionDiscriminator = [
-    248, 198, 158, 145, 225, 117, 135, 200  // mint_game_reward discriminator
-  ];
+  // Get the discriminator using Anchor's method
+  const discriminator = sighash('global', 'mint_game_reward');
 
   // Create a buffer for the collected tokens (u64)
   const tokenBuffer = Buffer.alloc(8);
   new BN(collectedTokens).toArrayLike(Buffer, 'le', 8).copy(tokenBuffer);
 
-  console.log('Discriminator:', Buffer.from(instructionDiscriminator).toString('hex'));
-  console.log('Token amount:', tokenBuffer.toString('hex'));
+  const data = Buffer.concat([discriminator, tokenBuffer]);
 
-  return Buffer.concat([
-    Buffer.from(instructionDiscriminator),
-    tokenBuffer
-  ]);
+  console.log('Instruction details:', {
+    discriminator: discriminator.toString('hex'),
+    tokenAmount: tokenBuffer.toString('hex'),
+    fullData: data.toString('hex')
+  });
+
+  return data;
 }
 
 exports.handler = async (event, context) => {
@@ -117,8 +123,7 @@ exports.handler = async (event, context) => {
       ata: playerATA.toBase58(),
       mintAuthority: mintAuthority.publicKey.toBase58(),
       player: playerPubkey.toBase58(),
-      tokenCount,
-      discriminator: createInstructionData(tokenCount).toString('hex')
+      tokenCount
     });
 
     return {
@@ -131,7 +136,7 @@ exports.handler = async (event, context) => {
           mint: MINT_PUBKEY.toBase58(),
           ata: playerATA.toBase58(),
           authority: mintAuthority.publicKey.toBase58(),
-          discriminator: createInstructionData(tokenCount).toString('hex')
+          instructionData: createInstructionData(tokenCount).toString('hex')
         }
       }),
     };
