@@ -3,6 +3,21 @@ import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { Program, AnchorProvider, BN, Wallet } from '@project-serum/anchor'
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
+// Custom error classes
+class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
+class NetworkError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "NetworkError";
+  }
+}
+
 const MINT_ADDRESS = new PublicKey('8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP')
 const BURN_PROGRAM_ID = new PublicKey('ACtXctJ38tvu8JDeg3a4nt9hRTf9AxsYjsd23XCvmHpe')
 
@@ -33,6 +48,11 @@ export const handler = async (event) => {
   try {
     const { playerPublicKey, amount = 1000 } = JSON.parse(event.body)
     console.log('Burn request received:', { playerPublicKey, amount })
+
+    // Validate input parameters
+    if (!playerPublicKey || amount <= 0) {
+      throw new ValidationError('Invalid burn parameters: playerPublicKey and amount must be provided and amount must be greater than 0.')
+    }
 
     // Initialize connection
     const connection = new Connection(
@@ -88,12 +108,32 @@ export const handler = async (event) => {
 
   } catch (error) {
     console.error('Burn failed:', error)
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        success: false,
-        error: error.message
-      })
+
+    // Handle specific error types
+    if (error instanceof ValidationError) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          success: false,
+          error: error.message
+        })
+      }
+    } else if (error.message.includes('network')) {
+      return {
+        statusCode: 502,
+        body: JSON.stringify({
+          success: false,
+          error: 'Network error occurred. Please try again later.'
+        })
+      }
+    } else {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          success: false,
+          error: 'An unexpected error occurred. Please try again later.'
+        })
+      }
     }
   }
 }
