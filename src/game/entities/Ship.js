@@ -4,8 +4,10 @@ import { useGameStore } from '../../stores/gameStore'
 import { usePowerupStore } from '../../stores/powerupStore'
 import { useEngineStore } from '../../stores/engineStore'
 import { useInventoryStore } from '../../stores/inventoryStore'
-import { particleSystem } from '../systems/ParticleSystem' // Add this import
+import { particleSystem } from '../systems/ParticleSystem'
 import { audioService } from '../../services/audio/AudioService'
+import { bulletSystem } from '../systems/BulletSystem';
+
 
 export default class Ship {
   constructor(args) {
@@ -87,22 +89,6 @@ export default class Ship {
       }
     }
 
-    // Create explosion particles
-    // for (let i = 0; i < 60; i++) {
-    //   const particle = new Particle({
-    //     lifeSpan: randomNumBetween(60, 100),
-    //     size: randomNumBetween(1, 4),
-    //     position: {
-    //       x: this.position.x + randomNumBetween(-this.radius / 4, this.radius / 4),
-    //       y: this.position.y + randomNumBetween(-this.radius / 4, this.radius / 4),
-    //     },
-    //     velocity: {
-    //       x: randomNumBetween(-1.5, 1.5),
-    //       y: randomNumBetween(-1.5, 1.5),
-    //     },
-    //   })
-    //   useEngineStore.getState().addEntity(particle, 'particles')
-    // }
   }
 
   rotate(dir) {
@@ -129,6 +115,23 @@ export default class Ship {
         ((this.rotation - 180) * Math.PI) / 180
       )
       particleSystem.createThrusterParticle(this.position, posDelta)
+    }
+  }
+
+  shootBullet() {
+    const now = Date.now();
+    const powerups = usePowerupStore.getState().powerups;
+
+    // Determine fire rate and bullet type based on powerups
+    const fireRate = powerups.rapidFire ? 50 : 250;
+    const bulletType = powerups.rapidFire ? 'rapid' :
+      powerups.beam ? 'beam' :
+        powerups.spread ? 'spread' :
+          'normal';
+
+    if (now - this.lastShot > fireRate) {
+      bulletSystem.fireBullet(this, bulletType);
+      this.lastShot = now;
     }
   }
 
