@@ -18,14 +18,25 @@ const loadAndVerifyAuthority = () => {
       new Uint8Array(JSON.parse(process.env.PROGRAM_AUTHORITY_PRIVATE_KEY))
     )
 
-    console.log('Loaded authority public key:', authorityKeypair.publicKey.toString())
-    console.log('Expected authority:', EXPECTED_AUTHORITY.toString())
-    console.log('Keys match:', authorityKeypair.publicKey.equals(EXPECTED_AUTHORITY))
-
     return authorityKeypair
   } catch (error) {
     console.error('Failed to load authority keypair:', error)
     throw error
+  }
+}
+
+// Custom error classes
+class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
+class NetworkError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "NetworkError";
   }
 }
 
@@ -38,8 +49,9 @@ export const handler = async (event) => {
     const { playerPublicKey, tokenCount } = JSON.parse(event.body)
     console.log('Minting request received:', { playerPublicKey, tokenCount })
 
+    // Validate input parameters
     if (!playerPublicKey || tokenCount <= 0 || tokenCount > 200) {
-      throw new Error('Invalid mint parameters')
+      throw new ValidationError('Invalid mint parameters')
     }
 
     // Initialize connection with commitment
@@ -64,13 +76,6 @@ export const handler = async (event) => {
       MINT_ADDRESS,
       playerPubkey
     )
-
-    console.log('Building transaction with accounts:', {
-      mint: MINT_ADDRESS.toString(),
-      playerATA: playerATA.toString(),
-      mintAuthority: authorityKeypair.publicKey.toString(),
-      player: playerPubkey.toString()
-    })
 
     // Build and send transaction
     const tx = await program.methods
@@ -97,12 +102,32 @@ export const handler = async (event) => {
 
   } catch (error) {
     console.error('Mint failed:', error)
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        success: false,
-        error: error.message
-      })
+
+    // Handle specific error types
+    if (error instanceof ValidationError) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          success: false,
+          error: error.message
+        })
+      }
+    } else if (error instanceof NetworkError) {
+      return {
+        statusCode: 502,
+        body: JSON.stringify({
+          success: false,
+          error: 'Network error occurred. Please try again later.'
+        })
+      }
+    } else {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          success: false,
+          error: 'An unexpected error occurred. Please try again later.'
+        })
+      }
     }
   }
 }
