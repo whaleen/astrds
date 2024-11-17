@@ -7,6 +7,7 @@ const {
   ASSOCIATED_TOKEN_PROGRAM_ID
 } = require('@solana/spl-token');
 const BN = require('bn.js');
+const crypto = require('crypto');  // Added this line
 
 function getInstructionDiscriminator(name) {
   // Anchor prefixes the name with 'global:' namespace
