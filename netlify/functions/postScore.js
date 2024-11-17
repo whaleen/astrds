@@ -25,12 +25,12 @@ export const handler = async (event, context) => {
     });
 
     const { score, walletAddress } = JSON.parse(event.body);
-    console.log('Processing new score:', { score, walletAddress });
+    // console.log('Processing new score:', { score, walletAddress });
 
     // Get existing scores
     const existingScoresStr = await store.get("scores");
     const existingScores = existingScoresStr ? JSON.parse(existingScoresStr) : [];
-    console.log('Current scores:', existingScores);
+    // console.log('Current scores:', existingScores);
 
     // Add new score
     const newScore = {
@@ -44,7 +44,7 @@ export const handler = async (event, context) => {
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
 
-    console.log('Saving updated scores:', allScores);
+    // console.log('Saving updated scores:', allScores);
     await store.set("scores", JSON.stringify(allScores));
 
     return {

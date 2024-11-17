@@ -91,11 +91,11 @@ const OverlayManager = () => {
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        console.log('⌨️ Key press ignored (input/textarea focused)')
+        // console.log('⌨️ Key press ignored (input/textarea focused)')
         return
       }
 
-      console.log('⌨️ Key pressed:', e.key.toLowerCase())
+      // console.log('⌨️ Key pressed:', e.key.toLowerCase())
       switch (e.key.toLowerCase()) {
         case 's':
           openOverlay(OVERLAY_TYPES.SOUND)
@@ -122,14 +122,14 @@ const OverlayManager = () => {
   }, [activeOverlay, openOverlay, closeOverlay])
 
   const handlePlayClick = () => {
-    console.log('🎮 Play button clicked')
+    // console.log('🎮 Play button clicked')
     closeOverlay()
     setGameState('READY_TO_PLAY')
   }
 
   // Wrapper component that adds conditional backdrop
   const OverlayWrapper = ({ children, type }) => {
-    console.log('🎭 Rendering overlay wrapper for type:', type)
+    // console.log('🎭 Rendering overlay wrapper for type:', type)
     if (!children) return null
 
     const { blur } = OVERLAY_BEHAVIOR[type] || {}
