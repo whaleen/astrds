@@ -1,23 +1,24 @@
 // src/components/tokens/ASTRDSMinting.jsx
 import React, { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Connection, Transaction, PublicKey } from '@solana/web3.js'
+import { Connection, Transaction } from '@solana/web3.js'
 
 const ASTRDSMinting = ({ tokenCount }) => {
   const wallet = useWallet()
-  const [mintingTokens, setMintingTokens] = useState(false)
-  const [mintError, setMintError] = useState(null)
-  const [mintSuccess, setMintSuccess] = useState(false)
+  const [status, setStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+    signature: null,
+  })
 
   const mintGameTokens = async () => {
     if (!wallet.connected || tokenCount === 0) return
 
     try {
-      setMintingTokens(true)
-      setMintError(null)
-      setMintSuccess(false)
+      setStatus({ loading: true, error: null, success: false, signature: null })
 
-      // Get partially signed transaction from backend
+      // 1. Get the transaction from our backend
       const response = await fetch('/.netlify/functions/mintTokens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -27,38 +28,33 @@ const ASTRDSMinting = ({ tokenCount }) => {
         }),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to build transaction')
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to build transaction')
       }
 
-      const { serializedTransaction } = await response.json()
-
-      // Deserialize the transaction
-      const transaction = Transaction.from(
-        Buffer.from(serializedTransaction, 'base64')
-      )
-
-      // Connect to Solana
+      // 2. Deserialize and sign the transaction
       const connection = new Connection(
         'https://api.devnet.solana.com',
         'confirmed'
       )
-
-      // Sign with the player's wallet
+      const transaction = Transaction.from(
+        Buffer.from(result.serializedTransaction, 'base64')
+      )
       const signedTx = await wallet.signTransaction(transaction)
 
-      // Send the fully signed transaction
+      // 3. Send and confirm the transaction
       const signature = await connection.sendRawTransaction(
         signedTx.serialize()
       )
+
       console.log('Transaction sent:', signature)
 
-      // Wait for confirmation
-      const confirmation = await connection.confirmTransaction(
-        signature,
-        'confirmed'
-      )
+      const confirmation = await connection.confirmTransaction(signature, {
+        commitment: 'confirmed',
+        maxRetries: 3,
+      })
 
       if (confirmation.value.err) {
         throw new Error(
@@ -66,13 +62,20 @@ const ASTRDSMinting = ({ tokenCount }) => {
         )
       }
 
-      console.log('Transaction confirmed:', signature)
-      setMintSuccess(true)
+      setStatus({
+        loading: false,
+        error: null,
+        success: true,
+        signature,
+      })
     } catch (error) {
       console.error('Minting error:', error)
-      setMintError(error.message || 'Failed to mint tokens. Please try again.')
-    } finally {
-      setMintingTokens(false)
+      setStatus({
+        loading: false,
+        error: error.message || 'Failed to mint tokens. Please try again.',
+        success: false,
+        signature: null,
+      })
     }
   }
 
@@ -87,30 +90,38 @@ const ASTRDSMinting = ({ tokenCount }) => {
 
       <button
         onClick={mintGameTokens}
-        disabled={mintingTokens || !wallet.connected || mintSuccess}
+        disabled={status.loading || !wallet.connected || status.success}
         className={`mt-4 px-4 py-2 bg-game-blue text-black
           ${
-            mintingTokens || mintSuccess
+            status.loading || status.success
               ? 'opacity-50 cursor-not-allowed'
               : 'hover:bg-white'
           }`}
       >
         {!wallet.connected
           ? 'Connect Wallet to Claim'
-          : mintingTokens
+          : status.loading
           ? 'Minting...'
-          : mintSuccess
+          : status.success
           ? 'Tokens Claimed!'
           : 'Claim Tokens'}
       </button>
 
-      {mintError && (
-        <div className='text-red-500 text-sm mt-2'>{mintError}</div>
+      {status.error && (
+        <div className='text-red-500 text-sm mt-2'>{status.error}</div>
       )}
 
-      {mintSuccess && (
+      {status.success && (
         <div className='text-green-500 text-sm mt-2'>
-          Tokens successfully minted to your wallet!
+          <div>Tokens successfully minted!</div>
+          <a
+            href={`https://explorer.solana.com/tx/${status.signature}?cluster=devnet`}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-blue-500 hover:underline'
+          >
+            View on Solana Explorer
+          </a>
         </div>
       )}
     </div>
