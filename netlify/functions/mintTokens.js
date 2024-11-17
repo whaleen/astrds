@@ -7,22 +7,38 @@ const {
   ASSOCIATED_TOKEN_PROGRAM_ID
 } = require('@solana/spl-token');
 const BN = require('bn.js');
+const crypto = require('crypto');
+
+function deriveDiscriminator(name) {
+  // Convert the namespace and name to a string of the form "global:name"
+  const preimage = `global:${name}`;
+  // Take the first 8 bytes of the hash
+  return Buffer.from(crypto.createHash('sha256').update(preimage).digest()).slice(0, 8);
+}
 
 // Function to create instruction data with proper Anchor format
 function createInstructionData(collectedTokens) {
-  // Anchor discriminator for 'mint_game_reward' instruction
-  const MINT_IX_DISCRIMINATOR = [175, 175, 109, 31, 13, 152, 155, 237];
+  // Get discriminator for 'mint_game_reward'
+  const discriminator = deriveDiscriminator('mint_game_reward');
 
   // Create a buffer for the collected tokens (u64)
   const tokenBuffer = Buffer.alloc(8);
   new BN(collectedTokens).toArrayLike(Buffer, 'le', 8).copy(tokenBuffer);
 
-  return Buffer.concat([Buffer.from(MINT_IX_DISCRIMINATOR), tokenBuffer]);
+  return Buffer.concat([discriminator, tokenBuffer]);
 }
 
 exports.handler = async (event, context) => {
   try {
     const { playerPublicKey, tokenCount } = JSON.parse(event.body);
+
+    if (tokenCount > 200) {
+      throw new Error('Maximum 200 tokens can be collected per game');
+    }
+
+    if (tokenCount <= 0) {
+      throw new Error('No tokens collected');
+    }
 
     if (!process.env.PROGRAM_AUTHORITY_PRIVATE_KEY) {
       throw new Error('PROGRAM_AUTHORITY_PRIVATE_KEY is not set');
@@ -66,18 +82,21 @@ exports.handler = async (event, context) => {
       );
     }
 
-    // Create mint instruction matching the IDL structure
+    // Log the instruction data for debugging
+    const instructionData = createInstructionData(tokenCount);
+    console.log('Instruction Data:', Buffer.from(instructionData).toString('hex'));
+
+    // Create mint instruction
     const mintInstruction = new TransactionInstruction({
       programId: PROGRAM_ID,
       keys: [
-        // Exactly matching the IDL account order
-        { pubkey: MINT_PUBKEY, isSigner: false, isWritable: true },          // mint
-        { pubkey: playerATA, isSigner: false, isWritable: true },            // playerTokenAccount
-        { pubkey: mintAuthority.publicKey, isSigner: true, isWritable: true },// mintAuthority
-        { pubkey: playerPubkey, isSigner: true, isWritable: false },         // player
-        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },    // tokenProgram
+        { pubkey: MINT_PUBKEY, isSigner: false, isWritable: true },
+        { pubkey: playerATA, isSigner: false, isWritable: true },
+        { pubkey: mintAuthority.publicKey, isSigner: true, isWritable: true },
+        { pubkey: playerPubkey, isSigner: true, isWritable: false },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       ],
-      data: createInstructionData(tokenCount)
+      data: instructionData
     });
 
     transaction.add(mintInstruction);
