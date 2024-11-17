@@ -1,6 +1,7 @@
 import { Connection, Transaction, PublicKey, Keypair, TransactionInstruction } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token'
 import BN from 'bn.js'
+import { Buffer } from 'buffer'
 
 // Check if the environment variable is set
 if (!process.env.PROGRAM_AUTHORITY_PRIVATE_KEY) {
