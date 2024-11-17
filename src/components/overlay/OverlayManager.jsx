@@ -8,6 +8,7 @@ import LeaderboardScreen from '@/screens/leaderboard/LeaderboardScreen'
 import { useGameStore } from '@/stores/gameStore'
 import { useSettingsPanelStore } from '@/stores/settingsPanelStore'
 import { useEngineStore } from '@/stores/engineStore'
+import TokenomicsScreen from '@/screens/tokenomics/tokenomicsScreen'
 
 export const OVERLAY_TYPES = {
   NONE: null,
@@ -15,6 +16,7 @@ export const OVERLAY_TYPES = {
   ACCOUNT: 'account',
   CHAT: 'chat',
   LEADERBOARD: 'leaderboard',
+  TOKENOMICS: 'tokenomics',
 }
 
 // Determine which overlays should blur the background and pause the game
@@ -22,7 +24,8 @@ const OVERLAY_BEHAVIOR = {
   [OVERLAY_TYPES.SOUND]: { blur: true, shouldPause: true },
   [OVERLAY_TYPES.ACCOUNT]: { blur: true, shouldPause: true },
   [OVERLAY_TYPES.CHAT]: { blur: true, shouldPause: true },
-  [OVERLAY_TYPES.LEADERBOARD]: { blur: false, shouldPause: false }, // Leaderboard doesn't pause or blur
+  [OVERLAY_TYPES.LEADERBOARD]: { blur: false, shouldPause: false },
+  [OVERLAY_TYPES.TOKENOMICS]: { blur: true, shouldPause: true },
 }
 
 export const useOverlayStore = create((set, get) => ({
@@ -109,6 +112,9 @@ const OverlayManager = () => {
         case 'a':
           openOverlay(OVERLAY_TYPES.ACCOUNT)
           break
+        case 't':
+          openOverlay(OVERLAY_TYPES.TOKENOMICS)
+          break
         case 'escape':
           if (activeOverlay) {
             closeOverlay()
@@ -180,6 +186,12 @@ const OverlayManager = () => {
               onClose={closeOverlay}
               onPlayAgain={handlePlayClick}
             />
+          </OverlayWrapper>
+        )
+      case OVERLAY_TYPES.TOKENOMICS:
+        return (
+          <OverlayWrapper type={OVERLAY_TYPES.TOKENOMICS}>
+            <TokenomicsScreen onClose={closeOverlay} />
           </OverlayWrapper>
         )
       default:

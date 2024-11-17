@@ -10,7 +10,8 @@ import { useLevelStore } from '../../stores/levelStore'
 import { useAudio } from '../../hooks/useAudio'
 import { MUSIC_TRACKS } from '../../services/audio/AudioTypes'
 import DeathScreen from './components/DeathScreen'
-import { useInventoryStore } from '@/stores/inventoryStore' // Add this import
+import { useInventoryStore } from '@/stores/inventoryStore'
+import PerformanceMonitor from '@/components/test/performanceMonitor'
 
 const KEY = {
   LEFT: 37,
@@ -214,9 +215,10 @@ const GameScreen = () => {
         height={screen.height * screen.ratio}
         className='block bg-black absolute inset-0 w-full h-full'
       />
+      <PerformanceMonitor />
       <OverlayChat />
       <PauseOverlay />
-      <DeathScreen /> {/* Add this line */}
+      <DeathScreen />
     </>
   )
 }

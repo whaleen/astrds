@@ -1,10 +1,10 @@
 // src/game/entities/Ship.js
-import { rotatePoint, randomNumBetween } from '@/utils/helpers'
+import { rotatePoint } from '@/utils/helpers'
 import { useGameStore } from '../../stores/gameStore'
 import { usePowerupStore } from '../../stores/powerupStore'
 import { useEngineStore } from '../../stores/engineStore'
 import { useInventoryStore } from '../../stores/inventoryStore'
-import Particle from './Particle'
+import { particleSystem } from '../systems/ParticleSystem' // Add this import
 import { audioService } from '../../services/audio/AudioService'
 
 export default class Ship {
@@ -33,6 +33,13 @@ export default class Ship {
 
     this.delete = true
     audioService.playSound('explosion')
+
+    // Use particleSystem for explosion particles
+    particleSystem.createExplosion(
+      this.position,
+      this.radius,
+      60  // Fixed number for ship explosion
+    )
 
     // Check for extra ships
     const inventory = useInventoryStore.getState()
@@ -81,21 +88,21 @@ export default class Ship {
     }
 
     // Create explosion particles
-    for (let i = 0; i < 60; i++) {
-      const particle = new Particle({
-        lifeSpan: randomNumBetween(60, 100),
-        size: randomNumBetween(1, 4),
-        position: {
-          x: this.position.x + randomNumBetween(-this.radius / 4, this.radius / 4),
-          y: this.position.y + randomNumBetween(-this.radius / 4, this.radius / 4),
-        },
-        velocity: {
-          x: randomNumBetween(-1.5, 1.5),
-          y: randomNumBetween(-1.5, 1.5),
-        },
-      })
-      useEngineStore.getState().addEntity(particle, 'particles')
-    }
+    // for (let i = 0; i < 60; i++) {
+    //   const particle = new Particle({
+    //     lifeSpan: randomNumBetween(60, 100),
+    //     size: randomNumBetween(1, 4),
+    //     position: {
+    //       x: this.position.x + randomNumBetween(-this.radius / 4, this.radius / 4),
+    //       y: this.position.y + randomNumBetween(-this.radius / 4, this.radius / 4),
+    //     },
+    //     velocity: {
+    //       x: randomNumBetween(-1.5, 1.5),
+    //       y: randomNumBetween(-1.5, 1.5),
+    //     },
+    //   })
+    //   useEngineStore.getState().addEntity(particle, 'particles')
+    // }
   }
 
   rotate(dir) {
@@ -114,26 +121,15 @@ export default class Ship {
     // Play thrust sound
     audioService.playSound('thrust')
 
-    // Create thruster particles
-    let posDelta = rotatePoint(
-      { x: 0, y: -10 },
-      { x: 0, y: 0 },
-      ((this.rotation - 180) * Math.PI) / 180
-    )
-
-    const particle = new Particle({
-      lifeSpan: randomNumBetween(20, 40),
-      size: randomNumBetween(1, 3),
-      position: {
-        x: this.position.x + posDelta.x + randomNumBetween(-2, 2),
-        y: this.position.y + posDelta.y + randomNumBetween(-2, 2),
-      },
-      velocity: {
-        x: posDelta.x / randomNumBetween(3, 5),
-        y: posDelta.y / randomNumBetween(3, 5),
-      },
-    })
-    useEngineStore.getState().addEntity(particle, 'particles')
+    // Only create particle every other frame or so
+    if (Math.random() > 0.5) {  // 50% chance each frame
+      let posDelta = rotatePoint(
+        { x: 0, y: -10 },
+        { x: 0, y: 0 },
+        ((this.rotation - 180) * Math.PI) / 180
+      )
+      particleSystem.createThrusterParticle(this.position, posDelta)
+    }
   }
 
   render(state) {

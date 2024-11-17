@@ -2,7 +2,7 @@
 import { asteroidVertices, randomNumBetween } from '@/utils/helpers'
 import { useGameStore } from '../../stores/gameStore'
 import { useEngineStore } from '../../stores/engineStore'
-import Particle from './Particle'
+import { particleSystem } from '../systems/ParticleSystem'
 import { audioService } from '../../services/audio/AudioService'
 
 export default class Asteroid {
@@ -30,22 +30,12 @@ export default class Asteroid {
     const scoreToAdd = Math.max(0, Math.floor(this.score))
     gameStore.addToScore(scoreToAdd)
 
-    // Create explosion particles
-    for (let i = 0; i < this.radius; i++) {
-      const particle = new Particle({
-        lifeSpan: randomNumBetween(60, 100),
-        size: randomNumBetween(1, 3),
-        position: {
-          x: this.position.x + randomNumBetween(-this.radius / 4, this.radius / 4),
-          y: this.position.y + randomNumBetween(-this.radius / 4, this.radius / 4),
-        },
-        velocity: {
-          x: randomNumBetween(-1.5, 1.5),
-          y: randomNumBetween(-1.5, 1.5),
-        },
-      })
-      useEngineStore.getState().addEntity(particle, 'particles')
-    }
+    // Use particleSystem instead of directly creating particles
+    particleSystem.createExplosion(
+      this.position,
+      this.radius,
+      Math.floor(this.radius) // Particle count scales with asteroid size
+    )
 
     // Break into smaller asteroids
     if (this.radius > 10) {

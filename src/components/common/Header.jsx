@@ -1,7 +1,7 @@
 // src/components/common/Header.jsx
 import React from 'react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { MessageSquare, User, Trophy } from 'lucide-react'
+import { MessageSquare, User, Trophy, Coins } from 'lucide-react'
 import { StyledWalletButton } from './StyledComponents'
 import { useOverlayStore, OVERLAY_TYPES } from '../overlay/OverlayManager'
 import VolumeControl from '../sound/VolumeControl'
@@ -49,6 +49,12 @@ const Header = () => {
 
         {/* Right section */}
         <div className='flex items-center gap-4'>
+          <HeaderButton
+            icon={Coins}
+            label='Tokenomics'
+            overlayType={OVERLAY_TYPES.TOKENOMICS}
+            shortcut='t'
+          />
           <HeaderButton
             icon={MessageSquare}
             label='Chat'

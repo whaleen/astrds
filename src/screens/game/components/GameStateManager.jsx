@@ -6,6 +6,7 @@ import ReadyScreen from '@/screens/ready/ReadyScreen'
 import GameScreen from '../GameScreen'
 import GameOverScreen from '@/screens/gameover/GameOverScreen'
 import LeaderboardScreen from '@/screens/leaderboard/LeaderboardScreen'
+import TokenomicsScreen from '@/screens/tokenomics/tokenomicsScreen'
 
 const GameStateManager = () => {
   const gameState = useGameStore((state) => state.gameState)
@@ -21,6 +22,8 @@ const GameStateManager = () => {
       return <GameOverScreen />
     case 'LEADERBOARD':
       return <LeaderboardScreen />
+    case 'TOKENOMICS':
+      return <TokenomicsScreen />
     default:
       return null
   }

@@ -1,100 +1,126 @@
 // netlify/functions/mintTokens.js
-const anchor = require('@project-serum/anchor');
-const { Connection, PublicKey, Keypair } = require('@solana/web3.js');
-const {
-  TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddress
-} = require('@solana/spl-token');
+import { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import { Program, AnchorProvider, BN, Wallet } from '@project-serum/anchor'
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
-// Program IDL - this should match your program exactly
-const IDL = {
-  "version": "0.1.0",
-  "name": "astrds_game_rewards",
-  "instructions": [{
-    "name": "mintGameReward",
-    "accounts": [
-      { "name": "mint", "isMut": true, "isSigner": false },
-      { "name": "playerTokenAccount", "isMut": true, "isSigner": false },
-      { "name": "mintAuthority", "isMut": true, "isSigner": true },
-      { "name": "player", "isMut": false, "isSigner": true },
-      { "name": "tokenProgram", "isMut": false, "isSigner": false }
-    ],
-    "args": [{ "name": "collectedTokens", "type": "u64" }]
-  }]
-};
+const MINT_ADDRESS = new PublicKey('8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP')
+const PROGRAM_ID = new PublicKey('6PmJ5dNoiHXtTWcm3H23eQ5G3DZLbQ7PCwBorPhmXvef')
+const EXPECTED_AUTHORITY = new PublicKey('EUeL2L6KtWF6r2hCwg6rYyTc3161gESkVx5d3WxagLyf')
 
-exports.handler = async (event, context) => {
+// Load and verify authority keypair
+const loadAndVerifyAuthority = () => {
   try {
-    const { playerPublicKey, tokenCount } = JSON.parse(event.body);
-
-    if (tokenCount <= 0 || tokenCount > 200) {
-      throw new Error('Invalid token count');
+    if (!process.env.PROGRAM_AUTHORITY_PRIVATE_KEY) {
+      throw new Error('Missing PROGRAM_AUTHORITY_PRIVATE_KEY environment variable')
     }
 
-    // Setup connection and program
-    const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-    const provider = new anchor.AnchorProvider(
+    const authorityKeypair = Keypair.fromSecretKey(
+      new Uint8Array(JSON.parse(process.env.PROGRAM_AUTHORITY_PRIVATE_KEY))
+    )
+
+    console.log('Loaded authority public key:', authorityKeypair.publicKey.toString())
+    console.log('Expected authority:', EXPECTED_AUTHORITY.toString())
+    console.log('Keys match:', authorityKeypair.publicKey.equals(EXPECTED_AUTHORITY))
+
+    return authorityKeypair
+  } catch (error) {
+    console.error('Failed to load authority keypair:', error)
+    throw error
+  }
+}
+
+export const handler = async (event) => {
+  try {
+    // First verify our authority keypair
+    console.log('Verifying authority keypair...')
+    const authorityKeypair = loadAndVerifyAuthority()
+
+    const { playerPublicKey, tokenCount } = JSON.parse(event.body)
+    console.log('Minting request received:', { playerPublicKey, tokenCount })
+
+    if (!playerPublicKey || tokenCount <= 0 || tokenCount > 200) {
+      throw new Error('Invalid mint parameters')
+    }
+
+    // Initialize connection with commitment
+    const connection = new Connection(
+      'https://api.devnet.solana.com',
+      'confirmed'
+    )
+
+    // Create proper provider with authority wallet
+    const provider = new AnchorProvider(
       connection,
-      {
-        publicKey: new PublicKey(playerPublicKey),
-        signTransaction: async (tx) => tx, // We'll sign later
-      },
+      new Wallet(authorityKeypair),
       { commitment: 'confirmed' }
-    );
+    )
 
-    const program = new anchor.Program(
-      IDL,
-      '6PmJ5dNoiHXtTWcm3H23eQ5G3DZLbQ7PCwBorPhmXvef',
-      provider
-    );
-
-    const MINT_PUBKEY = new PublicKey('8a73Nvt2dAo67Mg5YnjhFNxqj4p1JpBuVGKnhvzbZDJP');
-    const playerPubkey = new PublicKey(playerPublicKey);
-    const mintAuthority = Keypair.fromSecretKey(
-      Uint8Array.from(JSON.parse(process.env.PROGRAM_AUTHORITY_PRIVATE_KEY))
-    );
+    // Initialize program
+    const program = new Program(IDL, PROGRAM_ID, provider)
 
     // Get player's ATA
+    const playerPubkey = new PublicKey(playerPublicKey)
     const playerATA = await getAssociatedTokenAddress(
-      MINT_PUBKEY,
+      MINT_ADDRESS,
       playerPubkey
-    );
+    )
 
-    // Build the transaction using Anchor
+    console.log('Building transaction with accounts:', {
+      mint: MINT_ADDRESS.toString(),
+      playerATA: playerATA.toString(),
+      mintAuthority: authorityKeypair.publicKey.toString(),
+      player: playerPubkey.toString()
+    })
+
+    // Build and send transaction
     const tx = await program.methods
-      .mintGameReward(new anchor.BN(tokenCount))
+      .mintGameReward(new BN(tokenCount))
       .accounts({
-        mint: MINT_PUBKEY,
+        mint: MINT_ADDRESS,
         playerTokenAccount: playerATA,
-        mintAuthority: mintAuthority.publicKey,
+        mintAuthority: authorityKeypair.publicKey,
         player: playerPubkey,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
-      .transaction();
+      .signers([authorityKeypair])
+      .rpc()
 
-    // Add the mint authority as a signer
-    tx.partialSign(mintAuthority);
-
-    const serializedTransaction = tx.serialize({
-      requireAllSignatures: false
-    }).toString('base64');
+    console.log('Mint transaction successful:', tx)
 
     return {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
-        serializedTransaction
+        serializedTransaction: tx,
       })
-    };
+    }
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Mint failed:', error)
     return {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
         error: error.message
       })
-    };
+    }
   }
-};
+}
+
+const IDL = {
+  "version": "0.1.0",
+  "name": "astrds_game_rewards",
+  "instructions": [
+    {
+      "name": "mintGameReward",
+      "accounts": [
+        { "name": "mint", "isMut": true, "isSigner": false },
+        { "name": "playerTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "mintAuthority", "isMut": true, "isSigner": true },
+        { "name": "player", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "collectedTokens", "type": "u64" }]
+    }
+  ]
+}

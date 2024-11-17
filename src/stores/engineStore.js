@@ -54,19 +54,25 @@ export const useEngineStore = create((set, get) => ({
   initializeEngine: (context) => set({ context, inGame: true }),
 
   // Entity Management
-  addEntity: (entity, group) => set((state) => ({
-    entities: {
-      ...state.entities,
-      [group]: [...state.entities[group], entity]
-    }
-  })),
+  addEntity: (entity, group) => {
+    console.log(`Adding entity to ${group}:`, entity);
+    set((state) => ({
+      entities: {
+        ...state.entities,
+        [group]: [...state.entities[group], entity]
+      }
+    }));
+  },
 
-  removeEntity: (entityId, group) => set((state) => ({
-    entities: {
-      ...state.entities,
-      [group]: state.entities[group].filter(entity => entity.id !== entityId)
-    }
-  })),
+  removeEntity: (entityId, group) => {
+    console.log(`Removing entity from ${group}:`, entityId);
+    set((state) => ({
+      entities: {
+        ...state.entities,
+        [group]: state.entities[group].filter(entity => entity.id !== entityId)
+      }
+    }));
+  },
 
   // Physics & Movement
   updateEntityPosition: (entityId, group, newPosition) => set((state) => ({
@@ -213,6 +219,8 @@ export const useEngineStore = create((set, get) => ({
 
     // Check for level advancement
     if (state.entities.asteroids.length === 0) {
+      console.log('Active particles:', state.entities.particles.length);
+
       // Increment asteroid count for next level
       set(state => ({
         asteroidCount: Math.min(state.asteroidCount + 1, 10)
@@ -231,16 +239,28 @@ export const useEngineStore = create((set, get) => ({
     state.spawnToken()
     state.spawnShipPickup()
 
+
+    // Debug log particle count periodically
+    if (state.entities.particles.length > 0) {
+      console.log('Active particles in engine:', state.entities.particles.length);
+    }
+
     // Update all entities
     Object.entries(state.entities).forEach(([group, entities]) => {
-      entities.forEach((entity, index) => {
+      entities.forEach((entity) => {
         if (entity.delete) {
-          state.removeEntity(entity.id, group)
+          state.removeEntity(entity.id, group);
         } else {
-          entity.render(state)
+          try {
+            entity.render(state);
+          } catch (error) {
+            console.error(`Error rendering ${group} entity:`, error);
+            // Remove problematic entity
+            state.removeEntity(entity.id, group);
+          }
         }
-      })
-    })
+      });
+    });
 
     // Handle shooting
     if (state.keys.space) {
