@@ -39,3 +39,9 @@ pnpm-debug.log*
 
 # Project Media Assets
 	public/raw
+
+
+# Shit
+/idl
+/keys
+stats.html

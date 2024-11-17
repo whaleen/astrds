@@ -354,12 +354,16 @@ export const useEngineStore = create((set, get) => ({
   },
 
   // Pause Management
-  togglePause: () => set((state) => {
-    if (state.gameLoopId) {
+  togglePause: (shouldPause) => {
+    const state = get()
+    const newPauseState = shouldPause !== undefined ? shouldPause : !state.inGame
+
+    if (newPauseState) {
       state.stopGameLoop()
     } else {
       state.startGameLoop()
     }
-    return { inGame: !state.inGame }
-  })
+
+    set({ inGame: !newPauseState })
+  }
 }))

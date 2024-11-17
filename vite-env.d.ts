@@ -6,3 +6,8 @@ interface ImportMeta {
     // Add other env variables as needed
   }
 }
+
+declare module '*.json' {
+  const value: any
+  export default value
+}

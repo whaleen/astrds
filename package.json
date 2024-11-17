@@ -18,6 +18,7 @@
     "test:blob": "curl -X GET '/.netlify/functions/getScores'"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
     "@netlify/blobs": "^8.1.0",
     "@netlify/functions": "^2.8.2",
     "@solana/spl-token": "^0.4.9",
@@ -26,6 +27,7 @@
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.95.4",
+    "bn.js": "^4.12.1",
     "bs58": "^4.0.1",
     "lucide-react": "^0.456.0",
     "pusher": "^5.2.0",

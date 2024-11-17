@@ -8,6 +8,7 @@ import { SOUND_TYPES, MUSIC_TRACKS } from '../../services/audio/AudioTypes'
 import GameTitle from '@/components/common/GameTitle'
 import ScreenContainer from '@/components/common/ScreenContainer'
 import { useInventoryStore } from '@/stores/inventoryStore' // Add this import
+import ASTRDSMinting from '@/components/tokens/ASTRDSMinting'
 
 const GameOverScreen = () => {
   const wallet = useWallet()
@@ -15,7 +16,8 @@ const GameOverScreen = () => {
   const lastGameStats = useGameStore((state) => state.lastGameStats)
   const setGameState = useGameStore((state) => state.setGameState)
   const { playSound, transitionMusic, stopMusic } = useAudio()
-  const resetInventory = useInventoryStore((state) => state.resetInventory) // Add this
+  const resetInventory = useInventoryStore((state) => state.resetInventory)
+  const tokens = useInventoryStore((state) => state.items.tokens) // tokens to be minted w/ astrds program
 
   // Music / SFX
   useEffect(() => {
@@ -60,6 +62,9 @@ const GameOverScreen = () => {
             <GameTitle />
             <h1 className='text-game-red text-4xl mb-8'>GAME OVER</h1>
 
+            {/* // tokens to be minted w/ astrds program */}
+            <ASTRDSMinting tokenCount={tokens} />
+
             {renderAchievement()}
 
             <div className='mb-8'>
@@ -68,7 +73,6 @@ const GameOverScreen = () => {
                 {score.toLocaleString()}
               </div>
             </div>
-
             {lastGameStats && (
               <div className='mb-8 space-y-2'>
                 <div className='text-gray-400 text-xs'>
@@ -76,7 +80,6 @@ const GameOverScreen = () => {
                 </div>
               </div>
             )}
-
             <div className='space-y-4'>
               <QuarterButton
                 onClick={handlePlayAgain}
@@ -85,7 +88,6 @@ const GameOverScreen = () => {
                 Play Again
               </QuarterButton>
             </div>
-
             <div className='mt-8 text-xs text-gray-500'>
               Tip: Practice makes perfect! Keep playing to improve your score.
             </div>
