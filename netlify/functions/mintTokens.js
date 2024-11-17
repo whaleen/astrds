@@ -9,23 +9,24 @@ const {
 const BN = require('bn.js');
 const crypto = require('crypto');
 
-function getInstructionDiscriminator(name) {
-  const preimage = `global:${name}`;
-  let hash = Buffer.from(
-    crypto
-      .createHash('sha256')
-      .update(preimage)
-      .digest()
-  ).slice(0, 8);
+// Function to serialize the instruction data according to Anchor's format
+function createInstructionData(collectedTokens) {
+  // We can get this from anchor build
+  const instructionDiscriminator = [
+    248, 198, 158, 145, 225, 117, 135, 200  // mint_game_reward discriminator
+  ];
 
-  console.log(`Discriminator for ${name}:`, hash);
-  return hash;
-}
+  // Create a buffer for the collected tokens (u64)
+  const tokenBuffer = Buffer.alloc(8);
+  new BN(collectedTokens).toArrayLike(Buffer, 'le', 8).copy(tokenBuffer);
 
-function serializeU64(value) {
-  const buffer = Buffer.alloc(8);
-  new BN(value).toArrayLike(Buffer, 'le', 8).copy(buffer);
-  return buffer;
+  console.log('Discriminator:', Buffer.from(instructionDiscriminator).toString('hex'));
+  console.log('Token amount:', tokenBuffer.toString('hex'));
+
+  return Buffer.concat([
+    Buffer.from(instructionDiscriminator),
+    tokenBuffer
+  ]);
 }
 
 exports.handler = async (event, context) => {
@@ -57,36 +58,11 @@ exports.handler = async (event, context) => {
       ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
-    // Create instruction data
-    const discriminator = getInstructionDiscriminator('mint_game_reward');
-    const data = Buffer.concat([
-      discriminator,
-      serializeU64(tokenCount)
-    ]);
-
-    console.log('Instruction data:', data.toString('hex'));
-    console.log('Player ATA:', playerATA.toBase58());
-    console.log('Mint Authority:', mintAuthority.publicKey.toBase58());
-
     // First verify the mint account exists
     const mintAccount = await connection.getAccountInfo(MINT_PUBKEY);
     if (!mintAccount) {
       throw new Error('Mint account does not exist');
     }
-
-    // Create mint instruction
-    const mintInstruction = new TransactionInstruction({
-      programId: PROGRAM_ID,
-      keys: [
-        // Order matches IDL exactly
-        { pubkey: MINT_PUBKEY, isSigner: false, isWritable: true },          // mint
-        { pubkey: playerATA, isSigner: false, isWritable: true },            // playerTokenAccount
-        { pubkey: mintAuthority.publicKey, isSigner: true, isWritable: true },// mintAuthority
-        { pubkey: playerPubkey, isSigner: true, isWritable: false },         // player
-        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },    // tokenProgram
-      ],
-      data
-    });
 
     // Create transaction
     const transaction = new Transaction();
@@ -97,15 +73,29 @@ exports.handler = async (event, context) => {
       console.log('Creating ATA:', playerATA.toBase58());
       transaction.add(
         createAssociatedTokenAccountInstruction(
-          playerPubkey,  // Changed payer to player
-          playerATA,
-          playerPubkey,
-          MINT_PUBKEY,
+          playerPubkey,  // payer
+          playerATA,     // ata
+          playerPubkey,  // owner
+          MINT_PUBKEY,   // mint
           TOKEN_PROGRAM_ID,
           ASSOCIATED_TOKEN_PROGRAM_ID
         )
       );
     }
+
+    // Create mint instruction with proper format
+    const mintInstruction = new TransactionInstruction({
+      programId: PROGRAM_ID,
+      keys: [
+        // Order matches IDL exactly
+        { pubkey: MINT_PUBKEY, isSigner: false, isWritable: true },          // mint
+        { pubkey: playerATA, isSigner: false, isWritable: true },            // playerTokenAccount
+        { pubkey: mintAuthority.publicKey, isSigner: true, isWritable: true },// mintAuthority
+        { pubkey: playerPubkey, isSigner: true, isWritable: false },         // player
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },    // tokenProgram
+      ],
+      data: createInstructionData(tokenCount)
+    });
 
     transaction.add(mintInstruction);
 
@@ -122,6 +112,15 @@ exports.handler = async (event, context) => {
       requireAllSignatures: false
     }).toString('base64');
 
+    console.log('Transaction built with:', {
+      mint: MINT_PUBKEY.toBase58(),
+      ata: playerATA.toBase58(),
+      mintAuthority: mintAuthority.publicKey.toBase58(),
+      player: playerPubkey.toBase58(),
+      tokenCount,
+      discriminator: createInstructionData(tokenCount).toString('hex')
+    });
+
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -131,7 +130,8 @@ exports.handler = async (event, context) => {
         debug: {
           mint: MINT_PUBKEY.toBase58(),
           ata: playerATA.toBase58(),
-          authority: mintAuthority.publicKey.toBase58()
+          authority: mintAuthority.publicKey.toBase58(),
+          discriminator: createInstructionData(tokenCount).toString('hex')
         }
       }),
     };
