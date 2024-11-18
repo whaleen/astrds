@@ -1,4 +1,4 @@
-// src/App.jsx
+// src/App.tsx
 import React, { useMemo, useEffect, useState } from 'react'
 import {
   ConnectionProvider,
@@ -14,7 +14,11 @@ import { useSettingsPanelStore } from './stores/settingsPanelStore'
 import { useAudio } from './hooks/useAudio'
 import { usePhantom } from './hooks/usePhantom'
 
-const LoadingOverlay = ({ progress }) => (
+interface LoadingOverlayProps {
+  progress: number;
+}
+
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ progress }) => (
   <div className='fixed inset-0 bg-black flex items-center justify-center z-50'>
     <div className='text-center'>
       <h2 className='text-xl text-game-blue mb-4'>Loading Game Assets</h2>
@@ -31,7 +35,7 @@ const LoadingOverlay = ({ progress }) => (
   </div>
 )
 
-const App = () => {
+const App: React.FC = () => {
   usePhantom()
   const [isLoading, setIsLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
@@ -39,23 +43,23 @@ const App = () => {
   const toggleSettingsPanel = useSettingsPanelStore((state) => state.toggle)
   const endpoint = useMemo(() => import.meta.env.VITE_SOLANA_RPC_ENDPOINT, [])
 
-  // Initialize sound system
   useEffect(() => {
     if (isInitialized) {
       setIsLoading(false)
     }
   }, [isInitialized])
 
-  // Keyboard controls for volume only - overlay shortcuts are handled by OverlayManager
   useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
         return
       }
 
       switch (e.key.toLowerCase()) {
         case 'm':
-          // Toggle between 0 and previous volume
           setVolume('master', volumes.master > 0 ? 0 : 0.5)
           break
         case '1':
@@ -75,7 +79,6 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [toggleSettingsPanel, setVolume])
 
-  // Wallet configuration
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter({
@@ -109,7 +112,7 @@ const App = () => {
               <>
                 <GameStateManager />
                 <ChatSystem />
-                <OverlayManager /> {/* Mount the OverlayManager */}
+                <OverlayManager />
               </>
             )}
           </GameLayout>
