@@ -13,6 +13,9 @@ import OverlayManager from './components/overlay/OverlayManager'
 import { useSettingsPanelStore } from './stores/settingsPanelStore'
 import { useAudio } from './hooks/useAudio'
 import { usePhantom } from './hooks/usePhantom'
+import { Commitment } from '@solana/web3.js';
+import Debugger from './components/Debugger';
+
 
 interface LoadingOverlayProps {
   progress: number;
@@ -38,9 +41,11 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ progress }) => (
 const App: React.FC = () => {
   usePhantom()
   const [isLoading, setIsLoading] = useState(true)
-  const [loadingProgress, setLoadingProgress] = useState(0)
-  const { setVolume, isInitialized } = useAudio()
-  const toggleSettingsPanel = useSettingsPanelStore((state) => state.toggle)
+  const [loadingProgress] = useState(0)
+
+
+  const { volumes, setVolume, isInitialized } = useAudio();
+  const toggleSettingsPanel = useSettingsPanelStore((state) => state.toggle);
   const endpoint = useMemo(() => import.meta.env.VITE_SOLANA_RPC_ENDPOINT, [])
 
   useEffect(() => {
@@ -89,9 +94,9 @@ const App: React.FC = () => {
   )
 
   const config = {
-    commitment: 'confirmed',
+    commitment: 'confirmed' as Commitment, // Cast to Commitment
     wsEndpoint: endpoint.replace('https', 'wss'),
-    preflightCommitment: 'processed',
+    preflightCommitment: 'processed' as Commitment, // Cast to Commitment
     confirmTransactionInitialTimeout: 60000,
   }
 
@@ -113,6 +118,8 @@ const App: React.FC = () => {
                 <GameStateManager />
                 <ChatSystem />
                 <OverlayManager />
+                {/* <Debugger /> */}
+
               </>
             )}
           </GameLayout>
