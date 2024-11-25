@@ -17,5 +17,5 @@ export const verifyWalletSignature = async (wallet, connection) => {
 
 export const isWalletVerified = (wallet) => {
   if (!wallet.publicKey) return false
-  return authService.verifiedSessions.has(wallet.publicKey.toString())
+  return authService.isVerified(wallet.publicKey.toString())
 }

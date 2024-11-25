@@ -2,13 +2,14 @@
 import { useState, useCallback } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { authService } from '@/auth/AuthService'
-import { useGameData } from '../stores/gameData'
+import { useStateMachine } from '@/stores/stateMachine'
+import { MachineState } from '@/types/machine'
 
 export const useAuth = () => {
   const wallet = useWallet()
   const [isVerifying, setIsVerifying] = useState(false)
   const [error, setError] = useState(null)
-  const setGameState = useGameData((state) => state.setGameState)
+  const setState = useStateMachine((state) => state.setState)
 
   const verifyWallet = useCallback(
     async (paymentType = 'SOL') => {
@@ -25,11 +26,7 @@ export const useAuth = () => {
           wallet,
           paymentType
         )
-        if (success) {
-          setGameState('READY_TO_PLAY')
-          return true
-        }
-        return false
+        return success
       } catch (err) {
         console.error('Verification error:', err)
         setError(err.message)
@@ -38,7 +35,7 @@ export const useAuth = () => {
         setIsVerifying(false)
       }
     },
-    [wallet, setGameState]
+    [wallet]
   )
 
   const clearAuth = useCallback(() => {

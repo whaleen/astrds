@@ -16,9 +16,6 @@ const GameOverScreen: React.FC = () => {
   const lastGameStats = useGameData((state) => state.lastGameStats)
   const tokens = useInventoryStore((state) => state.items.tokens)
 
-
-
-
   // Tracking game sessions:
   const endGameSession = useGameData((state) => state.endGameSession)
 
@@ -27,8 +24,6 @@ const GameOverScreen: React.FC = () => {
   }, [endGameSession])
 
   // end: Tracking game sessions
-
-
 
   const startTransition = useStateMachine(state => state.startTransition)
 

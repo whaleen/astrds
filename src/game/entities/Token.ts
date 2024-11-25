@@ -5,6 +5,7 @@ import {
   TokenState,
   TokenMethods,
   GameScreenState,
+  TokenMetadata,
 } from '@/types/entities/token'
 import { Vector2D } from '@/types/core'
 
@@ -69,6 +70,7 @@ export default class Token implements TokenState, TokenMethods {
     this.rotation = 0
     this.value = 100
   }
+  metadata: TokenMetadata
 
   destroy(): void {
     this.delete = true

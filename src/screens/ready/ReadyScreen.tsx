@@ -1,15 +1,15 @@
 // src/screens/ready/ReadyScreen.tsx
 import React, { useState, useEffect, useRef } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useAudio } from '../../hooks/useAudio'
 import { useAuth } from '@/hooks/useAuth'
 import { useStateMachine } from '@/stores/stateMachine'
 import { useEngineStore } from '@/stores/engineStore'
+import { useGameData } from '@/stores/gameData' // Add this
 import { SOUND_TYPES, MUSIC_TRACKS } from '../../services/audio/AudioTypes'
 import ScreenContainer from '@/components/common/ScreenContainer'
 import GameTitle from '@/components/common/GameTitle'
 import { MachineState } from '@/types/machine'
-import { useGameData } from '@/stores/gameData'
-import { useWallet } from '@solana/wallet-adapter-react'
 
 const QUARTER_INSERT_DURATION = 1200
 
@@ -24,29 +24,8 @@ const ReadyScreen: React.FC = () => {
   const { playSound, stopMusic, transitionMusic } = useAudio()
   const { verifyWallet, clearAuth } = useAuth()
   const startTransition = useStateMachine(state => state.startTransition)
-
-
-  // Tracking game sessions:
   const wallet = useWallet()
-  const startGameSession = useGameData((state) => state.startGameSession)
-
-  useEffect(() => {
-    const initGame = async () => {
-      if (wallet.publicKey) {
-        try {
-          await startGameSession(wallet.publicKey.toString())
-        } catch (error) {
-          console.error('Failed to start game session:', error)
-          // Could add error handling UI here
-        }
-      }
-    }
-
-    initGame()
-  }, [wallet.publicKey, startGameSession])
-
-  // end: Tracking game sessions
-
+  const startGameSession = useGameData(state => state.startGameSession)
 
   useEffect(() => {
     mountedRef.current = true
@@ -60,6 +39,12 @@ const ReadyScreen: React.FC = () => {
       try {
         sequenceStartedRef.current = true
         console.log('Starting game sequence...')
+
+        // Initialize game session
+        if (wallet.publicKey) {
+          await startGameSession(wallet.publicKey.toString())
+          console.log('Game session started')
+        }
 
         await transitionMusic(MUSIC_TRACKS.TITLE, MUSIC_TRACKS.READY, {
           crossFadeDuration: 1000,
@@ -96,7 +81,6 @@ const ReadyScreen: React.FC = () => {
 
         if (mountedRef.current) {
           console.log('Countdown complete, transitioning to PLAYING')
-          // Add small delay to ensure clean transition
           await new Promise(resolve => setTimeout(resolve, 100))
           await startTransition(MachineState.READY_TO_PLAY, MachineState.PLAYING)
         }
@@ -115,7 +99,7 @@ const ReadyScreen: React.FC = () => {
       mountedRef.current = false
       stopMusic(MUSIC_TRACKS.READY, { fadeOut: true })
     }
-  }, [startTransition, resetEngine, playSound, stopMusic, transitionMusic, verifyWallet, clearAuth])
+  }, [startTransition, resetEngine, playSound, stopMusic, transitionMusic, verifyWallet, clearAuth, wallet.publicKey, startGameSession])
 
   const handleReturnToTitle = async () => {
     try {

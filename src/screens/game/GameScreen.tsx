@@ -73,6 +73,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ className }) => {
           onDie: () => {
             console.log('Ship destroyed')
             setState(MachineState.GAME_OVER)
+
+            // is this a good place to set the sessionEnd in the new blob?
             stopGameLoop()
           },
         })

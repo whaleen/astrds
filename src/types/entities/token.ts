@@ -1,5 +1,11 @@
 // src/types/entities/token.ts
-import { BaseEntity, Vector2D } from '../core'
+import { BaseEntity } from '../core'
+
+export interface TokenMetadata {
+  symbol: string
+  value: number
+  mineable: boolean
+}
 
 export interface TokenConfig {
   screen: {
@@ -7,6 +13,7 @@ export interface TokenConfig {
     height: number
   }
   type?: string
+  metadata?: TokenMetadata
 }
 
 export interface TokenState extends BaseEntity {
@@ -14,7 +21,7 @@ export interface TokenState extends BaseEntity {
   timeToLive: number
   creation: number
   color: string
-  value: number // Add this line
+  metadata: TokenMetadata
 }
 
 export interface TokenMethods {
@@ -28,4 +35,13 @@ export interface GameScreenState {
     width: number
     height: number
   }
+}
+
+export const TOKEN_TYPES: { [key: string]: TokenMetadata } = {
+  ASTRDS: {
+    symbol: 'ASTRDS',
+    value: 1,
+    mineable: true,
+  },
+  // Can add other token types here
 }

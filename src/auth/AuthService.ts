@@ -1,4 +1,4 @@
-// src/services/auth/AuthService.js
+// src/auth/AuthService.ts
 import {
   Connection,
   PublicKey,
@@ -11,6 +11,7 @@ import {
   createAssociatedTokenAccountInstruction,
   getAccount,
   getMint,
+  TOKEN_PROGRAM_ID,
 } from '@solana/spl-token'
 
 const RECIPIENT_WALLET = new PublicKey(
@@ -21,12 +22,15 @@ const SOL_COST = 0.05
 const TOKEN_COST = 1000
 
 class AuthService {
+  private verifiedSessions: Set<string>
+  private connection: Connection
+
   constructor() {
     this.verifiedSessions = new Set()
     this.connection = new Connection(import.meta.env.VITE_SOLANA_RPC_ENDPOINT)
   }
 
-  async getMintDecimals() {
+  async getMintDecimals(): Promise<number> {
     try {
       const mintInfo = await getMint(this.connection, TOKEN_MINT)
       return mintInfo.decimals
@@ -36,12 +40,15 @@ class AuthService {
     }
   }
 
-  async getTokenAmount(uiAmount) {
+  async getTokenAmount(uiAmount: number): Promise<number> {
     const decimals = await this.getMintDecimals()
     return Math.floor(uiAmount * Math.pow(10, decimals))
   }
 
-  async ensureTokenAccount(walletPubkey, isSource = true) {
+  async ensureTokenAccount(
+    walletPubkey: PublicKey,
+    isSource = true
+  ): Promise<PublicKey | null> {
     const tokenAddress = await getAssociatedTokenAddress(
       TOKEN_MINT,
       isSource ? walletPubkey : RECIPIENT_WALLET
@@ -65,7 +72,10 @@ class AuthService {
     }
   }
 
-  async createPaymentTransaction(walletPubkey, paymentType = 'SOL') {
+  async createPaymentTransaction(
+    walletPubkey: PublicKey,
+    paymentType = 'SOL'
+  ): Promise<Transaction> {
     const transaction = new Transaction()
 
     if (paymentType === 'SOL') {
@@ -77,50 +87,61 @@ class AuthService {
         })
       )
     } else if (paymentType === 'ASTRDS') {
-      // Get token amount with proper decimals
       const tokenAmount = await this.getTokenAmount(TOKEN_COST)
       console.log(`Converting ${TOKEN_COST} ASTRDS to ${tokenAmount} raw units`)
 
-      // Check and create token accounts if needed
-      const fromTokenAccount = await this.ensureTokenAccount(walletPubkey, true)
-      const toTokenAccount = await this.ensureTokenAccount(
+      // Get token account addresses
+      const fromTokenAddress = await getAssociatedTokenAddress(
+        TOKEN_MINT,
+        walletPubkey
+      )
+      const toTokenAddress = await getAssociatedTokenAddress(
+        TOKEN_MINT,
+        RECIPIENT_WALLET
+      )
+
+      // Check if accounts exist
+      const fromAccountExists = await this.ensureTokenAccount(
+        walletPubkey,
+        true
+      )
+      const toAccountExists = await this.ensureTokenAccount(
         RECIPIENT_WALLET,
         false
       )
 
-      // If sender's token account doesn't exist, create it
-      if (!fromTokenAccount) {
+      // Create accounts if needed
+      if (!fromAccountExists) {
         transaction.add(
           createAssociatedTokenAccountInstruction(
             walletPubkey,
-            await getAssociatedTokenAddress(TOKEN_MINT, walletPubkey),
+            fromTokenAddress,
             walletPubkey,
             TOKEN_MINT
           )
         )
       }
 
-      // If recipient's token account doesn't exist, create it
-      if (!toTokenAccount) {
+      if (!toAccountExists) {
         transaction.add(
           createAssociatedTokenAccountInstruction(
             walletPubkey,
-            await getAssociatedTokenAddress(TOKEN_MINT, RECIPIENT_WALLET),
+            toTokenAddress,
             RECIPIENT_WALLET,
             TOKEN_MINT
           )
         )
       }
 
-      // Add transfer instruction with proper token amount
+      // Add transfer instruction using the resolved addresses
       transaction.add(
         createTransferInstruction(
-          fromTokenAccount ||
-            (await getAssociatedTokenAddress(TOKEN_MINT, walletPubkey)),
-          toTokenAccount ||
-            (await getAssociatedTokenAddress(TOKEN_MINT, RECIPIENT_WALLET)),
+          fromTokenAddress,
+          toTokenAddress,
           walletPubkey,
-          tokenAmount // Using the converted amount
+          tokenAmount,
+          [],
+          TOKEN_PROGRAM_ID
         )
       )
     }
@@ -128,7 +149,7 @@ class AuthService {
     return transaction
   }
 
-  async getTokenBalance(walletPubkey) {
+  async getTokenBalance(walletPubkey: PublicKey): Promise<number> {
     try {
       const tokenAccount = await getAssociatedTokenAddress(
         TOKEN_MINT,
@@ -140,14 +161,21 @@ class AuthService {
       const accountInfo = await this.connection.getTokenAccountBalance(
         tokenAccount
       )
-      return accountInfo.value.uiAmount
+      return accountInfo.value.uiAmount || 0
     } catch {
       console.log('No token account found, balance is 0')
       return 0
     }
   }
 
-  async verifyWalletSignature(wallet, paymentType = 'SOL') {
+  clearSession(publicKey: PublicKey): void {
+    this.verifiedSessions.delete(publicKey.toString())
+  }
+
+  async verifyWalletSignature(
+    wallet: any,
+    paymentType = 'SOL'
+  ): Promise<boolean> {
     if (!wallet.publicKey) throw new Error('No wallet connected')
 
     const sessionKey = wallet.publicKey.toString()
@@ -156,7 +184,6 @@ class AuthService {
     }
 
     try {
-      // Check balances based on payment type
       if (paymentType === 'ASTRDS') {
         const tokenBalance = await this.getTokenBalance(wallet.publicKey)
         console.log(`Current token balance: ${tokenBalance} ASTRDS`)
@@ -189,7 +216,7 @@ class AuthService {
       const signature = await this.connection.sendRawTransaction(
         signedTx.serialize(),
         {
-          skipPreflight: false, // Enable preflight checks
+          skipPreflight: false,
           preflightCommitment: 'confirmed',
         }
       )
@@ -206,6 +233,10 @@ class AuthService {
       console.error('Verification failed:', error)
       throw error
     }
+  }
+
+  public isVerified(publicKey: string): boolean {
+    return this.verifiedSessions.has(publicKey)
   }
 }
 

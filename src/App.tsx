@@ -118,7 +118,7 @@ const App: React.FC = () => {
                 <GameStateManager />
                 <ChatSystem />
                 <OverlayManager />
-                {/* <Debugger /> */}
+                <Debugger />
 
               </>
             )}

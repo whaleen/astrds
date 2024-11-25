@@ -193,7 +193,10 @@ export const useGameData = create<GameStore>((set, get) => ({
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to end game session')
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to end game session')
+      }
 
       set({ currentSessionId: null, sessionTokens: [] })
     } catch (err) {
@@ -205,7 +208,7 @@ export const useGameData = create<GameStore>((set, get) => ({
           details: err,
         },
       }))
-      throw err
+      console.error('Error ending game session:', err)
     }
   },
 
