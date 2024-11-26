@@ -8,16 +8,18 @@
 │   └── functions
 │       ├── burnTokens.js
 │       ├── getChatMessages.js
+│       ├── getGame.js
 │       ├── getScores.js
 │       ├── idl
 │       │   └── mint_game_reward.json
 │       ├── mintTokens.js
 │       ├── postChatMessage.js
-│       └── postScore.js
+│       ├── postGame.js
+│       ├── postScore.js
+│       └── updateGame.js
 ├── netlify.toml
+├── package-lock.json
 ├── package.json
-├── pnpm-lock.yaml
-├── pnpm-workspace.yaml
 ├── postcss.config.js
 ├── public
 │   ├── assets
@@ -71,6 +73,7 @@
 │   │   ├── AuthService.ts
 │   │   └── auth.ts
 │   ├── components
+│   │   ├── Debugger.tsx
 │   │   ├── chat
 │   │   │   ├── ChatBase.tsx
 │   │   │   ├── ChatSystem.tsx
@@ -81,6 +84,7 @@
 │   │   │   ├── Buttons.tsx
 │   │   │   ├── GameTitle.tsx
 │   │   │   ├── Header.tsx
+│   │   │   ├── MenuButton.tsx
 │   │   │   ├── ScreenContainer.tsx
 │   │   │   └── StyledComponents.tsx
 │   │   ├── icons
@@ -114,6 +118,7 @@
 │   ├── hooks
 │   │   ├── useAudio.ts
 │   │   ├── useAuth.ts
+│   │   ├── useKeyboardCommands.ts
 │   │   └── usePhantom.ts
 │   ├── index.tsx
 │   ├── screens
@@ -123,10 +128,10 @@
 │   │   │   ├── GameScreen.tsx
 │   │   │   └── components
 │   │   │       ├── DeathDisplay.tsx
+│   │   │       ├── GameHUD.tsx
 │   │   │       ├── GameLayout.tsx
 │   │   │       ├── GameOverlay.tsx
 │   │   │       ├── GameStateManager.tsx
-│   │   │       ├── GameHUD.tsx
 │   │   │       ├── LevelDisplay.tsx
 │   │   │       ├── LevelTransition.tsx
 │   │   │       └── PauseOverlay.tsx
@@ -154,20 +159,31 @@
 │   │       └── PhantomService.ts
 │   ├── stores
 │   │   ├── audioStore.ts
+│   │   ├── authStore.ts
 │   │   ├── chatStore.ts
 │   │   ├── engineStore.ts
-│   │   ├── gameStateStore.ts
-│   │   ├── gameStore.ts
+│   │   ├── gameData.ts
 │   │   ├── inventoryStore.ts
 │   │   ├── levelStore.ts
 │   │   ├── overlayStore.ts
 │   │   ├── powerupStore.ts
-│   │   └── settingsPanelStore.ts
+│   │   ├── settingsPanelStore.ts
+│   │   ├── stateMachine.ts
+│   │   └── walletStore.ts
 │   ├── styles
 │   │   └── style.css
 │   ├── types
+│   │   ├── auth.ts
+│   │   ├── chat.ts
+│   │   ├── commands.ts
 │   │   ├── components
+│   │   │   ├── game.ts
+│   │   │   ├── hud.ts
+│   │   │   ├── index.ts
+│   │   │   ├── layout.ts
 │   │   │   ├── leaderboard.ts
+│   │   │   ├── menu.ts
+│   │   │   ├── overlays.ts
 │   │   │   └── sound.ts
 │   │   ├── core.ts
 │   │   ├── entities
@@ -180,28 +196,30 @@
 │   │   │   └── token.ts
 │   │   ├── forms
 │   │   │   └── index.ts
+│   │   ├── game.ts
 │   │   ├── index.ts
+│   │   ├── machine.ts
 │   │   ├── managers
-│   │   │   ├── gameState.ts
 │   │   │   └── overlay.ts
 │   │   ├── overlay.ts
-│   │   └── stores
-│   │       ├── base.ts
-│   │       ├── chat.ts
-│   │       ├── engine.ts
-│   │       ├── game.ts
-│   │       ├── gameState.ts
-│   │       ├── inventory.ts
-│   │       ├── level.ts
-│   │       ├── powerup.ts
-│   │       └── settings.ts
+│   │   ├── stores
+│   │   │   ├── base.ts
+│   │   │   ├── chat.ts
+│   │   │   ├── engine.ts
+│   │   │   ├── game.ts
+│   │   │   ├── inventory.ts
+│   │   │   ├── level.ts
+│   │   │   ├── machine.ts
+│   │   │   ├── overlay.ts
+│   │   │   ├── powerup.ts
+│   │   │   └── settings.ts
+│   │   └── wallet.ts
 │   └── utils
 │       ├── helpers.ts
-│       ├── keyboardCommands.ts
 │       └── tokenBalances.ts
 ├── tailwind.config.js
 ├── tree.txt
 ├── vite-env.d.ts
 └── vite.config.js
 
-46 directories, 159 files
+46 directories, 177 files

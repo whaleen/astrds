@@ -27,11 +27,12 @@ const GameOverScreen: React.FC = () => {
 
   const startTransition = useStateMachine(state => state.startTransition)
 
-  const handlePlayAgain = async () => {
+  // Replace handlePlayAgain with:
+  const handleReturnToTitle = async () => {
     try {
-      await startTransition(MachineState.GAME_OVER, MachineState.READY_TO_PLAY)
+      await startTransition(MachineState.GAME_OVER, MachineState.INITIAL)
     } catch (error) {
-      console.error('Failed to restart game:', error)
+      console.error('Failed to return to title:', error)
     }
   }
 
@@ -84,7 +85,7 @@ const GameOverScreen: React.FC = () => {
 
             <div className='space-y-4'>
               <QuarterButton
-                onClick={handlePlayAgain}
+                onClick={handleReturnToTitle}
                 disabled={!wallet.connected}
               >
                 Play Again

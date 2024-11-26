@@ -2,14 +2,11 @@
 import { useState, useCallback } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { authService } from '@/auth/AuthService'
-import { useStateMachine } from '@/stores/stateMachine'
-import { MachineState } from '@/types/machine'
 
 export const useAuth = () => {
   const wallet = useWallet()
   const [isVerifying, setIsVerifying] = useState(false)
   const [error, setError] = useState(null)
-  const setState = useStateMachine((state) => state.setState)
 
   const verifyWallet = useCallback(
     async (paymentType = 'SOL') => {

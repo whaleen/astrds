@@ -20,7 +20,8 @@ export default class Token implements TokenState, TokenMethods {
   public timeToLive: number
   public creation: number
   public color: string
-  public value: number = 1 // Default token value
+  public metadata: TokenMetadata
+  public isPendingCollection: boolean = false // Initialize the new property
 
   constructor(args: TokenConfig) {
     this.id = `token-${Date.now()}-${Math.random()}`
@@ -68,9 +69,13 @@ export default class Token implements TokenState, TokenMethods {
     this.creation = Date.now()
     this.color = '#FF642D'
     this.rotation = 0
-    this.value = 100
+
+    this.metadata = args.metadata || {
+      symbol: 'ASTRDS',
+      value: 1,
+      mineable: true,
+    }
   }
-  metadata: TokenMetadata
 
   destroy(): void {
     this.delete = true

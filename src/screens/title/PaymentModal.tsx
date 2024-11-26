@@ -1,6 +1,6 @@
 // src/screens/title/PaymentModal.tsx
 import React, { memo } from 'react';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { Coins } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { FormProps } from '@/types/forms';
@@ -43,9 +43,8 @@ const PaymentOption = memo(({ selected, onSelect, type, amount, symbol, label }:
 ));
 
 const PaymentModal = memo((props: FormProps) => {
-  const { isVisible, selectedOption, onSelect, onSubmit, onClose, isVerifying, error } = props;
+  const { isVisible, selectedOption, onSelect, onSubmit, onClose, error } = props;
   const wallet = useWallet();
-  const { connection } = useConnection();
   const { isVerifying: authVerifying } = useAuth();
 
   if (!isVisible) return null;

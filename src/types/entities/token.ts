@@ -22,6 +22,7 @@ export interface TokenState extends BaseEntity {
   creation: number
   color: string
   metadata: TokenMetadata
+  isPendingCollection: boolean // Add this line
 }
 
 export interface TokenMethods {

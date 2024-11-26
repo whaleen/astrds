@@ -1,5 +1,10 @@
 // src/types/stores/game.ts
-import { Score } from '../core'
+import { Score } from '../core' // Add this import at the top
+
+export interface GameSessionState {
+  status: 'active' | 'ending' | 'ended' | null
+  endTime?: string
+}
 
 export interface GameError {
   code: string
@@ -39,6 +44,7 @@ export interface GameStoreState {
   error: GameError | null
   currentSessionId: string | null
   sessionTokens: TokenEarned[]
+  sessionState: GameSessionState
 }
 
 export interface GameStore extends GameStoreState {
@@ -50,5 +56,5 @@ export interface GameStore extends GameStoreState {
   startGameSession: (walletAddress: string) => Promise<string>
   updateSessionTokens: (newToken: TokenEarned) => Promise<void>
   endGameSession: () => Promise<void>
-  verifyTokensForMinting: () => Promise<boolean>
+  verifyTokensForMinting: () => Promise<number> // Change return type from boolean to number
 }

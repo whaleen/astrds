@@ -34,15 +34,15 @@ const TitleScreen: React.FC = () => {
 
   const handlePaymentSubmit = useCallback(async () => {
     try {
-      setIsPaymentModalVisible(false)
-      const success = await verifyWallet()
+      setIsPaymentModalVisible(false);
+      const success = await verifyWallet(selectedPaymentOption);
       if (success) {
-        await handleQuarterInsert()
+        await handleQuarterInsert();
       }
     } catch (err) {
-      console.error('Payment failed:', err)
+      console.error('Payment failed:', err);
     }
-  }, [verifyWallet, handleQuarterInsert])
+  }, [verifyWallet, handleQuarterInsert, selectedPaymentOption]);
 
   const handleDirectStart = useCallback(async () => {
     try {

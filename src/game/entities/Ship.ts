@@ -40,7 +40,7 @@ export default class Ship implements ShipState, ShipMethods {
     }
     this.rotation = 0
     this.rotationSpeed = 6
-    this.speed = 0.45
+    this.speed = 0.25
     this.inertia = 0.99
     this.radius = 20
     this.lastShot = 0

@@ -18,6 +18,9 @@ const initialState: GameStoreState = {
   error: null,
   currentSessionId: null,
   sessionTokens: [],
+  sessionState: {
+    status: null,
+  },
 }
 
 export const useGameData = create<GameStore>((set, get) => ({
@@ -120,6 +123,8 @@ export const useGameData = create<GameStore>((set, get) => ({
 
   // New session management methods
   startGameSession: async (walletAddress: string) => {
+    console.log('Starting game session for wallet:', walletAddress)
+
     try {
       const response = await fetch('/.netlify/functions/postGame', {
         method: 'POST',
@@ -127,12 +132,22 @@ export const useGameData = create<GameStore>((set, get) => ({
         body: JSON.stringify({ walletAddress }),
       })
 
-      if (!response.ok) throw new Error('Failed to start game session')
+      if (!response.ok) {
+        throw new Error('Failed to start game session')
+      }
 
       const { sessionId } = await response.json()
-      set({ currentSessionId: sessionId, sessionTokens: [] })
+      console.log('Game session started successfully. Session ID:', sessionId)
+
+      set({
+        currentSessionId: sessionId,
+        sessionTokens: [],
+        sessionState: { status: 'active' },
+      })
+
       return sessionId
     } catch (err) {
+      console.error('Error starting game session:', err)
       set((state) => ({
         ...state,
         error: {
@@ -140,6 +155,7 @@ export const useGameData = create<GameStore>((set, get) => ({
           message: 'Failed to start game session',
           details: err,
         },
+        sessionState: { status: null },
       }))
       throw err
     }
@@ -147,7 +163,10 @@ export const useGameData = create<GameStore>((set, get) => ({
 
   updateSessionTokens: async (newToken: TokenEarned) => {
     const { currentSessionId, sessionTokens } = get()
-    if (!currentSessionId) return
+    if (!currentSessionId) {
+      console.warn('No active session for token update')
+      return
+    }
 
     const updatedTokens = [...sessionTokens, newToken]
 
@@ -161,26 +180,46 @@ export const useGameData = create<GameStore>((set, get) => ({
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to update session tokens')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update session tokens')
+      }
 
+      // Only update local state after successful server update
       set({ sessionTokens: updatedTokens })
     } catch (err) {
+      console.error('Failed to update session tokens:', err)
       set((state) => ({
-        ...state,
         error: {
           code: 'TOKEN_UPDATE_ERROR',
           message: 'Failed to update session tokens',
           details: err,
         },
       }))
+      throw err
     }
   },
 
   endGameSession: async () => {
-    const { currentSessionId, score } = get()
-    if (!currentSessionId) return
+    const { currentSessionId, sessionState, score } = get()
+
+    // Guard against multiple calls
+    if (
+      !currentSessionId ||
+      sessionState.status === 'ending' ||
+      sessionState.status === 'ended'
+    ) {
+      console.log('Session already ending or ended')
+      return
+    }
 
     try {
+      // Mark session as ending
+      set({ sessionState: { status: 'ending' } })
+
+      // Wait for any pending token updates
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
       const response = await fetch('/.netlify/functions/updateGame', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -193,28 +232,36 @@ export const useGameData = create<GameStore>((set, get) => ({
         }),
       })
 
-      const result = await response.json()
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to end game session')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to end game session')
       }
 
-      set({ currentSessionId: null, sessionTokens: [] })
+      set({
+        currentSessionId: null,
+        sessionTokens: [],
+        sessionState: {
+          status: 'ended',
+          endTime: new Date().toISOString(),
+        },
+      })
     } catch (err) {
+      console.error('Error ending game session:', err)
       set((state) => ({
-        ...state,
         error: {
           code: 'SESSION_END_ERROR',
-          message: 'Failed to end game session',
+          message:
+            err instanceof Error ? err.message : 'Failed to end game session',
           details: err,
         },
+        sessionState: { status: 'active' },
       }))
-      console.error('Error ending game session:', err)
     }
   },
 
   verifyTokensForMinting: async () => {
     const { currentSessionId, sessionTokens } = get()
-    if (!currentSessionId) return false
+    if (!currentSessionId) return 0 // Return 0 instead of false
 
     try {
       const response = await fetch(
@@ -224,15 +271,13 @@ export const useGameData = create<GameStore>((set, get) => ({
 
       const { tokensEarned } = await response.json()
 
-      // Verify each token amount matches
-      const verified = sessionTokens.every((clientToken) => {
-        const serverToken = tokensEarned.find(
-          (t) => t.symbol === clientToken.symbol
-        )
-        return serverToken && serverToken.amount === clientToken.amount
-      })
+      // Calculate and return the total token count instead of boolean
+      const serverCount = tokensEarned.reduce(
+        (sum, token) => sum + (token.symbol === 'ASTRDS' ? token.amount : 0),
+        0
+      )
 
-      return verified
+      return serverCount
     } catch (err) {
       set((state) => ({
         ...state,
@@ -242,7 +287,7 @@ export const useGameData = create<GameStore>((set, get) => ({
           details: err,
         },
       }))
-      return false
+      return 0 // Return 0 on error
     }
   },
 }))

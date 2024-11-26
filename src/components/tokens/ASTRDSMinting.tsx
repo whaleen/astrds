@@ -1,79 +1,122 @@
 // src/components/tokens/ASTRDSMinting.tsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useGameData } from '@/stores/gameData'
 
 const ASTRDSMinting: React.FC<{ tokenCount: number }> = ({ tokenCount }) => {
   const { publicKey } = useWallet()
   const verifyTokensForMinting = useGameData((state) => state.verifyTokensForMinting)
+  const currentSessionId = useGameData((state) => state.currentSessionId)
+  const sessionState = useGameData((state) => state.sessionState)
+  const [hasFetched, setHasFetched] = useState(false)
+  const [verifiedCount, setVerifiedCount] = useState<number | null>(null)
+
   const [status, setStatus] = useState({
     loading: false,
     error: null as string | null,
     signature: null as string | null,
   })
 
+  // Fetch and verify token count on mount
+  useEffect(() => {
+    const verifyTokens = async () => {
+      if (!currentSessionId || hasFetched) return;
+
+      try {
+        console.log('Starting token verification:', {
+          sessionId: currentSessionId,
+          clientCount: tokenCount
+        });
+
+        const serverCount = await verifyTokensForMinting();
+        console.log('Token verification result:', {
+          clientCount: tokenCount,
+          serverCount
+        });
+
+        setVerifiedCount(serverCount);
+      } catch (error) {
+        console.error('Token verification failed:', error);
+      }
+      setHasFetched(true);
+    };
+
+    verifyTokens();
+  }, [currentSessionId, hasFetched]);
+
   const mintGameTokens = async () => {
-    if (!publicKey || tokenCount <= 0) {
+    if (!publicKey || !verifiedCount || verifiedCount <= 0) {
       console.warn('Invalid mint attempt:', {
         publicKey: publicKey?.toString(),
-        tokenCount,
-      })
-      return
+        verifiedCount,
+        currentSessionId,
+        sessionState
+      });
+      return;
     }
 
     try {
-      setStatus({ loading: true, error: null, signature: null })
+      setStatus({ loading: true, error: null, signature: null });
 
-      // Verify token amounts against session record
-      console.log('Verifying token amounts...')
-      const verified = await verifyTokensForMinting()
-      if (!verified) {
-        throw new Error('Token verification failed - amounts do not match server record')
-      }
-      console.log('Token verification successful')
-
-      console.log('Initiating mint for player:', publicKey.toString())
-      const response = await fetch('/.netlify/functions/mintTokens', {
+      // Use the verified count from server for minting
+      console.log('Initiating mint with verified count:', verifiedCount);
+      const mintResponse = await fetch('/.netlify/functions/mintTokens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           playerPublicKey: publicKey.toString(),
-          tokenCount: Number(tokenCount),
+          tokenCount: verifiedCount,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await mintResponse.json();
       if (!result.success) {
-        throw new Error(result.error || 'Minting failed')
+        throw new Error(result.error || 'Minting failed');
       }
 
       setStatus({
         loading: false,
         error: null,
         signature: result.serializedTransaction,
-      })
-
-      console.log('Mint transaction successful:', result.serializedTransaction)
+      });
 
     } catch (error) {
-      console.error('Minting failed:', error)
+      console.error('Minting failed:', error);
       setStatus({
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to mint tokens',
         signature: null,
-      })
+      });
     }
+  };
+
+  if (tokenCount <= 0) return null;
+
+  // Show loading state while verifying
+  if (!hasFetched || verifiedCount === null) {
+    return (
+      <div className='mb-8 text-center'>
+        <p className='text-gray-400'>Verifying collected tokens...</p>
+      </div>
+    );
   }
 
-  // Early return if no tokens to claim
-  if (tokenCount <= 0) {
-    return null
+  // Show mismatch warning if counts don't match
+  if (verifiedCount !== tokenCount) {
+    return (
+      <div className='mb-8 text-center'>
+        <p className='text-yellow-400'>Token verification mismatch. Please try again.</p>
+        <p className='text-sm text-gray-400'>
+          Client: {tokenCount}, Server: {verifiedCount}
+        </p>
+      </div>
+    );
   }
 
   return (
     <div className='mb-8 space-y-4'>
       <div className='text-lg mb-4'>
-        <span className='text-game-blue'>Collected Tokens:</span> {tokenCount}
+        <span className='text-game-blue'>Verified Tokens:</span> {verifiedCount}
       </div>
 
       <button
@@ -88,10 +131,10 @@ const ASTRDSMinting: React.FC<{ tokenCount: number }> = ({ tokenCount }) => {
         {!publicKey
           ? 'Connect Wallet to Claim'
           : status.loading
-            ? 'Verifying and Minting...'
+            ? 'Minting...'
             : status.signature
               ? 'Tokens Claimed!'
-              : `Claim ${tokenCount} ASTRDS`}
+              : `Claim ${verifiedCount} ASTRDS`}
       </button>
 
       {status.error && (
@@ -117,7 +160,7 @@ const ASTRDSMinting: React.FC<{ tokenCount: number }> = ({ tokenCount }) => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ASTRDSMinting
+export default ASTRDSMinting;

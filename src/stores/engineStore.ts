@@ -21,7 +21,7 @@ import { particleSystem } from '@/game/systems/ParticleSystem'
 import { useInventoryStore } from './inventoryStore'
 import { useGameData } from './gameData'
 import { audioService } from '@/services/audio/AudioService'
-import useLevelStore from './levelStore'
+import { useLevelStore } from './levelStore'
 
 // Performance monitoring
 interface PerformanceMetrics {
@@ -233,29 +233,48 @@ export const useEngineStore = create<EngineStore>((set, get) => ({
     if (!currentShip) return
 
     // Ship-Token collisions - Collect tokens, don't destroy ship!
-    // Token collisions
     tokens.forEach((token) => {
       if (state.checkCollision(currentShip, token)) {
+        console.log('Token collision detected:', {
+          tokenId: token.id,
+          currentTokens: useInventoryStore.getState().items.tokens,
+          sessionId: useGameData.getState().currentSessionId,
+        })
+
         // Record token collection in session before destroying
         useGameData
           .getState()
           .updateSessionTokens({
-            symbol: 'ASTRDS', // We can make this configurable later
-            amount: 1, // Keep existing behavior of 1 token per pickup
+            symbol: 'ASTRDS',
+            amount: 1,
             verified: false,
           })
-          .catch(console.error) // Handle error but don't block gameplay
+          .then(() => {
+            console.log('Token session update success:', {
+              tokenId: token.id,
+              sessionTokens: useGameData.getState().sessionTokens.length,
+            })
+          })
+          .catch((error) => {
+            console.error('Token session update failed:', {
+              tokenId: token.id,
+              error: error.message,
+              sessionState: useGameData.getState().sessionState,
+            })
+          })
 
-        // Destroy the token entity since we collected it
-        token.destroy()
-
-        // Add token to inventory using existing behavior
+        // Add token to inventory
         const inventoryStore = useInventoryStore.getState()
-        if (typeof inventoryStore.addItem === 'function') {
-          inventoryStore.addItem('tokens', 1)
-        }
+        const beforeCount = inventoryStore.items.tokens
+        inventoryStore.addItem('tokens', 1)
+        console.log('Inventory updated:', {
+          tokenId: token.id,
+          beforeCount,
+          afterCount: inventoryStore.items.tokens,
+        })
 
-        // Optionally play collection sound effect
+        // Destroy token
+        token.destroy()
         audioService.playSound('collect')
       }
     })
@@ -324,25 +343,18 @@ export const useEngineStore = create<EngineStore>((set, get) => ({
       state.context.fillRect(0, 0, state.screen.width, state.screen.height)
       state.context.globalAlpha = 1
 
-      // Game logic
-      // if (state.entities.asteroids.length === 0) {
-      //   set((state) => ({
-      //     asteroidCount: Math.min(state.asteroidCount + 1, 10),
-      //   }))
-      //   state.spawnAsteroids(state.asteroidCount)
-      // }
-
       // We check for cleared asteroids, then increment level, spawn new asteroids, party!
       if (state.entities.asteroids.length === 0) {
-        // Increment level
         const levelStore = useLevelStore.getState()
-        levelStore.incrementLevel()
+        if (!levelStore.isRespawning) {
+          // Add this check
+          levelStore.incrementLevel()
 
-        // Increase asteroid count and spawn new ones
-        set((state) => ({
-          asteroidCount: Math.min(state.asteroidCount + 1, 10),
-        }))
-        state.spawnAsteroids(state.asteroidCount)
+          set((state) => ({
+            asteroidCount: Math.min(state.asteroidCount + 1, 10),
+          }))
+          state.spawnAsteroids(state.asteroidCount)
+        }
       }
 
       // Update spawners
